@@ -1,0 +1,5 @@
+LDR 0,0,31 ; Load register 3 with the contents of the memory loc 31
+STR 3,0,31,1 ; example with indirect addressing
+LDA 2,1,16,1
+LDX 1,16
+STX 1,31,1

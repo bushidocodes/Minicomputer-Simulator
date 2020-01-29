@@ -1,7 +1,9 @@
 package com.simulator.awesome;
 
+import java.io.File;
 import java.lang.Short;
 import java.lang.String;
+import java.util.Arrays;
 
 class Main {
 
@@ -25,5 +27,10 @@ class Main {
         // Execute a word with opcode 2... STR
         my_compy.memory[1] = Short.valueOf((short)0b0001000000000000);
         Simulator.parse_and_execute(my_compy.memory[1]);
+
+        Assembler my_assembler = new Assembler();
+        String basePath = new File("").getAbsolutePath(); //get current base directory
+        my_assembler.loadFile(basePath.concat("/static/sample-program.txt"));
+        System.out.println(Arrays.toString(my_assembler.convertToMachineCode()));
     }
 }
