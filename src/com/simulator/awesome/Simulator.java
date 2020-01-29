@@ -193,10 +193,10 @@ public class Simulator {
                 System.out.println("IN");
                 break;
             case 62:
-                System.out.println("IN");
+                System.out.println("OUT");
                 break;
             case 63:
-                System.out.println("IN");
+                System.out.println("CHK");
                 break;
         }
 
