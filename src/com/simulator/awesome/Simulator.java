@@ -618,4 +618,35 @@ public class Simulator {
         String binary_string = Integer.toBinaryString(Short.toUnsignedInt(word));
         return String.format("%1$16s", binary_string).replace(' ', '0');
     }
+
+    public void load_program(String[] assembledMachineCode, int memoryLocation){
+        // Iterate through memory line-by-line, loading in the corresponding machine code from the program.
+        int computerMemoryLoc = memoryLocation;
+        for (int inputMemoryLoc = 0; inputMemoryLoc<assembledMachineCode.length; inputMemoryLoc++){
+            memory[computerMemoryLoc] = (short)Integer.parseUnsignedInt(assembledMachineCode[inputMemoryLoc],2);
+            computerMemoryLoc++;
+        }
+    }
+
+    // This function allows you to not specify a memory location for loading a program (default to location 6)
+    public void load_program(String[] assembledMachineCode){
+        // No memory location was specified, load the program into memory starting at the first location 6
+        load_program(assembledMachineCode, 6);
+    }
+
+    // Not sure if we'll keep this but it's useful for printing the memory contents to console.
+    public String[] memory_to_string(){
+        // Initialize an array equal to the computer memory size
+        String[] memoryString_arr = new String[word_count];
+
+        // For each word in memory, convert it to a string of binary numbers
+        for (int i=0; i<word_count; i++) {
+            try{
+                memoryString_arr[i] = Simulator.word_to_string(memory[i]);
+            } catch(NullPointerException e) {
+                //null value in memory-- carry on
+            }
+        }
+        return memoryString_arr;
+    }
 }
