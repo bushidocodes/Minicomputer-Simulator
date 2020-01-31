@@ -85,6 +85,7 @@ public class Simulator {
 
     /**
      OPCODE 00 - Halt the Machine
+     Octal: 000
      HLT
     */
     public static void halt() {
@@ -94,6 +95,7 @@ public class Simulator {
 
     /**
      OPCODE 01 - Load Register From Memory
+     Octal: 001
      LDR r, x, address[,I]
      r = 0..3
      r <- c(EA)
@@ -105,6 +107,7 @@ public class Simulator {
 
     /**
      OPCODE 02 - Store Register To Memory
+     Octal: 002
      STR r, x, address[,I]
      r = 0..3
      Memory(EA) <- c(r)
@@ -115,6 +118,7 @@ public class Simulator {
 
     /**
      OPCODE 03 - Load Register with Address
+     Octal: 003
      LDA r, x, address[,I]
      r = 0..3
      r <- EA
@@ -125,6 +129,7 @@ public class Simulator {
 
     /**
      OPCODE 04 - Add Memory To Register
+     Octal: 004
      AMR r, x, address[,I]
      r = 0..3
      r<- c(r) + c(EA)
@@ -135,6 +140,7 @@ public class Simulator {
 
     /**
      OPCODE 05 - Subtract Memory From Register
+     Octal: 005
      SMR r, x, address[,I]
      r = 0..3
      r<- c(r) – c(EA)
@@ -143,9 +149,9 @@ public class Simulator {
         System.out.println("SMR");
     }
 
-
     /**
      * OPCODE 06 - Add Immediate to Register
+     * Octal: 006
      * AIR r, immed
      * r = 0..3
      * r <- c(r) + Immed
@@ -161,6 +167,7 @@ public class Simulator {
 
     /**
      OPCODE 07 - Subtract Immediate from Register
+     Octal: 007
      SIR r, immed
      r = 0..3
      r <- c(r) - Immed
@@ -173,9 +180,9 @@ public class Simulator {
         System.out.println("SIR");
     }
 
-
     /**
      OPCODE 10 - Jump If Zero
+     Octal: 012
      JZ r, x, address[,I]
      If c(r) = 0, then PC <- EA
      Else PC <- PC+1
@@ -186,6 +193,7 @@ public class Simulator {
 
     /**
      OPCODE 11 - Jump If Not Equal
+     Octal: 013
      JNE r, x, address[,I]
      If c(r) != 0, then PC <-- EA
      Else PC <- PC + 1
@@ -196,6 +204,7 @@ public class Simulator {
 
     /**
      * OPCODE 12 - Jump If Condition Code
+     * Octal: 014
      * JCC cc, x, address[,I]
      * cc replaces r for this instruction
      * cc takes values 0, 1, 2, 3 as above and specifies the bit in the Condition Code Register to check;
@@ -208,6 +217,7 @@ public class Simulator {
 
     /**
      * OPCODE 13 - Unconditional Jump To Address
+     * Octal: 015
      * JMA x, address[,I]
      * PC <- EA,
      * Note: r is ignored in this instruction
@@ -218,6 +228,7 @@ public class Simulator {
 
     /**
      OPCODE 14 - Jump and Save Return Address
+     Octal: 016
      JSR x, address[,I]
      R3 <- PC+1;
      PC <- EA
@@ -230,6 +241,7 @@ public class Simulator {
 
     /**
      OPCODE 15 - Return From Subroutine
+     Octal: 017
      w/ return code as Immed portion (optional) stored in the instruction’s address field.
      RFS Immed
      R0 <- Immed; PC <- c(R3)
@@ -241,6 +253,7 @@ public class Simulator {
 
     /**
      OPCODE 16 - Subtract One and Branch.
+     Octal: 020
      SOB r, x, address[,I]
      r = 0..3
      r <- c(r) – 1
@@ -253,6 +266,7 @@ public class Simulator {
 
     /**
      OPCODE 17 - Jump Greater Than or Equal To
+     Octal: 021
      JGE r,x, address[,I]
      If c(r) >= 0, then PC <- EA
      Else PC <- PC + 1
@@ -263,6 +277,7 @@ public class Simulator {
 
     /**
      OPCODE 20 - Multiply Register by Register
+     Octal: 024
      MLT rx,ry
      rx, rx+1 <- c(rx) * c(ry)
      rx must be 0 or 2
@@ -276,6 +291,7 @@ public class Simulator {
 
     /**
      OPCODE 21 - Divide Register by Register
+     Octal: 025
      DVD rx,ry
      rx, rx+1 <- c(rx)/ c(ry)
      rx must be 0 or 2
@@ -289,6 +305,7 @@ public class Simulator {
 
     /**
      OPCODE 22 - Test the Equality of Register and Register
+     Octal: 026
      TRR rx, ry
      If c(rx) = c(ry), set cc(4) <- 1; else, cc(4) <- 0
     */
@@ -298,6 +315,7 @@ public class Simulator {
 
     /**
      OPCODE 23 - Logical And of Register and Register
+     Octal: 027
      AND rx, ry
      c(rx) <- c(rx) AND c(ry)
     */
@@ -307,6 +325,7 @@ public class Simulator {
 
     /**
      OPCODE 24 - Logical Or of Register and Register
+     Octal: 030
      ORR rx, ry
      c(rx) <- c(rx) OR c(ry)
     */
@@ -316,6 +335,7 @@ public class Simulator {
 
     /**
      OPCODE 25 - Logical Not of Register To Register
+     Octal: 031
      NOT rx
      C(rx) <- NOT c(rx)
     */
@@ -323,83 +343,9 @@ public class Simulator {
         System.out.println("NOT");
     }
 
-
     /**
-     OPCODE 31 - Shift Register by Count
-     SRC r, count, L/R, A/L
-     c(r) is shifted left (L/R =1) or right (L/R = 0) either logically (A/L = 1) or arithmetically (A/L = 0)
-     XX, XXX are ignored
-     Count = 0…15
-     If Count = 0, no shift occurs
-    */
-    public static void shift_register_by_count(){
-        System.out.println("SRC");
-    }
-
-    /**
-     OPCODE 32 - Rotate Register by Count
-     RRC r, count, L/R, A/L
-     c(r) is rotated left (L/R = 1) or right (L/R =0) either logically (A/L =1)
-     XX, XXX is ignored
-     Count = 0…15
-     If Count = 0, no rotate occurs
-    */
-    public static void rotate_register_by_count(){
-        System.out.println("RRC");
-    }
-
-    /**
-     OPCODE 33 - Floating Add Memory To Register
-     FADD fr, x, address[,I]
-     c(fr) <- c(fr) + c(EA)
-     c(fr) <- c(fr) + c(c(EA)), if I bit set
-     fr must be 0 or 1.
-     OVERFLOW may be set
-    */
-    public static void floating_add_memory_to_register(){
-        System.out.println("FADD");
-    }
-
-    /**
-     OPCODE 34 - Floating Subtract Memory From Register
-     FSUB fr, x, address[,I]
-     c(fr) <- c(fr) - c(EA)
-     c(fr) <- c(fr) - c(c(EA)), if I bit set
-     fr must be 0 or 1
-     UNDERFLOW may be set
-    */
-    public static void floating_subtract_memory_from_register(){
-        System.out.println("FSUB");
-    }
-
-    /**
-     OPCODE 35 - Vector Add
-     VADD fr, x, address[,I]
-     fr contains the length of the vectors
-     c(EA) or c(c(EA)), if I bit set, is address of first vector
-     c(EA+1) or c(c(EA+1)), if I bit set, is address of the second vector
-     Let V1 be vector at address; Let V2 be vector at address+1
-     Then, V1[i] = V1[i]+ V2[i], i = 1, c(fr).
-    */
-    public static void vector_add(){
-        System.out.println("VADD");
-    }
-
-    /**
-     OPCODE 36 - Vector Subtract
-     VSUB fr, x, address[,I]
-     fr contains the length of the vectors
-     c(EA) or c(c(EA)), if I bit set is address of first vector
-     c(EA+1) or c(c(EA+1)), if I bit set is address of the second vector
-     Let V1 be vector at address; Let V2 be vector at address+1
-     Then, V1[i] = V1[i] - V2[i], i = 1, c(fr).
-    */
-    public static void vector_substract(){
-        System.out.println("VSUB");
-    }
-
-    /**
-     * OPCODE 36 - Trap
+     * OPCODE 30 - Trap
+     * Octal: 036
      * Traps to memory address 0, which contains the address of a table in memory.
      * Stores the PC+1 in memory location 2.
      * The table can have a maximum of 16 entries representing 16 routines for user-specified instructions stored elsewhere in memory.
@@ -413,7 +359,88 @@ public class Simulator {
     }
 
     /**
+     OPCODE 31 - Shift Register by Count
+     Octal: 037
+     SRC r, count, L/R, A/L
+     c(r) is shifted left (L/R =1) or right (L/R = 0) either logically (A/L = 1) or arithmetically (A/L = 0)
+     XX, XXX are ignored
+     Count = 0…15
+     If Count = 0, no shift occurs
+    */
+    public static void shift_register_by_count(){
+        System.out.println("SRC");
+    }
+
+    /**
+     OPCODE 32 - Rotate Register by Count
+     Octal: 040
+     RRC r, count, L/R, A/L
+     c(r) is rotated left (L/R = 1) or right (L/R =0) either logically (A/L =1)
+     XX, XXX is ignored
+     Count = 0…15
+     If Count = 0, no rotate occurs
+    */
+    public static void rotate_register_by_count(){
+        System.out.println("RRC");
+    }
+
+    /**
+     OPCODE 33 - Floating Add Memory To Register
+     Octal: 041
+     FADD fr, x, address[,I]
+     c(fr) <- c(fr) + c(EA)
+     c(fr) <- c(fr) + c(c(EA)), if I bit set
+     fr must be 0 or 1.
+     OVERFLOW may be set
+    */
+    public static void floating_add_memory_to_register(){
+        System.out.println("FADD");
+    }
+
+    /**
+     OPCODE 34 - Floating Subtract Memory From Register
+     Octal: 042
+     FSUB fr, x, address[,I]
+     c(fr) <- c(fr) - c(EA)
+     c(fr) <- c(fr) - c(c(EA)), if I bit set
+     fr must be 0 or 1
+     UNDERFLOW may be set
+    */
+    public static void floating_subtract_memory_from_register(){
+        System.out.println("FSUB");
+    }
+
+    /**
+     OPCODE 35 - Vector Add
+     Octal: 043
+     VADD fr, x, address[,I]
+     fr contains the length of the vectors
+     c(EA) or c(c(EA)), if I bit set, is address of first vector
+     c(EA+1) or c(c(EA+1)), if I bit set, is address of the second vector
+     Let V1 be vector at address; Let V2 be vector at address+1
+     Then, V1[i] = V1[i]+ V2[i], i = 1, c(fr).
+    */
+    public static void vector_add(){
+        System.out.println("VADD");
+    }
+
+    /**
+     OPCODE 36 - Vector Subtract
+     Octal: 044
+     VSUB fr, x, address[,I]
+     fr contains the length of the vectors
+     c(EA) or c(c(EA)), if I bit set is address of first vector
+     c(EA+1) or c(c(EA+1)), if I bit set is address of the second vector
+     Let V1 be vector at address; Let V2 be vector at address+1
+     Then, V1[i] = V1[i] - V2[i], i = 1, c(fr).
+    */
+    public static void vector_substract(){
+        System.out.println("VSUB");
+    }
+
+    /**
      OPCODE 37 - Convert to Fixed/FloatingPoint
+     Octal: 045
      CNVRT r, x, address[,I]
      If F = 0, convert c(EA) to a fixed point number and store in r.
      If F = 1, convert c(EA) to a floating point number and store in FR0.
@@ -425,6 +452,7 @@ public class Simulator {
 
     /**
      OPCODE 41 - Load Index Register from Memory
+     Octal: 051
      LDX x, address[,I]
      x = 1..3
      Xx <- c(EA)
@@ -435,6 +463,7 @@ public class Simulator {
 
     /**
      OPCODE 42 - Store Index Register to Memory
+     Octal: 052
      STX x, address[,I]
      X = 1..3
      Memory(EA) <- c(Xx)
@@ -445,6 +474,7 @@ public class Simulator {
 
     /**
      OPCODE 50 - Load Floating Register From Memory
+     Octal: 062
      LDFR fr, x, address [,i]
      fr = 0..1
      fr <- c(EA), c(EA+1)
@@ -456,6 +486,7 @@ public class Simulator {
 
     /**
      OPCODE 51 - Store Floating Register To Memory
+     Octal: 063
      STFR fr, x, address [,i]
      fr = 0..1
      EA, EA+1 <- c(fr)
@@ -467,6 +498,7 @@ public class Simulator {
 
     /**
      * OPCODE 61 - Input Character To Register from Device
+     * Octal: 075
      * IN r, devid
      * r = 0..3
      */
@@ -476,6 +508,7 @@ public class Simulator {
 
     /**
      OPCODE 62 - Output Character to Device from Register
+     Octal: 076
      OUT r, devid
      r = 0..3
      */
@@ -485,6 +518,7 @@ public class Simulator {
 
     /**
      OPCODE 63 - Check Device Status to Register
+     Octal: 077
      CHK r, devid
      r = 0..3
      c(r) <- device status
@@ -564,6 +598,9 @@ public class Simulator {
             case 25:
                 logical_not_of_register_and_register();
                 break;
+            case 30:
+                trap();
+                break;
             case 31:
                 shift_register_by_count();
                 break;
@@ -579,11 +616,8 @@ public class Simulator {
             case 35:
                 vector_add();
                 break;
-            // case 36:
-            //   vector_substract();
-            //   break;
             case 36:
-                trap();
+                vector_substract();
                 break;
             case 37:
                 convert_to_fixed_or_floating_point();
