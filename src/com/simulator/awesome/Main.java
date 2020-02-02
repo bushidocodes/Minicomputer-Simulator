@@ -20,6 +20,9 @@ class Main {
         // See the program loaded in memory
         System.out.println(Arrays.toString(myComputer.memoryToString()));
 
+        LoadStoreInstruction load = new LoadStoreInstruction((short) 0b0000010111010101);
+        load.print();
+
         // Set a word with opcode 0... halt. This is actually implemented.
         myComputer.setWord(12, (short) 0b0000000000000000);
         myComputer.parseAndExecute(myComputer.getWord(12));
