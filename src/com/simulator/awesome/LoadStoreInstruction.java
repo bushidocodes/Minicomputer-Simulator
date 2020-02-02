@@ -1,7 +1,7 @@
 package com.simulator.awesome;
 
 // This class centralizes the parsing of the LoadStore class of instructions
-// It is used by LDR, STR, LDA, LDX, STX
+// It is used by LDR, STR, LDA, LDX, STX, JZ, JNE, JCC, JMA, JSR, RFS, SOB, JGE, AMR, SMR, AIR, SIR
 public class LoadStoreInstruction {
     public short address;
     public boolean isIndirect;
@@ -25,7 +25,7 @@ public class LoadStoreInstruction {
         this.isIndirect = (word & indirectAddressingMask) == indirectAddressingMask;
         this.indexRegisterId = (short)((word & indexRegisterMask) >>> indexRegisterOffset);
         this.registerId = (short)((word & registerMask) >>> registerOffset);
-        this.opCode = (short) ((word & opCodeMask) >>> opCodeOffset);
+        this.opCode = (short) (((word & opCodeMask) >>> opCodeOffset) & 0b0000000000111111);
     }
 
     public void print(){
