@@ -23,6 +23,16 @@ class Main {
         LoadStoreInstruction load = new LoadStoreInstruction((short) 0b0000010111010101);
         load.print();
 
+        ArithmeticLogicInstruction arr = new ArithmeticLogicInstruction((short) 0b0101000001000000);
+        arr.print();
+
+        ShiftRotateInstruction shift = new ShiftRotateInstruction((short) 0b0111110100001111);
+        shift.print();
+
+        InputOutputInstruction inOut = new InputOutputInstruction((short) 0b1111110100111111);
+        inOut.print();
+
+
         // Set a word with opcode 0... halt. This is actually implemented.
         myComputer.setWord(12, (short) 0b0000000000000000);
         myComputer.parseAndExecute(myComputer.getWord(12));
