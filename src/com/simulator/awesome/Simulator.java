@@ -913,7 +913,7 @@ public class Simulator {
 
         // MBR <-MEM[MAR]
         // Fetch the word located at the MAR location from memory and transfer it to Memory Buffer Register.
-        this.mbr = memory[this.mar];
+        this.mbr = getWord(this.mar);
     }
 
     // Execution Step 2
@@ -924,7 +924,7 @@ public class Simulator {
         this.ir = this.mbr;
 
         // Extract the opcode from the IR
-        short opcode = extractOpCode(this.ir);
+        short opcode = Simulator.extractOpCode(this.ir);
 
         // TODO: determine the class of opcode: determines the functional unit that will be used to execute the instruction
         // TODO: set internal flags based on opcode
@@ -948,7 +948,7 @@ public class Simulator {
         // Fetch the contents of the word in memory specified by the MAR into the MBR.
         // "Read"
         // TODO: Is this correct?
-        this.mbr = memory[this.mar];
+        this.mbr = getWord(this.mar);
 
     }
 
@@ -976,7 +976,7 @@ public class Simulator {
     private void executionNextInstruction() {
         // TODO: This will need to be expanded when we implement branching
         // Increment the Program Counter
-        if (pc<2047){
+        if (this.pc<this.wordCount){
             this.pc++;
         } else {
             pauseExecutionLoop();
