@@ -1,7 +1,7 @@
 package com.simulator.awesome;
 
+import javax.swing.*;
 import java.io.File;
-import java.lang.Short;
 import java.lang.String;
 import java.util.Arrays;
 
@@ -34,7 +34,24 @@ class Main {
 
 
         // Set a word with opcode 0... halt. This is actually implemented.
-        myComputer.setWord(12, (short) 0b0000000000000000);
-        myComputer.parseAndExecute(myComputer.getWord(12));
+        //myComputer.setWord(12, (short) 0b0000000000000000);
+        //myComputer.parseAndExecute(myComputer.getWord(12));
+
+        // Put a load instruction at address 6
+        myComputer.setWord(6 ,(short) 0b0000011100011111);
+
+        launchGUI();
+
+        myComputer.powerOn();
+        myComputer.startExecutionLoop();
+
+    }
+
+    static void launchGUI(){
+        JFrame frame = new JFrame("Test");
+        frame.setContentPane(new Test().rootPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 }

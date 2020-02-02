@@ -976,7 +976,7 @@ public class Simulator {
     private void executionNextInstruction() {
         // TODO: This will need to be expanded when we implement branching
         // Increment the Program Counter
-        if (this.pc<this.wordCount){
+        if (this.pc<this.wordCount-1){
             this.pc++;
         } else {
             pauseExecutionLoop();
