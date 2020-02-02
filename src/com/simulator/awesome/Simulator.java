@@ -57,6 +57,18 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
+    /** The execution step, 1-6
+     * 1. Instruction Fetch
+     * 2. Instruction Decode
+     * 3. Operand Fetch
+     * 4. Execute
+     * 5. Result Store
+     * 6. Next Instruction
+     **/
+    private int executionStep = 1;
+
+    private boolean isRunning = false;
+
     // TODO: What are the mystery registers we're missing?
 
     Simulator(int wordCount) {
@@ -223,15 +235,27 @@ public class Simulator {
         this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 3, isIllegalMemoryAddressBeyondLimit);
     }
 
+    public boolean isRunning(){
+        return isRunning;
+    }
+
+    public void setIsRunning(boolean running){
+        if(running){
+            isRunning = true;
+        } else {
+            isRunning = false;
+        }
+    }
+
     /**
      *
      * @param word - the machine word you want to extract the OPCODE from
      * @return - The value of the opcode from the word
      */
     private static short extractOpCode(short word) {
-        // OPCODE is 0-4bits, so right shift by 11
+        // OPCODE is 0-5bits, so right shift by 10
         // the >>> operator is a bitshift that includes the "sign bit"
-        short opcode = (short)(word>>>11);
+        short opcode = (short)(word>>>10);
         return opcode;
     }
 
@@ -252,7 +276,9 @@ public class Simulator {
      r = 0..3
      r <- c(EA)
      note that EA is computed as given above
-    */
+
+     In one cycle, move the data from the MBR to an Internal Result Register (IRR)
+     */
     private void loadRegisterFromMemory(){
         System.out.println("LDR");
     }
@@ -833,5 +859,131 @@ public class Simulator {
             }
         }
         return memoryStringArr;
+    }
+
+    /** The execution step, 1-6
+     * 1. Instruction Fetch
+     * 2. Instruction Decode
+     * 3. Operand Fetch
+     * 4. Execute
+     * 5. Result Store
+     * 6. Next Instruction
+     **/
+    private void executionLoop(){
+        switch (executionStep){
+            // Instruction Fetch
+            case 1:
+                executionInstructionFetch();
+                break;
+            // Instruction Decode
+            case 2:
+                executionInstructionDecode();
+                break;
+            // Operand Fetch
+            case 3:
+                executionOperandFetch();
+                break;
+            // Execute
+            case 4:
+                executionExecute();
+                break;
+            // Result Store
+            case 5:
+                executionResultStore();
+                break;
+            // Next Instruction
+            case 6:
+                executionNextInstruction();
+                break;
+        }
+        if (executionStep == 6){
+            executionStep = 1;
+        } else {
+            executionStep++;
+        }
+    }
+
+    // Execution Step 1
+    // Obtain Instruction from Program Storage
+    private void executionInstructionFetch() {
+        // MAR <- PC
+        // Transfer Program Counter to Memory Address Register
+        this.mar = this.pc;
+
+        // MBR <-MEM[MAR]
+        // Fetch the word located at the MAR location from memory and transfer it to Memory Buffer Register.
+        this.mbr = memory[this.mar];
+    }
+
+    // Execution Step 2
+    // Determine Operation Required
+    private void executionInstructionDecode() {
+        // IR <- MBR
+        // Transfer Memory Buffer Register to Instruction Register
+        this.ir = this.mbr;
+
+        // Extract the opcode from the IR
+        short opcode = extractOpCode(this.ir);
+
+        // TODO: determine the class of opcode: determines the functional unit that will be used to execute the instruction
+        // TODO: set internal flags based on opcode
+    }
+
+    // Execution Step 3
+    // Locate and Fetch Operand Data
+    private void executionOperandFetch() {
+        // IAR <- IR(address field)
+        // Move the first operand address from the Instruction Register to the Internal Address Register
+        // TODO: What is the internal address register?
+
+        // IAR<- IAR + X(index field)
+        // If the operand is indexed, add the contents of the specified index register to the IAR
+        // TODO: What is the internal address register?
+
+        // MAR <- IR
+        // Move the contents of the IAR to the MAR
+        // TODO: What is the internal address register?
+
+        // Fetch the contents of the word in memory specified by the MAR into the MBR.
+        // "Read"
+        // TODO: Is this correct?
+        this.mbr = memory[this.mar];
+
+    }
+
+    // Execution Step 4
+    // Execute the Operation
+    private void executionExecute() {
+        // Depending on the operation code, execute the operation.
+        //parseAndExecute(opcode);
+        // TODO: where do we get the opcode?
+    }
+
+    // Execution Step 5
+    // Deposit Results
+    private void executionResultStore() {
+        /**
+        In 1 cycle, move the contents of the IRR to:
+        a. If target = register, use Register Select 1 to store IRR contents into the specified register
+        b. If target = memory, such as a STR, move contents of IRR to MBR. On the next cycle, move contents of MBR to memory using address in MAR.
+         **/
+        // TODO: implement this
+    }
+
+    // Execution Step 6
+    // Determine Next Instruction
+    private void executionNextInstruction() {
+        // TODO: This will need to be expanded when we implement branching
+        // Increment the Program Counter
+        this.pc++;
+    }
+
+    public void start(){
+        System.out.println("Starting computer.");
+        this.pc = 6;
+        this.setIsRunning(true);
+        while(this.isRunning){
+            executionLoop();
+        }
     }
 }
