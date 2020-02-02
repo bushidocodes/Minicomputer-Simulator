@@ -869,7 +869,8 @@ public class Simulator {
      * 5. Result Store
      * 6. Next Instruction
      **/
-    private void executionLoop(){
+
+    private void singleStep(){
         switch (executionStep){
             // Instruction Fetch
             case 1:
@@ -975,15 +976,27 @@ public class Simulator {
     private void executionNextInstruction() {
         // TODO: This will need to be expanded when we implement branching
         // Increment the Program Counter
-        this.pc++;
+        if (pc<2047){
+            this.pc++;
+        } else {
+            pauseExecutionLoop();
+        }
     }
 
-    public void start(){
-        System.out.println("Starting computer.");
+    public void powerOn(){
         this.pc = 6;
+    }
+
+    public void startExecutionLoop(){
+        System.out.println("Starting execution loop.");
         this.setIsRunning(true);
         while(this.isRunning){
-            executionLoop();
+            singleStep();
         }
+    }
+
+    public void pauseExecutionLoop(){
+        System.out.println("Pausing execution loop.");
+        this.setIsRunning(false);
     }
 }
