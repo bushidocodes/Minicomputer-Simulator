@@ -8,20 +8,20 @@ import java.util.Arrays;
 class Main {
 
     public static void main(String[] args) {
-        Assembler my_assembler = new Assembler();
+        Assembler myAssembler = new Assembler();
         String basePath = new File("").getAbsolutePath(); //get current base directory
-        my_assembler.loadFile(basePath.concat("/static/sample-program.txt"));
+        myAssembler.loadFile(basePath.concat("/static/sample-program.txt"));
 
-        Simulator my_compy = new Simulator(2048);
+        Simulator myComputer = new Simulator(2048);
 
         // Load the program into memory. You may optionally specify a location, e.g. load_program(program, address)
-        my_compy.load_program(my_assembler.convertToMachineCode());
+        myComputer.loadProgram(myAssembler.convertToMachineCode());
 
         // See the program loaded in memory
-        System.out.println(Arrays.toString(my_compy.memory_to_string()));
+        System.out.println(Arrays.toString(myComputer.memoryToString()));
 
         // Set a word with opcode 0... halt. This is actually implemented.
-        my_compy.memory[1] = Short.valueOf((short)0b0000000000000000);
-        Simulator.parse_and_execute(my_compy.memory[1]);
+        myComputer.setWord(12, (short) 0b0000000000000000);
+        myComputer.parseAndExecute(myComputer.getWord(12));
     }
 }
