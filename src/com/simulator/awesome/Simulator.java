@@ -1,64 +1,72 @@
 package com.simulator.awesome;
 
+import java.util.Arrays;
+
 public class Simulator {
 
     // The number of 16-bit words we have in memory
-    int word_count;
+    private int wordCount;
 
     // The linear memory of our simulated system.
     // Shorts in Java are 16-bit, so this is word addressable
     // The index represents the nth word, zero indexed
-    public Short memory[];
+    private Short memory[];
 
     // Program Counter: Address of the next instruction to be executed
     // Uses the least significant 12 bits
-    short pc;
+    private short pc;
     static final short PC_MASK = (short)0b0000111111111111;
 
     // Condition code.
-    // Uses the least significant 4 bytes
+    // Uses the least significant 4 bits
     // set when arithmetic/logical operations are executed
     // it has four 1-bit elements: overflow, underflow, division by zero, equal-or-not.
-    // They may be referenced as cc(0), cc(1), cc(2), cc(3).
-    byte cc;
-    // Or by the names OVERFLOW, UNDERFLOW, DIVZERO, EQUALORNOT
-    // TODO: Determine if I have this flipped or not ~SPM
-    static final byte OVERFLOW =   (byte)0b1000;
-    static final byte UNDERFLOW =  (byte)0b0100;
-    static final byte DIVZERO =    (byte)0b0010;
-    static final byte EQUALORNOT = (byte)0b0001;
+    // ID   |   Fault
+    // 0001 |   Overflow
+    // 0010 |   Underflow
+    // 0100 |   Division by Zero
+    // 1000 |   Equal Or Not
+    private byte cc;
 
     // Instruction register. Holds the instruction to be executed
-    short ir;
+    private short ir;
 
     // Memory Address Register. Holds the address of the word to be fetched from memory
-    short mar;
+    private short mar;
     static final short MAR_MASK = (short)0b0000111111111111;
 
     // Memory Buffer Register.
     // Holds the word just fetched or the word to be stored into memory.
     // If this is a word we're writing to memory, it can either be something to be written
     // or something that we've already written, ya dig?
-    short mbr;
+    private short mbr;
 
     // Machine Fault Register.
     // Contains the ID code of a machine fault after it occurs
-    byte mfr;
-
-    static final byte MFR_MASK = (byte)0b00001111;
+    // DO NOT IMPLEMENT UNTIL PHASE 3
+    // ID   |   Fault
+    // 0001 |   Illegal Memory Address to Reserved Locations
+    // 0010 |   Illegal TRAP code
+    // 0100 |   Illegal Operation Code
+    // 1000 |   Illegal Memory Address beyond 2048 (or higher is memory is expanded)
+    private byte mfr;
 
     // The four general purpose registers
-    short r0, r1, r2, r3;
+    private short r0, r1, r2, r3;
 
     // The three index registers
-    short x1, x2, x3;
+    private short x1, x2, x3;
 
     // TODO: What are the mystery registers we're missing?
 
-    Simulator(int word_count) {
+    Simulator(int wordCount) {
         // Allocate Linear Memory
-        this.word_count = 2048;
-        this.memory = new Short[2048];
+        this.wordCount = 2048;
+        this.memory = new Short[wordCount];
+
+        for (int i = 0; i < wordCount; i++) {
+            this.memory[i] = 0;
+        }
 
         // Allocate and zero out all Registers
         this.pc = 0;
@@ -76,7 +84,151 @@ public class Simulator {
         this.x3 = 0;
     }
 
-    public static short extract_opcode(short word) {
+    public short getWord(int address) {
+        if (address < 6) {
+            // Illegally accessing protected memory
+            // In the future, we'll set MFR to xxx1, but for now, we can just halt
+            System.out.println("Illegally accessing protecting address! Halting");
+            halt();
+        } else if (address > this.wordCount) {
+            // Illegally accessing protecting memory above limit
+            // In the future, we'll set MFT to 1xxx, but for now, we can just halt
+            System.out.println("Illegally accessing address above highest memory address. Halting!");
+            halt();
+        }
+
+        return this.memory[address];
+    }
+
+    public void setWord(int address, short value){
+        if (address < 6) {
+            // Illegally accessing protected memory
+            // In the future, we'll set MFR to xxx1, but for now, we can just halt
+            System.out.println("Illegally accessing protecting address! Halting");
+            halt();
+        } else if (address > this.wordCount) {
+            // Illegally accessing protecting memory above limit
+            // In the future, we'll set MFT to 1xxx, but for now, we can just halt
+            System.out.println("Illegally accessing address above highest memory address. Halting!");
+            halt();
+        } else {
+            try {
+                this.memory[address] = value;
+
+            } catch (Exception err) {
+                System.err.println("Accessing " + address + " causes " + err);
+            }
+        }
+    }
+
+    public short getProgramCounter() {
+        return (short) (this.pc & Simulator.PC_MASK);
+    }
+
+    public void setProgramCounter(short unmaskedPC) {
+        this.pc = (short) (unmaskedPC & Simulator.PC_MASK);
+    }
+
+    /**
+     * A Helper getter for bit arrays
+     * @param bitArray - The integral value that we are treating as an array of bits
+     * @param offset - The offset from the least significant bit. 0 is b0001
+     * @return - True if bit is set
+     */
+    private static boolean getNthLeastSignificantBit(int bitArray, int offset) {
+        int getterMask = (0b00000001<<offset);
+        return (bitArray & getterMask) == getterMask;
+    }
+
+    /**
+     * A Helper setting for bit arrays
+     * @param bitArray - The integral that we are treating as an array of bits
+     * @param offset - The offset from the least significant bit. 0 is b0001
+     * @param isSet - The resulting bit array after manipulating the bit
+     */
+    private static int setNthLeastSignificantBit(int bitArray, int offset, boolean isSet) {
+        int setterMask = (0b00000001<<offset);
+        return isSet ? (bitArray | setterMask) : (bitArray & ~setterMask);
+    }
+
+    public boolean isOverflow() {
+        return getNthLeastSignificantBit(this.cc, 0);
+    }
+
+    public void setOverflow(boolean isOverflow) {
+        this.cc = (byte)setNthLeastSignificantBit(this.cc, 0, isOverflow);
+    }
+
+    public boolean isUnderflow() {
+        return getNthLeastSignificantBit(this.cc, 1);
+    }
+
+    public void setUnderflow(boolean isUnderflow) {
+        this.cc = (byte)setNthLeastSignificantBit(this.cc, 1, isUnderflow);
+    }
+
+    public boolean isDivideByZero() {
+        return getNthLeastSignificantBit(this.cc, 2);
+    }
+
+    public void setDivideByZero(boolean isDivideByZero) {
+        this.cc = (byte)setNthLeastSignificantBit(this.cc, 2, isDivideByZero);
+    }
+
+    public boolean isEqualOrNot() {
+        return getNthLeastSignificantBit(this.cc, 3);
+    }
+
+    public void setEqualOrNot(boolean isEqualOrNot) {
+        this.cc = (byte)setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
+    }
+
+    public short getMemoryAddressRegister() {
+        return (short) (this.mar & Simulator.MAR_MASK);
+    }
+
+    public void setMemoryAddressRegister(short unmaskedMAR) {
+        this.mar = (short) (unmaskedMAR & Simulator.PC_MASK);
+    }
+
+    public boolean isIllegalMemoryAccessToReservedLocations() {
+        return getNthLeastSignificantBit(this.mfr, 0);
+    }
+
+    public void setIllegalMemoryAccessToReservedLocations(boolean isIllegalMemoryAccessToReservedLocations) {
+        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 0, isIllegalMemoryAccessToReservedLocations);
+    }
+
+    public boolean isIllegalTrapCode() {
+        return getNthLeastSignificantBit(this.mfr, 1);
+    }
+
+    public void setIllegalTrapCode(boolean isIllegalTrapCode) {
+        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 1, isIllegalTrapCode);
+    }
+
+    public boolean isIllegalOpcode() {
+        return getNthLeastSignificantBit(this.mfr, 2);
+    }
+
+    public void setIsIllegalOpcode(boolean isIllegalOpcode) {
+        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 2, isIllegalOpcode);
+    }
+
+    public boolean isIllegalMemoryAddressBeyondLimit() {
+        return getNthLeastSignificantBit(this.mfr, 3);
+    }
+
+    public void setIsIllegalMemoryAddressBeyondLimit(boolean isIllegalMemoryAddressBeyondLimit) {
+        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 3, isIllegalMemoryAddressBeyondLimit);
+    }
+
+    /**
+     *
+     * @param word - the machine word you want to extract the OPCODE from
+     * @return - The value of the opcode from the word
+     */
+    private static short extractOpCode(short word) {
         // OPCODE is 0-4bits, so right shift by 11
         // the >>> operator is a bitshift that includes the "sign bit"
         short opcode = (short)(word>>>11);
@@ -88,7 +240,7 @@ public class Simulator {
      Octal: 000
      HLT
     */
-    public static void halt() {
+    private void halt() {
         System.out.println("Halting...");
         System.exit(0);
     }
@@ -101,7 +253,7 @@ public class Simulator {
      r <- c(EA)
      note that EA is computed as given above
     */
-    public static void load_register_from_memory(){
+    private void loadRegisterFromMemory(){
         System.out.println("LDR");
     }
 
@@ -112,7 +264,7 @@ public class Simulator {
      r = 0..3
      Memory(EA) <- c(r)
     */
-    public static void store_register_to_memory(){
+    private void storeRegisterToMemory(){
         System.out.println("STR");
     }
 
@@ -123,7 +275,7 @@ public class Simulator {
      r = 0..3
      r <- EA
     */
-    public static void load_register_with_address(){
+    private void loadRegisterWithAddress(){
         System.out.println("LDA");
     }
 
@@ -134,7 +286,7 @@ public class Simulator {
      r = 0..3
      r<- c(r) + c(EA)
     */
-    public static void add_memory_to_register(){
+    private void addMemoryToRegister(){
         System.out.println("AMR");
     }
 
@@ -145,7 +297,7 @@ public class Simulator {
      r = 0..3
      r<- c(r) – c(EA)
     */
-    public static void subtract_memory_from_register(){
+    private void subtractMemoryFromRegister(){
         System.out.println("SMR");
     }
 
@@ -160,7 +312,7 @@ public class Simulator {
      *  2. if c(r) = 0, loads r with Immed
      *  IX and I are ignored in this instruction
      */
-    public static void add_immediate_to_register(){
+    private void addImmediateToRegister(){
         System.out.println("AIR");
     }
 
@@ -176,7 +328,7 @@ public class Simulator {
          2. if c(r) = 0, loads r1 with –(Immed)
          IX and I are ignored in this instruction
     */
-    public static void subtract_immediate_from_register(){
+    private void subtractImmediateFromRegister(){
         System.out.println("SIR");
     }
 
@@ -187,7 +339,7 @@ public class Simulator {
      If c(r) = 0, then PC <- EA
      Else PC <- PC+1
     */
-    public static void jump_if_zero(){
+    private void jumpIfZero(){
         System.out.println("JZ");
     }
 
@@ -198,7 +350,7 @@ public class Simulator {
      If c(r) != 0, then PC <-- EA
      Else PC <- PC + 1
     */
-    public static void jump_if_not_zero(){
+    private void jumpIfNotZero(){
         System.out.println("JZ");
     }
 
@@ -211,7 +363,7 @@ public class Simulator {
      * If cc bit  = 1, PC <- EA
      * Else PC <- PC + 1
      **/
-    public static void jump_if_condition_code(){
+    private void jumpIfConditionCode(){
         System.out.println("JCC");
     }
 
@@ -222,7 +374,7 @@ public class Simulator {
      * PC <- EA,
      * Note: r is ignored in this instruction
      */
-    public static void unconditional_jump_to_address(){
+    private void unconditionalJumpToAddress(){
         System.out.println("JMA");
     }
 
@@ -235,7 +387,7 @@ public class Simulator {
      R0 should contain pointer to arguments
      Argument list should end with –1 (all 1s) value
     */
-    public static void jump_and_save_return_address(){
+    private void jumpAndSaveReturnAddress(){
         System.out.println("JSR");
     }
 
@@ -247,7 +399,7 @@ public class Simulator {
      R0 <- Immed; PC <- c(R3)
      IX, I fields are ignored.
     */
-    public static void return_from_subroutine(){
+    private void returnFromSubroutine(){
         System.out.println("RFS");
     }
 
@@ -260,7 +412,7 @@ public class Simulator {
      If c(r) > 0,  PC <- EA;
      Else PC <- PC + 1
     */
-    public static void subtract_one_and_branch(){
+    private void subtractOneAndBranch(){
         System.out.println("SOB");
     }
 
@@ -271,7 +423,7 @@ public class Simulator {
      If c(r) >= 0, then PC <- EA
      Else PC <- PC + 1
     */
-    public static void jump_greater_than_or_equal_to(){
+    private void jumpGreaterThanOrEqualTo(){
         System.out.println("JGE");
     }
 
@@ -285,7 +437,7 @@ public class Simulator {
      rx contains the high order bits, rx+1 contains the low order bits of the result
      Set OVERFLOW flag, if overflow
     */
-    public static void multiply_register_by_register(){
+    private void multiplyRegisterByRegister(){
         System.out.println("MLT");
     }
 
@@ -299,7 +451,7 @@ public class Simulator {
      ry must be 0 or 2
      If c(ry) = 0, set cc(3) to 1 (set DIVZERO flag)
     */
-    public static void divide_register_by_register(){
+    private void divideRegisterByRegister(){
         System.out.println("DVD");
     }
 
@@ -309,7 +461,7 @@ public class Simulator {
      TRR rx, ry
      If c(rx) = c(ry), set cc(4) <- 1; else, cc(4) <- 0
     */
-    public static void test_the_equality_of_register_and_register(){
+    private void testTheEqualityOfRegisterAndRegister(){
         System.out.println("TRR");
     }
 
@@ -319,7 +471,7 @@ public class Simulator {
      AND rx, ry
      c(rx) <- c(rx) AND c(ry)
     */
-    public static void logical_and_of_register_and_register(){
+    private void logicalAndOfRegisterAndRegister(){
         System.out.println("AND");
     }
 
@@ -329,7 +481,7 @@ public class Simulator {
      ORR rx, ry
      c(rx) <- c(rx) OR c(ry)
     */
-    public static void logical_or_of_register_and_register(){
+    private void logicalOrOfRegisterAndRegister(){
         System.out.println("ORR");
     }
 
@@ -339,7 +491,7 @@ public class Simulator {
      NOT rx
      C(rx) <- NOT c(rx)
     */
-    public static void logical_not_of_register_and_register(){
+    private void logicalNotOfRegisterAndRegister(){
         System.out.println("NOT");
     }
 
@@ -354,7 +506,7 @@ public class Simulator {
      * executes those instructions, and returns to the instruction stored in memory location 2.
      * The PC+1 of the TRAP instruction is stored in memory location 2.
      */
-    public static void trap(){
+    private void trap(){
         System.out.println("TRAP");
     }
 
@@ -367,7 +519,7 @@ public class Simulator {
      Count = 0…15
      If Count = 0, no shift occurs
     */
-    public static void shift_register_by_count(){
+    private void shiftRegisterByCount(){
         System.out.println("SRC");
     }
 
@@ -380,7 +532,7 @@ public class Simulator {
      Count = 0…15
      If Count = 0, no rotate occurs
     */
-    public static void rotate_register_by_count(){
+    private void rotateRegisterByCount(){
         System.out.println("RRC");
     }
 
@@ -393,7 +545,7 @@ public class Simulator {
      fr must be 0 or 1.
      OVERFLOW may be set
     */
-    public static void floating_add_memory_to_register(){
+    private void floatingAddMemoryToRegister(){
         System.out.println("FADD");
     }
 
@@ -406,7 +558,7 @@ public class Simulator {
      fr must be 0 or 1
      UNDERFLOW may be set
     */
-    public static void floating_subtract_memory_from_register(){
+    private void floatingSubtractMemoryFromRegister(){
         System.out.println("FSUB");
     }
 
@@ -420,7 +572,7 @@ public class Simulator {
      Let V1 be vector at address; Let V2 be vector at address+1
      Then, V1[i] = V1[i]+ V2[i], i = 1, c(fr).
     */
-    public static void vector_add(){
+    private void vectorAdd(){
         System.out.println("VADD");
     }
 
@@ -434,7 +586,7 @@ public class Simulator {
      Let V1 be vector at address; Let V2 be vector at address+1
      Then, V1[i] = V1[i] - V2[i], i = 1, c(fr).
     */
-    public static void vector_substract(){
+    private void vectorSubstract(){
         System.out.println("VSUB");
     }
 
@@ -446,7 +598,7 @@ public class Simulator {
      If F = 1, convert c(EA) to a floating point number and store in FR0.
      The r register contains the value of F before the instruction is executed.
     */
-    public static void convert_to_fixed_or_floating_point(){
+    private void convertToFixedOrFloatingPoint(){
         System.out.println("CNVRT");
     }
 
@@ -457,7 +609,7 @@ public class Simulator {
      x = 1..3
      Xx <- c(EA)
     */
-    public static void load_index_register_from_memory(){
+    private void loadIndexRegisterFromMemory(){
         System.out.println("LDX");
     }
 
@@ -468,7 +620,7 @@ public class Simulator {
      X = 1..3
      Memory(EA) <- c(Xx)
     */
-    public static void store_index_register_to_memory(){
+    private void storeIndexRegisterToMemory(){
         System.out.println("STX");
     }
 
@@ -480,7 +632,7 @@ public class Simulator {
      fr <- c(EA), c(EA+1)
      fr <- c(c(EA), c(EA)+1), if I bit set
     */
-    public static void load_floating_point_from_memory(){
+    private void loadFloatingPointFromMemory(){
     System.out.println("LDFR");
 }
 
@@ -492,7 +644,7 @@ public class Simulator {
      EA, EA+1 <- c(fr)
      c(EA), c(EA)+1 <- c(fr), if I-bit set
     */
-    public static void store_floating_point_to_memory(){
+    private void storeFloatingPointToMemory(){
         System.out.println("STFR");
     }
 
@@ -502,7 +654,7 @@ public class Simulator {
      * IN r, devid
      * r = 0..3
      */
-    public static void input_character_to_register_from_device(){
+    private void inputCharacterToRegisterFromDevice(){
         System.out.println("IN");
     }
 
@@ -512,7 +664,7 @@ public class Simulator {
      OUT r, devid
      r = 0..3
      */
-    public static void output_character_to_device_from_register(){
+    private void outputCharacterToDeviceFromRegister(){
         System.out.println("OUT");
     }
 
@@ -523,164 +675,163 @@ public class Simulator {
      r = 0..3
      c(r) <- device status
     */
-    public static void check_device_status_to_register(){
+    private void checkDeviceStatusToRegister(){
         System.out.println("CHECK");
     }
 
 
-    public static void parse_and_execute(short word) {
-        short opcode = Simulator.extract_opcode(word);
+    public void parseAndExecute(short word) {
+        short opCode = Simulator.extractOpCode(word);
 
-        switch(opcode) {
+        switch(opCode) {
             case 0:
                 halt();
                 break;
             case 1:
-                load_register_from_memory();
+                loadRegisterFromMemory();
                 break;
             case 2:
-                store_register_to_memory();
+                storeRegisterToMemory();
                 break;
             case 3:
-                load_register_with_address();
+                loadRegisterWithAddress();
                 break;
             case 4:
-                add_memory_to_register();
+                addMemoryToRegister();
                 break;
             case 5:
-                subtract_memory_from_register();
+                subtractMemoryFromRegister();
                 break;
             case 6:
-                add_immediate_to_register();
+                addImmediateToRegister();
                 break;
             case 7:
-                subtract_immediate_from_register();
+                subtractImmediateFromRegister();
                 break;
             case 10:
-                jump_if_zero();
+                jumpIfZero();
                 break;
             case 11:
-                jump_if_not_zero();
+                jumpIfNotZero();
                 break;
             case 12:
-                jump_if_condition_code();
+                jumpIfConditionCode();
                 break;
             case 13:
-                unconditional_jump_to_address();
+                unconditionalJumpToAddress();
                 break;
             case 14:
-                jump_and_save_return_address();
+                jumpAndSaveReturnAddress();
                 break;
             case 15:
-                return_from_subroutine();
+                returnFromSubroutine();
                 break;
             case 16:
-                subtract_one_and_branch();
+                subtractOneAndBranch();
                 break;
             case 17:
-                jump_greater_than_or_equal_to();
+                jumpGreaterThanOrEqualTo();
                 break;
             case 20:
-                multiply_register_by_register();
+                multiplyRegisterByRegister();
                 break;
             case 21:
-                divide_register_by_register();
+                divideRegisterByRegister();
                 break;
             case 22:
-                test_the_equality_of_register_and_register();
+                testTheEqualityOfRegisterAndRegister();
                 break;
             case 23:
-                logical_and_of_register_and_register();
+                logicalAndOfRegisterAndRegister();
                 break;
             case 24:
-                logical_or_of_register_and_register();
+                logicalOrOfRegisterAndRegister();
                 break;
             case 25:
-                logical_not_of_register_and_register();
+                logicalNotOfRegisterAndRegister();
                 break;
             case 30:
                 trap();
                 break;
             case 31:
-                shift_register_by_count();
+                shiftRegisterByCount();
                 break;
             case 32:
-                rotate_register_by_count();
+                rotateRegisterByCount();
                 break;
             case 33:
-                floating_add_memory_to_register();
+                floatingAddMemoryToRegister();
                 break;
             case 34:
-                floating_subtract_memory_from_register();
+                floatingSubtractMemoryFromRegister();
                 break;
             case 35:
-                vector_add();
+                vectorAdd();
                 break;
             case 36:
-                vector_substract();
+                vectorSubstract();
                 break;
             case 37:
-                convert_to_fixed_or_floating_point();
+                convertToFixedOrFloatingPoint();
                 break;
             case 41:
-                load_index_register_from_memory();
+                loadIndexRegisterFromMemory();
                 break;
             case 42:
-                store_index_register_to_memory();
+                storeIndexRegisterToMemory();
                 break;
             case 50:
-                load_floating_point_from_memory();
+                loadFloatingPointFromMemory();
                 break;
             case 51:
-                store_floating_point_to_memory();
+                storeFloatingPointToMemory();
                 break;
             case 61:
-                input_character_to_register_from_device();
+                inputCharacterToRegisterFromDevice();
                 break;
             case 62:
-                output_character_to_device_from_register();
+                outputCharacterToDeviceFromRegister();
                 break;
             case 63:
-                check_device_status_to_register();
+                checkDeviceStatusToRegister();
                 break;
         }
-
     }
 
     // Given a 16-bit short, generates a binary string
-    public static String word_to_string(short word){
-        String binary_string = Integer.toBinaryString(Short.toUnsignedInt(word));
-        return String.format("%1$16s", binary_string).replace(' ', '0');
+    public static String wordToString(short word){
+        String binaryString = Integer.toBinaryString(Short.toUnsignedInt(word));
+        return String.format("%1$16s", binaryString).replace(' ', '0');
     }
 
-    public void load_program(String[] assembledMachineCode, int memoryLocation){
+    public void loadProgram(String[] assembledMachineCode, int memoryLocation){
         // Iterate through memory line-by-line, loading in the corresponding machine code from the program.
         int computerMemoryLoc = memoryLocation;
         for (int inputMemoryLoc = 0; inputMemoryLoc<assembledMachineCode.length; inputMemoryLoc++){
-            memory[computerMemoryLoc] = (short)Integer.parseUnsignedInt(assembledMachineCode[inputMemoryLoc],2);
+            this.setWord(computerMemoryLoc, (short)Integer.parseUnsignedInt(assembledMachineCode[inputMemoryLoc],2));
             computerMemoryLoc++;
         }
     }
 
     // This function allows you to not specify a memory location for loading a program (default to location 6)
-    public void load_program(String[] assembledMachineCode){
+    public void loadProgram(String[] assembledMachineCode){
         // No memory location was specified, load the program into memory starting at the first location 6
-        load_program(assembledMachineCode, 6);
+        loadProgram(assembledMachineCode, 6);
     }
 
     // Not sure if we'll keep this but it's useful for printing the memory contents to console.
-    public String[] memory_to_string(){
+    public String[] memoryToString(){
         // Initialize an array equal to the computer memory size
-        String[] memoryString_arr = new String[word_count];
+        String[] memoryStringArr = new String[this.wordCount];
 
         // For each word in memory, convert it to a string of binary numbers
-        for (int i=0; i<word_count; i++) {
+        for (int i=0; i<this.wordCount; i++) {
             try{
-                memoryString_arr[i] = Simulator.word_to_string(memory[i]);
+                memoryStringArr[i] = Simulator.wordToString(memory[i]);
             } catch(NullPointerException e) {
                 //null value in memory-- carry on
             }
         }
-        return memoryString_arr;
+        return memoryStringArr;
     }
 }
