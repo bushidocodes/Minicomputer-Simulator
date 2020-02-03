@@ -2,29 +2,96 @@ package com.simulator.awesome;
 
 // This class centralizes the parsing of the LoadStore class of instructions
 // It is used by IN, OUT, CHK
-public class InputOutputInstruction {
-    public short opCode;
+public class InputOutputInstruction extends Instruction {
     public short registerId;
     public short deviceId;
 
-    InputOutputInstruction(short word) {
-        short opCodeMask             = (short) 0b1111110000000000;
+    InputOutputInstruction(short word, Simulator context) {
+        super(word, context);
         short registerMask           = (short) 0b0000001100000000;
         short deviceMask             = (short) 0b0000000000111111;
 
         short deviceOffset           = 0;
         short registerOffset         = 8;
-        short opCodeOffset           = 10;
 
         this.deviceId = (short)((word & deviceMask) >>> deviceOffset);
         this.registerId = (short)((word & registerMask) >>> registerOffset);
-        // I am unclear why I need to do this additional mask. If I don't do it, shifting right pads with 1 bits
-        this.opCode = (short) (((word & opCodeMask) >>> opCodeOffset) & 0b0000000000111111);
+    }
+
+    public void fetchOperand(){
+        // NOOP
+    }
+
+    public void execute() {
+        // NOOP
+    }
+
+    public void storeResult(){
+        // NOOP
     }
 
     public void print(){
         System.out.println("OpCode: " + Short.toUnsignedInt(this.opCode));
         System.out.println("Register ID: " + this.registerId);
         System.out.println("Device ID: " + this.deviceId);
+    }
+}
+
+
+class InputCharacterToRegisterFromDevice extends LoadStoreInstruction {
+    public InputCharacterToRegisterFromDevice(short word, Simulator context) {
+        super(word, context);
+    }
+    /**
+     * OPCODE 61 - Input Character To Register from Device
+     * Octal: 075
+     * IN r, devid
+     * r = 0..3
+     */
+    public void execute(){
+        System.out.println("IN");
+    }
+
+    public void storeResult(){
+        // NOOP
+    }
+}
+
+class OutputCharacterToDeviceFromRegister extends LoadStoreInstruction {
+    public OutputCharacterToDeviceFromRegister(short word, Simulator context) {
+        super(word, context);
+    }
+    /**
+     OPCODE 62 - Output Character to Device from Register
+     Octal: 076
+     OUT r, devid
+     r = 0..3
+     */
+    public void execute(){
+        System.out.println("OUT");
+    }
+
+    public void storeResult(){
+        // NOOP
+    }
+}
+
+class CheckDeviceStatusToRegister extends LoadStoreInstruction {
+    public CheckDeviceStatusToRegister(short word, Simulator context) {
+        super(word, context);
+    }
+    /**
+     OPCODE 63 - Check Device Status to Register
+     Octal: 077
+     CHK r, devid
+     r = 0..3
+     c(r) <- device status
+     */
+    public void execute(){
+        System.out.println("CHK");
+    }
+
+    public void storeResult(){
+        // NOOP
     }
 }
