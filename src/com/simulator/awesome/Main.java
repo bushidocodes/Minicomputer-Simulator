@@ -20,22 +20,17 @@ class Main {
         // See the program loaded in memory
         System.out.println(Arrays.toString(myComputer.memoryToString()));
 
-        LoadStoreInstruction load = new LoadStoreInstruction((short) 0b0000010111010101);
+        LoadStoreInstruction load = new LoadStoreInstruction((short) 0b0000010111010101, myComputer);
         load.print();
 
-        ArithmeticLogicInstruction arr = new ArithmeticLogicInstruction((short) 0b0101000001000000);
+        ArithmeticLogicInstruction arr = new ArithmeticLogicInstruction((short) 0b0101000001000000, myComputer);
         arr.print();
 
-        ShiftRotateInstruction shift = new ShiftRotateInstruction((short) 0b0111110100001111);
+        ShiftRotateInstruction shift = new ShiftRotateInstruction((short) 0b0111110100001111, myComputer);
         shift.print();
 
-        InputOutputInstruction inOut = new InputOutputInstruction((short) 0b1111110100111111);
+        InputOutputInstruction inOut = new InputOutputInstruction((short) 0b1111110100111111, myComputer);
         inOut.print();
-
-
-        // Set a word with opcode 0... halt. This is actually implemented.
-        //myComputer.setWord(12, (short) 0b0000000000000000);
-        //myComputer.parseAndExecute(myComputer.getWord(12));
 
         // Put a load instruction at address 6
         myComputer.setWord(6 ,(short) 0b0000011100011111);
