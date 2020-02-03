@@ -1,7 +1,5 @@
 package com.simulator.awesome;
 
-import java.util.Arrays;
-
 public class Simulator {
 
     // The number of 16-bit words we have in memory
@@ -30,6 +28,9 @@ public class Simulator {
 
     // Instruction register. Holds the instruction to be executed
     private short ir;
+
+    // Internal Address Register. Used for moving data around in the CPU.
+    private short iar;
 
     // Memory Address Register. Holds the address of the word to be fetched from memory
     private short mar;
@@ -67,7 +68,17 @@ public class Simulator {
      **/
     private int executionStep = 1;
 
+    // Loop state
     private boolean isRunning = false;
+
+    // Types of instruction formats
+    enum InstructionType {
+        ARITHMETIC, IO, LOADSTORE, SHIFTROTATE, HALT, TRAP, VECTORFP;
+    }
+
+    // Variables for holding current instruction details during
+    private InstructionType currentInstructionType;
+    private short currentOpcode;
 
     // TODO: What are the mystery registers we're missing?
 
@@ -861,6 +872,59 @@ public class Simulator {
         return memoryStringArr;
     }
 
+    public InstructionType determineOpcodeClass(short word) {
+        short opCode = Simulator.extractOpCode(word);
+        InstructionType currentInstructionType = null;
+
+        switch(opCode) {
+            case 0:
+                currentInstructionType = InstructionType.HALT;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+            case 41:
+            case 42:
+                currentInstructionType = InstructionType.LOADSTORE;
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+            case 24:
+            case 25:
+                currentInstructionType = InstructionType.ARITHMETIC;
+            case 30:
+                currentInstructionType = InstructionType.TRAP;
+            case 31:
+            case 32:
+                currentInstructionType = InstructionType.SHIFTROTATE;
+            case 33:
+            case 34:
+            case 35:
+            case 36:
+            case 37:
+            case 50:
+            case 51:
+                currentInstructionType = InstructionType.VECTORFP;
+            case 61:
+            case 62:
+            case 63:
+                currentInstructionType = InstructionType.IO;
+        }
+        return currentInstructionType;
+    }
+
     /** The execution step, 1-6
      * 1. Instruction Fetch
      * 2. Instruction Decode
@@ -924,9 +988,11 @@ public class Simulator {
         this.ir = this.mbr;
 
         // Extract the opcode from the IR
-        short opcode = Simulator.extractOpCode(this.ir);
+        this.currentOpcode = Simulator.extractOpCode(this.ir);
 
-        // TODO: determine the class of opcode: determines the functional unit that will be used to execute the instruction
+        // Determine the class of opcode: determines the functional unit that will be used to execute the instruction
+        this.currentInstructionType = determineOpcodeClass(this.currentOpcode);
+
         // TODO: set internal flags based on opcode
     }
 
@@ -935,28 +1001,52 @@ public class Simulator {
     private void executionOperandFetch() {
         // IAR <- IR(address field)
         // Move the first operand address from the Instruction Register to the Internal Address Register
-        // TODO: What is the internal address register?
-
         // IAR<- IAR + X(index field)
         // If the operand is indexed, add the contents of the specified index register to the IAR
-        // TODO: What is the internal address register?
+        switch(this.currentInstructionType){
+            case LOADSTORE:
+                LoadStoreInstruction loadStoreInstruction = new LoadStoreInstruction(this.ir);
+                if(loadStoreInstruction.indexRegisterId == 0){
+                    // No indexing. Move the address into IAR.
+                    this.iar = loadStoreInstruction.address;
+                } else {
+                    // Indexing. Add the index to the address and then store in IAR.
+                    this.iar = (short) (loadStoreInstruction.address + loadStoreInstruction.indexRegisterId);
+                }
+                break;
+            case IO:
+                InputOutputInstruction ioInstruction = new InputOutputInstruction(this.ir);
+                break;
+            case ARITHMETIC:
+                ArithmeticLogicInstruction arithmeticInstruction = new ArithmeticLogicInstruction(this.ir);
+                break;
+            case SHIFTROTATE:
+                ShiftRotateInstruction shiftRotateInstruction = new ShiftRotateInstruction(this.ir);
+                break;
+            case HALT:
+                // need a class for halt instruction
+                break;
+            case TRAP:
+                // need a class for trap instruction
+                break;
+            case VECTORFP:
+                // need a class for vector/floating point instruction
+                break;
+        }
 
         // MAR <- IR
         // Move the contents of the IAR to the MAR
-        // TODO: What is the internal address register?
+        this.mar = this.iar;
 
         // Fetch the contents of the word in memory specified by the MAR into the MBR.
-        // "Read"
-        // TODO: Is this correct?
         this.mbr = getWord(this.mar);
-
     }
 
     // Execution Step 4
     // Execute the Operation
     private void executionExecute() {
         // Depending on the operation code, execute the operation.
-        //parseAndExecute(opcode);
+        parseAndExecute(opcode);
         // TODO: where do we get the opcode?
     }
 
