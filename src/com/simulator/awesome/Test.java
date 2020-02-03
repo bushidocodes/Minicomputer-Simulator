@@ -1,4 +1,4 @@
-package pers.shane.demo;
+package com.simulator.awesome;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 
 public class Test {
     private JTextField Input;
-    private JPanel rootPanel;
+    public JPanel rootPanel;
     private JLabel inputLabel;
     private JLabel addressLabel;
     private JLabel memoryLabel;
@@ -111,13 +111,4 @@ public class Test {
             }
         });
     }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Test");
-        frame.setContentPane(new Test().rootPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
-
 }
