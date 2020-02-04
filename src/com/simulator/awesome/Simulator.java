@@ -30,7 +30,7 @@ public class Simulator {
     private short ir;
 
     // Internal Address Register. Used for moving data around in the CPU.
-    public short iar;
+    private short iar;
 
     // Memory Address Register. Holds the address of the word to be fetched from memory
     private short mar;
@@ -53,10 +53,10 @@ public class Simulator {
     private byte mfr;
 
     // The four general purpose registers
-    public short r0, r1, r2, r3;
+    private short r0, r1, r2, r3;
 
     // The three index registers
-    public short x1, x2, x3;
+    private short x1, x2, x3;
 
     /** The execution step, 1-6
      * 1. Instruction Fetch
@@ -70,16 +70,7 @@ public class Simulator {
 
     // Loop state
     private boolean isRunning = false;
-
-    // Types of instruction formats
-    enum InstructionType {
-        ARITHMETIC, IO, LOADSTORE, SHIFTROTATE, HALT, TRAP, VECTORFP;
-    }
-
-    // Variables for holding current instruction details during
-    private InstructionType currentInstructionType;
     private short currentOpcode;
-
     private Instruction currentInstruction;
 
     // TODO: What are the mystery registers we're missing?
@@ -113,7 +104,7 @@ public class Simulator {
         if (address < 6) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            System.out.println("Illegally accessing protecting address! Halting");
+            System.out.println("getWord - Illegally accessing protected address " + address + "! Halting");
             System.exit(1);
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
@@ -129,7 +120,7 @@ public class Simulator {
         if (address < 6) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            System.out.println("Illegally accessing protecting address! Halting");
+            System.out.println("setWord - Illegally accessing protecting address! Halting");
             System.exit(1);
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
@@ -208,6 +199,14 @@ public class Simulator {
         this.cc = (byte)setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
     }
 
+    public short getInternalAddressRegister() {
+        return this.iar;
+    }
+
+    public void setInternalAddressRegister(short value) {
+        this.iar = value;
+    }
+
     public short getMemoryAddressRegister() {
         return (short) (this.mar & Simulator.MAR_MASK);
     }
@@ -227,6 +226,68 @@ public class Simulator {
     public void setMemoryBufferRegister(short mbr) {
         this.mbr = mbr;
     }
+
+    public short getGeneralRegister(short registerId) {
+        if(registerId == 0){
+            return this.r0;
+        } else if (registerId == 1){
+            return this.r1;
+        } else if (registerId == 2){
+            return this.r2;
+        } else if (registerId == 3){
+            return this.r3;
+        } else {
+            throw new RuntimeException("Invalid General Purpose Register!");
+        }
+    }
+
+    public void setGeneralRegister(short registerId, short value) {
+        if(registerId == 0){
+            this.r0 = value;
+        } else if (registerId == 1){
+            this.r1 = value;
+        } else if (registerId == 2){
+            this.r2 = value;
+        } else if (registerId == 3){
+            this.r3 = value;
+        } else {
+            throw new RuntimeException("Invalid General Purpose Register!");
+        }
+    }
+
+    /**
+     * Get the value of an Index Register
+     * @param registerId the index register to fetch [0,1,2,3]. 0 always resolves to 0
+     * @return value of the Index Register or 0 if 0 was provided
+     */
+    public short getIndexRegister(short registerId) {
+        if(registerId == 0){
+            return 0;
+        } else if(registerId == 1){
+            return this.x1;
+        } else if (registerId == 2){
+            return this.x2;
+        } else if (registerId == 3){
+            return this.x3;
+        } else {
+            throw new RuntimeException("Invalid Index Register!");
+        }
+    }
+
+    public void setIndexRegister(short registerId, short value) {
+        if(registerId == 0){
+            this.r0 = value;
+        } else if (registerId == 1){
+            this.r1 = value;
+        } else if (registerId == 2){
+            this.r2 = value;
+        } else if (registerId == 3){
+            this.r3 = value;
+        } else {
+            throw new RuntimeException("Invalid Index Register!");
+        }
+    }
+
 
 
     public boolean isIllegalMemoryAccessToReservedLocations() {
@@ -310,20 +371,18 @@ public class Simulator {
         loadProgram(assembledMachineCode, 6);
     }
 
-    // Not sure if we'll keep this but it's useful for printing the memory contents to console.
-    public String[] memoryToString(){
-        // Initialize an array equal to the computer memory size
-        String[] memoryStringArr = new String[this.wordCount];
-
-        // For each word in memory, convert it to a string of binary numbers
+    public void dumpMemoryToJavaConsole(){
+        System.out.println("=======================================");
+        System.out.println("Memory Dump (Excluding zeroed out words");
+        System.out.println("=======================================");
         for (int i=0; i<this.wordCount; i++) {
             try{
-                memoryStringArr[i] = Simulator.wordToString(memory[i]);
+                if (memory[i] != 0) System.out.printf("Address: %4d: %s\n",  i, Simulator.wordToString(memory[i]));
             } catch(NullPointerException e) {
                 //null value in memory-- carry on
             }
         }
-        return memoryStringArr;
+        System.out.println("=======================================");
     }
 
     /** The execution step, 1-6
@@ -377,6 +436,7 @@ public class Simulator {
     // Execution Step 1
     // Obtain Instruction from Program Storage
     private void executionInstructionFetch() {
+        System.out.println("PC: " + this.pc);
         // MAR <- PC
         // Transfer Program Counter to Memory Address Register
         this.mar = this.pc;
@@ -393,10 +453,8 @@ public class Simulator {
         // Transfer Memory Buffer Register to Instruction Register
         this.ir = this.mbr;
 
-        // Extract the opcode from the IR
-        this.currentOpcode = Simulator.extractOpCode(this.ir);
-
-        switch(this.currentOpcode) {
+        // Extract the opcode from the IR and use to set currentInstruction
+        switch(Simulator.extractOpCode(this.ir)) {
             case 0:
                 this.currentInstruction = new Halt(this.ir, this);
                 break;
