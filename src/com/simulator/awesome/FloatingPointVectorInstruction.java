@@ -142,48 +142,6 @@ class ConvertToFixedOrFloatingPoint extends FloatingPointVectorInstruction {
     }
 }
 
-class LoadIndexRegisterFromMemory extends FloatingPointVectorInstruction {
-    public LoadIndexRegisterFromMemory(short word, Simulator context) {
-        super(word, context);
-    }
-
-    /**
-     OPCODE 41 - Load Index Register from Memory
-     Octal: 051
-     LDX x, address[,I]
-     x = 1..3
-     Xx <- c(EA)
-     */
-    public void execute() {
-        System.out.println("LDX");
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
-}
-
-class StoreIndexRegisterToMemory extends FloatingPointVectorInstruction {
-    public StoreIndexRegisterToMemory(short word, Simulator context) {
-        super(word, context);
-    }
-
-    /**
-     OPCODE 42 - Store Index Register to Memory
-     Octal: 052
-     STX x, address[,I]
-     X = 1..3
-     Memory(EA) <- c(Xx)
-     */
-    public void execute() {
-        System.out.println("STX");
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
-}
-
 class LoadFloatingPointFromMemory extends FloatingPointVectorInstruction {
     public LoadFloatingPointFromMemory(short word, Simulator context) {
         super(word, context);
