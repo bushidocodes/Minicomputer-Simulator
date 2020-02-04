@@ -8,14 +8,19 @@ import java.util.Arrays;
 class Main {
     public static void main(String[] args) {
         try {
-            Assembler myAssembler = new Assembler();
-            String basePath = new File("").getAbsolutePath(); //get current base directory
-            myAssembler.loadFile(basePath.concat("/static/sample-program.txt"));
+            Assembler assembler1 = new Assembler();
+            Assembler assembler2 = new Assembler();
 
             Simulator myComputer = new Simulator(2048);
 
-            // Load the program into memory. You may optionally specify a location, e.g. load_program(program, address)
-            myComputer.loadProgram(myAssembler.convertToMachineCode());
+            // Pre-fill some data into the computer to be used by the demo assembly program
+            String basePath = new File("").getAbsolutePath(); //get current base directory
+            assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
+            myComputer.loadProgram(assembler1.input_arr, (short) 6);
+
+            // Load in the load/store demonstration program
+            assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
+            myComputer.loadProgram(assembler2.convertToMachineCode(), (short) 100);
 
             // See the program loaded in memory
             myComputer.dumpMemoryToJavaConsole();
@@ -36,8 +41,9 @@ class Main {
             myComputer.setWord(6 ,(short) 0b0000011100011111);
 
             launchGUI();
-            myComputer.powerOn();
-//            myComputer.startExecutionLoop();
+
+            myComputer.powerOn((short) 100);
+            myComputer.startExecutionLoop();
         } catch (Exception e) {
             System.out.println("Simulator crashed with " + e);
         }

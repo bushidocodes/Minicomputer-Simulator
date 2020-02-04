@@ -581,8 +581,19 @@ public class Simulator {
         }
     }
 
+    // Allow setting the program counter when booting from the command line.
+    public void powerOn(short programCounter){
+        // Check if program counter was set within the allowable range.
+        if(programCounter>5 && programCounter<wordCount){
+            setProgramCounter(programCounter);
+        } else {
+            setProgramCounter((short) 6);
+        }
+    }
+
+    // If program counter was not specified, default to 6.
     public void powerOn(){
-        this.pc = 6;
+        powerOn((short) 6);
     }
 
     public void startExecutionLoop(){
