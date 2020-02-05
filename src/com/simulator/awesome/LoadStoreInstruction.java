@@ -53,8 +53,6 @@ public class LoadStoreInstruction extends Instruction {
         // MAR <- IR
         // Move the contents of the IAR to the MAR
         this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
-        // Fetch the contents of the word in memory specified by the MAR into the MBR.
-//        this.context.fetchMemoryAddressRegister();
     }
 
     public void print(){
