@@ -46,6 +46,7 @@ public class LoadStoreInstruction extends Instruction {
     }
 
     // Resolves the operand address, resolving the pointer (indirect) to the address it contains if needed
+    // The end state is that the operand is loaded as an address to the IAR
     public void fetchOperand(){
         computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
@@ -53,7 +54,7 @@ public class LoadStoreInstruction extends Instruction {
         // Move the contents of the IAR to the MAR
         this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // Fetch the contents of the word in memory specified by the MAR into the MBR.
-        this.context.fetchMemoryAddressRegister();
+//        this.context.fetchMemoryAddressRegister();
     }
 
     public void print(){
@@ -80,7 +81,7 @@ class LoadRegisterFromMemory extends LoadStoreInstruction {
     }
 
     // Evaluates the address and copies the data at that address to the MBR
-    // If indirect is set, dereferences the pointer and writes the resulting value to the MBE
+    // If indirect is set, dereferences the pointer and writes the resulting value to the MBR
     public void fetchOperand(){
         super.fetchOperand();
         // MAR <- IAR - Move the contents of the IAR to the MAR
@@ -136,7 +137,7 @@ class LoadRegisterWithAddress extends LoadStoreInstruction {
         super(word, context);
     }
 
-    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
+    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to load
     // (including chasing pointers as needed) and then store it in the MAR
 
     public void execute(){

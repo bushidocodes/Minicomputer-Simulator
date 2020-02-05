@@ -275,14 +275,12 @@ public class Simulator {
     }
 
     public void setIndexRegister(short registerId, short value) {
-        if(registerId == 0){
-            this.r0 = value;
-        } else if (registerId == 1){
-            this.r1 = value;
+        if(registerId == 1){
+            this.x1 = value;
         } else if (registerId == 2){
-            this.r2 = value;
+            this.x2 = value;
         } else if (registerId == 3){
-            this.r3 = value;
+            this.x3 = value;
         } else {
             throw new RuntimeException("Invalid Index Register!");
         }
@@ -338,7 +336,7 @@ public class Simulator {
     private static short extractOpCode(short word) {
         // OPCODE is 0-5bits, so right shift by 10
         // the >>> operator is a bitshift that includes the "sign bit"
-        short opcode = (short)(word>>>10);
+        short opcode = (short)((word>>>10) & 0b0000000000111111);
         return opcode;
     }
 
@@ -369,6 +367,28 @@ public class Simulator {
     public void loadProgram(String[] assembledMachineCode){
         // No memory location was specified, load the program into memory starting at the first location 6
         loadProgram(assembledMachineCode, 6);
+    }
+
+    public void dumpRegistersToJavaConsole(){
+        System.out.println("=======================================");
+        System.out.println("Registers");
+        System.out.println("=======================================");
+        System.out.println("Program Counter: " + Simulator.wordToString(this.pc));
+        System.out.println("Condition Code: " + Simulator.wordToString(this.cc));
+        System.out.println("Instruction Register: " + Simulator.wordToString(this.ir));
+        System.out.println("Internal Address Register: " + Simulator.wordToString(this.iar));
+        System.out.println("Memory Address Register: " + Simulator.wordToString(this.mar));
+        System.out.println("Memory Buffer Register: " + Simulator.wordToString(this.mbr));
+        System.out.println("Memory Fault Register: " + Simulator.wordToString(this.mfr));
+        System.out.println("General Register 0: " + Simulator.wordToString(this.r0));
+        System.out.println("General Register 1: " + Simulator.wordToString(this.r1));
+        System.out.println("General Register 2: " + Simulator.wordToString(this.r2));
+        System.out.println("General Register 3: " + Simulator.wordToString(this.r3));
+        System.out.println("Index Register 1: " + Simulator.wordToString(this.x1));
+        System.out.println("Index Register 2: " + Simulator.wordToString(this.x2));
+        System.out.println("Index Register 3: " + Simulator.wordToString(this.x3));
+        System.out.println("Current OPCODE: " + Simulator.wordToString(this.currentOpcode));
+        System.out.println("=======================================");
     }
 
     public void dumpMemoryToJavaConsole(){
@@ -427,6 +447,8 @@ public class Simulator {
                 break;
         }
         if (this.executionStep == 6){
+            this.dumpRegistersToJavaConsole();
+            this.dumpMemoryToJavaConsole();
             this.executionStep = 1;
         } else {
             this.executionStep++;
