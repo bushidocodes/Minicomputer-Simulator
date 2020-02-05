@@ -1,0 +1,9 @@
+LDR 1,0,6; load register 1 with the contents of memory location 6 -- loads '8'
+STR 1,0,9; store the value in register 1 to memory location 9 -- stores '8' into loc 9
+LDR 2,0,6,1; load register 2 with the contents of memory location 6, indirect (no indexing) -- loads '32'
+LDX 1,8; load index register 1 with the contents of memory location 8 -- loads '32'
+STR 2,1,7,1; store the value in register 2 to memory location 7, indirect with indexing (x1) -- stores value '32' into loc 37 (EA(5+32)=37)
+STR 2,1,8; store the value in register 2 to memory location 8 with indexing (x1) -- stores value '32' into loc 40 (EA(8+32)=40)
+STX 1,19; store the value in index register 1 to memory location 19 -- stores '32' into loc 19
+LDA 2,0,19; load the value from memory location 19 into register 0, no indexing -- loads '32'
+STX 2,17; store the value of index register 2 into memory location 17 -- stores '32'
