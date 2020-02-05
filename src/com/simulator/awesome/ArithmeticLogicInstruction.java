@@ -313,7 +313,7 @@ class MultiplyRegisterByRegister extends ArithmeticLogicInstruction {
 
     /**
      OPCODE 20 - Multiply Register by Register
-     Octal: 024
+     octal: 024
      MLT rx,ry
      rx, rx+1 <- c(rx) * c(ry)
      rx must be 0 or 2
