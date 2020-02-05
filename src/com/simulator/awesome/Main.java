@@ -37,9 +37,6 @@ class Main {
             InputOutputInstruction inOut = new InputOutputInstruction((short) 0b1111110100111111, myComputer);
             inOut.print();
 
-            // Put a load instruction at address 6
-            myComputer.setWord(6 ,(short) 0b0000011100011111);
-
             launchGUI();
 
             myComputer.powerOn((short) 100);
