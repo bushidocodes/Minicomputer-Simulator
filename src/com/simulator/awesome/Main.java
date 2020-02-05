@@ -11,7 +11,7 @@ class Main {
             Simulator myComputer = new Simulator(2048);
 
             // See the program loaded in memory
-            boolean isInteractive = true;
+            boolean isInteractive = false;
             boolean isDebug = false;
 
             if (isDebug) {
@@ -24,8 +24,6 @@ class Main {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
                 Assembler assembler2 = new Assembler();
-                myComputer.powerOn((short) 100);
-                myComputer.startExecutionLoop();
 
                 // Pre-fill some data into the computer to be used by the demo assembly program
                 String basePath = new File("").getAbsolutePath(); //get current base directory
@@ -35,6 +33,10 @@ class Main {
                 // Load in the load/store demonstration program
                 assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
                 myComputer.loadProgram(assembler2.convertToMachineCode(), (short) 100);
+
+                // IPL and Start the Execution Loop
+                myComputer.powerOn((short) 100);
+                myComputer.startExecutionLoop();
             }
 
         } catch (Exception e) {
