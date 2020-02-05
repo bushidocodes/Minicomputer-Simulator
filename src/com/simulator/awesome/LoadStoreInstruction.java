@@ -163,8 +163,14 @@ class LoadIndexRegisterFromMemory extends LoadStoreInstruction {
 
     // Evaluates the address and copies the data at that address to the MBR
     // If indirect is set, dereferences the pointer and writes the resulting value to the MBE
+    // Note that we use the Index register as the source or destination, so it is not used for indexing
+    // This means that this operation CAN ONLY LOAD from words 0-32
+    // To use higher addresses, we have to use indirect addressing
     public void fetchOperand(){
-        super.fetchOperand();
+        // No indexing possible, so just set IAR to address
+        this.context.setInternalAddressRegister(this.address);
+        if (this.isIndirect) this.evaluatePointerToAddress();
+
         // MAR <- IAR - Move the contents of the IAR to the MAR
         this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // Fetch the contents of the word in memory specified by the MAR into the MBR.
@@ -194,6 +200,14 @@ class StoreIndexRegisterToMemory extends LoadStoreInstruction {
 
     // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
     // (including chasing pointers as needed) and then store it in the MAR
+    public void fetchOperand(){
+        // No indexing possible, so just set IAR to address
+        this.context.setInternalAddressRegister(this.address);
+        if (this.isIndirect) this.evaluatePointerToAddress();
+
+        // MAR <- IAR - Move the contents of the IAR to the MAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
+    }
 
     // Copies the index register value to the MBR
     public void execute() {
