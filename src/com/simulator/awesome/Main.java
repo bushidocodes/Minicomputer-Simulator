@@ -40,7 +40,7 @@ class Main {
             launchGUI();
 
             myComputer.powerOn((short) 100);
-            myComputer.startExecutionLoop();
+            //myComputer.startExecutionLoop();
         } catch (Exception e) {
             System.out.println("Simulator crashed with " + e);
         }

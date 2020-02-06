@@ -8,42 +8,39 @@ public class Test {
     private JTextField Input;
     public JPanel rootPanel;
     private JLabel inputLabel;
-    private JLabel addressLabel;
-    private JLabel memoryLabel;
     private JButton haltButton;
     private JButton startButton;
     private JButton endButton;
     private JButton SSButton;
     private JButton LRButton;
-    private JLabel outputNameLabel;
-    private JTextField addressTextField;
-    private JTextField memoryTextFiled;
     private JLabel R0Label;
     private JTextField R0TextField;
     private JTextField R1TextField;
     private JTextField R2TextField;
     private JLabel R1Label;
-    private JLabel R2Label;
-    private JLabel R3Label;
     private JTextField R3TextField;
     private JTextField IRTextField;
-    private JLabel IRLabel;
     private JLabel X1Label;
     private JTextField X1TextField;
     private JLabel X2Label;
     private JTextField X2TestField;
-    private JLabel X3Label;
     private JTextField X3TestField;
-    private JLabel MARLabel;
     private JTextField MARTextField;
     private JTextField MBRTextField;
-    private JLabel MBRLabel;
-    private JLabel PCLabel;
     private JTextField PCTextField;
     private JButton runButton;
-    private JTextField outputTextField;
-    private JButton writeButton;
     private JButton readButton;
+    private JComboBox comboBox1;
+    private JButton saveValueButton;
+    private JLabel X3Label;
+    private JLabel R2Label;
+    private JLabel R3Label;
+    private JLabel MARLabel;
+    private JLabel PCLabel;
+    private JLabel MBRLabel;
+    private JLabel IRLabel;
+    private JTextField textField1;
+    private JTextField textField2;
 
     public Test() {
         runButton.addActionListener(new ActionListener() {
@@ -99,14 +96,6 @@ public class Test {
             public void actionPerformed(ActionEvent e) {
                 // Write the codes here
                 System.out.println("TestRead");     //A Test output for the listener method
-
-            }
-        });
-        writeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Write the codes here
-                System.out.println("TestWrite");     //A Test output for the listener method
 
             }
         });
