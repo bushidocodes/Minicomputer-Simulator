@@ -1,8 +1,10 @@
 package com.simulator.awesome;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class Interface {
     private JTextField withValueInput;
@@ -12,40 +14,44 @@ public class Interface {
     private JButton iplButton;
     private JButton resetButton;
     private JButton SSButton;
-    private JButton loadAssemblyButton;
-    private JLabel R0Label;
+    private JButton loadProgramButton;
     private JTextField R0TextField;
     private JTextField R1TextField;
     private JTextField R2TextField;
-    private JLabel X1Label;
     private JTextField R3TextField;
     private JTextField IRTextField;
     private JLabel R1Label;
     private JTextField X1TextField;
-    private JLabel X2Label;
     private JTextField X2TextField;
     private JTextField X3TextField;
     private JTextField MARTextField;
     private JTextField MBRTextField;
     private JTextField PCTextField;
     private JButton runButton;
-    private JButton loadBinaryButton;
+    private JButton chooseFileButton;
     private JComboBox registerComboBox;
     private JButton saveValueButton;
-    private JLabel X3Label;
     private JLabel R2Label;
     private JLabel R3Label;
     private JLabel MARLabel;
     private JLabel PCLabel;
     private JLabel MBRLabel;
-    private JLabel IRLabel;
     private JTextField CCTextField;
     private JTextField MFRTextField;
     private JLabel withValueLabel;
     private JLabel MFRLabel;
     private JLabel CCLabel;
+    private JButton loadLoadStoreDemoButton;
+    private JComboBox fileTypeComboBox;
+    private JLabel R0Label;
+    private JLabel IRLabel;
+    private JLabel X1Label;
+    private JLabel X2Label;
+    private JLabel X3Label;
+    private JLabel selectedFileLabel;
+    private JSpinner programMemoryLocSpinner;
     private Simulator context;
-    private boolean isLooping;
+    private File selectedFile;
 
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
@@ -76,7 +82,8 @@ public class Interface {
         iplButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                context.powerOn((short) 100);
+                // Pushing the IPL button loads the demonstration program, ready for the grader to press Single Step
+                loadLoadStoreDemoButton.doClick();
                 refresh();
             }
         });
@@ -98,7 +105,8 @@ public class Interface {
                     context.pauseExecutionLoop();
                     refresh();
                 } else {
-                    System.out.println("Cannot Pause! System is not Running!");
+                    // Error: Halt button pressed but system is not running.
+                    JOptionPane.showMessageDialog(rootPanel, "ERROR: Cannot Pause! System is not running.");
                 }
             }
         });
@@ -153,7 +161,8 @@ public class Interface {
                             break;
                     }
                 } else {
-                    withValueInput.setText("ERR: 16-bit binary only");
+                    // Error: Input value was not a 16-bit binary number
+                    JOptionPane.showMessageDialog(rootPanel, "ERROR: Input value must be a 16-bit binary number.");
                 }
                 refresh();
             }
@@ -180,20 +189,95 @@ public class Interface {
             }
         });
 
-        loadAssemblyButton.addActionListener(new ActionListener() {
+        // Load Program - Allows loading a program (in binary or assembly) from a text file.
+        loadProgramButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("TestLoad Register");     //A Test output for the listener method
-                refresh();
-            }
-        });
-        loadBinaryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("TestRead");     //A Test output for the listener method
+                // Check that a file is selected
+                if(selectedFile != null && selectedFile.isFile()){
+                    short memoryLoc = (short) Integer.parseInt(programMemoryLocSpinner.getValue().toString());
+                    // Check that the desired memory location is within the valid range.
+                    if (memoryLoc > 5 && memoryLoc < context.getWordCount()-1) {
+                        // Check that a file type has been selected.
+                        if (fileTypeComboBox.getSelectedItem().toString().length() > 0) {
+                            switch (fileTypeComboBox.getSelectedItem().toString()) {
+                                case "Select File Type":
+                                    JOptionPane.showMessageDialog(rootPanel, "ERROR: Please select the file type from the dropdown menu.");
+                                    break;
+                                case "Binary":
+                                    // Load binary file into memory at the specified location
+                                    Assembler assembler1 = new Assembler();
+                                    context.loadProgram(assembler1.input_arr, memoryLoc);
+
+                                    // Set the PC to the first program instruction
+                                    context.powerOn(memoryLoc);
+                                    refresh();
+                                    break;
+                                case "Assembly":
+                                    // Convert assembly file to binary and load it into memory at the specified location
+                                    Assembler assembler2 = new Assembler();
+                                    assembler2.loadFile(selectedFile.getAbsolutePath());
+                                    context.loadProgram(assembler2.convertToMachineCode(), memoryLoc);
+
+                                    // Set the PC to the first program instruction
+                                    context.powerOn(memoryLoc);
+                                    refresh();
+                                    break;
+                            }
+                        }
+                    } else {
+                        // Error: Invalid memory location
+                        String maxLoc = Integer.toString(context.getWordCount()-1);
+                        JOptionPane.showMessageDialog(rootPanel, "ERROR: Memory location to insert the program must be within the valid range for unprotected memory (Minimum: "+6+") (Maximum: "+maxLoc+").");
+                    }
+                } else {
+                    // Error: No file selected.
+                    JOptionPane.showMessageDialog(rootPanel, "ERROR: Use the Choose File button to select a text file containing a binary or assembly program.");
+                }
                 refresh();
             }
         });
 
+        loadLoadStoreDemoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Not yet implemented, but saving this logic to run the simulator "headless"
+                Assembler assembler1 = new Assembler();
+                Assembler assembler2 = new Assembler();
+
+                // Pre-fill some data into the computer to be used by the demo assembly program
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
+                context.loadProgram(assembler1.input_arr, (short) 6);
+
+                // Load in the load/store demonstration program
+                assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
+                context.loadProgram(assembler2.convertToMachineCode(), (short) 100);
+
+                // IPL and Start the Execution Loop
+                context.powerOn((short) 100);
+                refresh();
+            }
+        });
+        chooseFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Launch a file chooser
+                JFileChooser chooser = new JFileChooser();
+
+                // Only allow selection of text files
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                        ".txt", "txt");
+                chooser.setFileFilter(filter);
+
+                // Store the selected file location and update the interface.
+                int returnVal = chooser.showOpenDialog(rootPanel);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    selectedFileLabel.setText(chooser.getSelectedFile().getName());
+                    selectedFile = chooser.getSelectedFile();
+                }
+                refresh();
+            }
+        });
     }
 }
