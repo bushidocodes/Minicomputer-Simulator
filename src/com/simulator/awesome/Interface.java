@@ -41,7 +41,7 @@ public class Interface {
     private JLabel withValueLabel;
     private JLabel MFRLabel;
     private JLabel CCLabel;
-    private JButton loadLOADSTOREDemoButton;
+    private JButton loadLoadStoreDemoButton;
     private JComboBox fileTypeComboBox;
     private JLabel R0Label;
     private JLabel IRLabel;
@@ -83,7 +83,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Pushing the IPL button loads the demonstration program, ready for the grader to press Single Step
-                loadLOADSTOREDemoButton.doClick();
+                loadLoadStoreDemoButton.doClick();
                 refresh();
             }
         });
@@ -238,7 +238,7 @@ public class Interface {
             }
         });
 
-        loadLOADSTOREDemoButton.addActionListener(new ActionListener() {
+        loadLoadStoreDemoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
