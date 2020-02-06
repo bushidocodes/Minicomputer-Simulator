@@ -3,6 +3,7 @@ package com.simulator.awesome;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class Interface {
     private JTextField withValueInput;
@@ -44,6 +45,7 @@ public class Interface {
     private JLabel withValueLabel;
     private JLabel MFRLabel;
     private JLabel CCLabel;
+    private JButton loadLOADSTOREDemoButton;
     private Simulator context;
     private boolean isLooping;
 
@@ -195,5 +197,26 @@ public class Interface {
             }
         });
 
+        loadLOADSTOREDemoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Not yet implemented, but saving this logic to run the simulator "headless"
+                Assembler assembler1 = new Assembler();
+                Assembler assembler2 = new Assembler();
+
+                // Pre-fill some data into the computer to be used by the demo assembly program
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
+                context.loadProgram(assembler1.input_arr, (short) 6);
+
+                // Load in the load/store demonstration program
+                assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
+                context.loadProgram(assembler2.convertToMachineCode(), (short) 100);
+
+                // IPL and Start the Execution Loop
+                context.powerOn((short) 100);
+                refresh();
+            }
+        });
     }
 }

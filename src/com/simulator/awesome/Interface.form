@@ -403,6 +403,14 @@
           <text value="R3"/>
         </properties>
       </component>
+      <component id="febd2" class="javax.swing.JButton" binding="loadLOADSTOREDemoButton" default-binding="true">
+        <constraints>
+          <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Load LOAD/STORE Demo Program"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>
