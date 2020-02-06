@@ -11,7 +11,7 @@ class Main {
             Simulator myComputer = new Simulator(2048);
 
             // See the program loaded in memory
-            boolean isInteractive = false;
+            boolean isInteractive = true;
             boolean isDebug = false;
 
             if (isDebug) {
@@ -19,7 +19,11 @@ class Main {
             }
 
             if (isInteractive) {
-                launchGUI(myComputer);
+                JFrame frame = new JFrame("Test");
+                frame.setContentPane(new Test(myComputer).rootPanel);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setVisible(true);
             } else {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
@@ -44,11 +48,4 @@ class Main {
         }
     }
 
-    static void launchGUI(Simulator context){
-        JFrame frame = new JFrame("Test");
-        frame.setContentPane(new Test(context).rootPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
 }

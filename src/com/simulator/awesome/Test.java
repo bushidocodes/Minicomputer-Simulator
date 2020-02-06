@@ -41,8 +41,15 @@ public class Test {
     private JLabel IRLabel;
     private JTextField textField1;
     private JTextField textField2;
+    private Simulator context;
+
+    public void refresh(){
+        this.R0TextField.setText(Simulator.wordToString(this.context.getGeneralRegister((short)0)));
+    }
 
     public Test(Simulator context) {
+        this.context = context;
+        this.refresh();
 
         // START - IPLs the Simulator
         startButton.addActionListener(new ActionListener() {
