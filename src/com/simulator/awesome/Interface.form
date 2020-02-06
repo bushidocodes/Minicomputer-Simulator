@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.simulator.awesome.Test">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.simulator.awesome.Interface">
   <grid id="27dc6" binding="rootPanel" layout-manager="GridLayoutManager" row-count="13" column-count="8" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
@@ -10,12 +10,12 @@
     </properties>
     <border type="none"/>
     <children>
-      <component id="b0d27" class="javax.swing.JLabel" binding="inputLabel">
+      <component id="b0d27" class="javax.swing.JLabel" binding="modifyRegisterLabel">
         <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Modify Register"/>
+          <text value="Set Register"/>
         </properties>
       </component>
       <component id="68cd8" class="javax.swing.JLabel" binding="R0Label">
@@ -26,7 +26,7 @@
           <text value="R0"/>
         </properties>
       </component>
-      <component id="7390c" class="javax.swing.JLabel" binding="R1Label">
+      <component id="7390c" class="javax.swing.JLabel" binding="X1Label">
         <constraints>
           <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -34,7 +34,7 @@
           <text value="X1"/>
         </properties>
       </component>
-      <component id="1ead8" class="javax.swing.JLabel" binding="X1Label">
+      <component id="1ead8" class="javax.swing.JLabel" binding="R1Label">
         <constraints>
           <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -50,11 +50,25 @@
           <text value="X2"/>
         </properties>
       </component>
-      <component id="167c7" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+      <component id="167c7" class="javax.swing.JComboBox" binding="registerComboBox">
         <constraints>
           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <model>
+            <item value="PC"/>
+            <item value="IR"/>
+            <item value="MAR"/>
+            <item value="MBR"/>
+            <item value="R0"/>
+            <item value="R1"/>
+            <item value="R2"/>
+            <item value="R3"/>
+            <item value="X1"/>
+            <item value="X2"/>
+            <item value="X3"/>
+          </model>
+        </properties>
       </component>
       <component id="bfbb9" class="javax.swing.JTextField" binding="R0TextField">
         <constraints>
@@ -67,7 +81,7 @@
           <text value=""/>
         </properties>
       </component>
-      <component id="7e57b" class="javax.swing.JTextField" binding="X2TestField">
+      <component id="7e57b" class="javax.swing.JTextField" binding="X2TextField">
         <constraints>
           <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -116,7 +130,7 @@
           <editable value="false"/>
         </properties>
       </component>
-      <component id="28e5e" class="javax.swing.JTextField" binding="X3TestField">
+      <component id="28e5e" class="javax.swing.JTextField" binding="X3TextField">
         <constraints>
           <grid row="6" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -151,24 +165,6 @@
         <properties>
           <editable value="false"/>
           <enabled value="true"/>
-        </properties>
-      </component>
-      <component id="8555c" class="javax.swing.JTextField" binding="R3TextField">
-        <constraints>
-          <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-        </properties>
-      </component>
-      <component id="92aa7" class="javax.swing.JLabel" binding="R3Label">
-        <constraints>
-          <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="R3"/>
         </properties>
       </component>
       <component id="bf972" class="javax.swing.JLabel" binding="MARLabel">
@@ -243,7 +239,7 @@
           <editable value="false"/>
         </properties>
       </component>
-      <component id="c5f9a" class="javax.swing.JTextField" binding="Input">
+      <component id="c5f9a" class="javax.swing.JTextField" binding="withValueInput">
         <constraints>
           <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -254,12 +250,12 @@
           <toolTipText value=""/>
         </properties>
       </component>
-      <component id="ff1f8" class="javax.swing.JLabel">
+      <component id="ff1f8" class="javax.swing.JLabel" binding="withValueLabel">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="With Value"/>
+          <text value="With Binary Value"/>
         </properties>
       </component>
       <component id="6e01d" class="javax.swing.JButton" binding="saveValueButton" default-binding="true">
@@ -270,7 +266,7 @@
           <text value="Save Value"/>
         </properties>
       </component>
-      <component id="2ad16" class="javax.swing.JButton" binding="startButton">
+      <component id="2ad16" class="javax.swing.JButton" binding="iplButton">
         <constraints>
           <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -278,7 +274,7 @@
           <text value="IPL"/>
         </properties>
       </component>
-      <component id="b29b8" class="javax.swing.JButton" binding="readButton">
+      <component id="b29b8" class="javax.swing.JButton" binding="loadBinaryButton">
         <constraints>
           <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -310,7 +306,7 @@
           <text value="SINGLE STEP"/>
         </properties>
       </component>
-      <component id="bfd6d" class="javax.swing.JButton" binding="LRButton">
+      <component id="bfd6d" class="javax.swing.JButton" binding="loadAssemblyButton">
         <constraints>
           <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -318,7 +314,7 @@
           <text value="Load File from Assembly ROM"/>
         </properties>
       </component>
-      <component id="71cec" class="javax.swing.JButton" binding="endButton">
+      <component id="71cec" class="javax.swing.JButton" binding="resetButton">
         <constraints>
           <grid row="11" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -326,7 +322,7 @@
           <text value="RESET"/>
         </properties>
       </component>
-      <component id="aaeee" class="javax.swing.JLabel">
+      <component id="aaeee" class="javax.swing.JLabel" binding="CCLabel">
         <constraints>
           <grid row="9" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -334,7 +330,7 @@
           <text value="CC"/>
         </properties>
       </component>
-      <component id="c9875" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+      <component id="c9875" class="javax.swing.JTextField" binding="CCTextField">
         <constraints>
           <grid row="9" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -344,7 +340,7 @@
           <editable value="false"/>
         </properties>
       </component>
-      <component id="a2b05" class="javax.swing.JTextField" binding="textField2" default-binding="true">
+      <component id="a2b05" class="javax.swing.JTextField" binding="MFRTextField">
         <constraints>
           <grid row="7" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -354,7 +350,7 @@
           <editable value="false"/>
         </properties>
       </component>
-      <component id="5f367" class="javax.swing.JLabel">
+      <component id="5f367" class="javax.swing.JLabel" binding="MFRLabel">
         <constraints>
           <grid row="7" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -389,6 +385,24 @@
           </grid>
         </constraints>
       </hspacer>
+      <component id="8555c" class="javax.swing.JTextField" binding="R3TextField">
+        <constraints>
+          <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <editable value="false"/>
+        </properties>
+      </component>
+      <component id="92aa7" class="javax.swing.JLabel" binding="R3Label">
+        <constraints>
+          <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="R3"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>
