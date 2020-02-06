@@ -7,17 +7,18 @@ import java.lang.String;
 class Main {
     public static void main(String[] args) {
         try {
-            Simulator myComputer = new Simulator(2048);
-
-            // See the program loaded in memory
             boolean isInteractive = true;
             boolean isDebug = false;
+
+            Simulator myComputer = new Simulator(2048);
+
 
             if (isDebug) {
                 myComputer.dumpMemoryToJavaConsole();
             }
 
             if (isInteractive) {
+                myComputer.attachConsole();
                 JFrame frame = new JFrame("CSCI 6461 Computer Simulator - Yellow Team");
                 frame.setContentPane(new Interface(myComputer).rootPanel);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
