@@ -41,63 +41,76 @@ public class Test {
     private JLabel IRLabel;
     private JTextField textField1;
     private JTextField textField2;
+    private Simulator context;
 
-    public Test() {
-        runButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Write the codes here
-                System.out.println("TestRun");     //A Test output for the listener method
+    public void refresh(){
+        this.R0TextField.setText(Simulator.wordToString(this.context.getGeneralRegister((short)0)));
+    }
 
-            }
-        });
-        haltButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Write the codes here
-                System.out.println("TestHalt");     //A Test output for the listener method
+    public Test(Simulator context) {
+        this.context = context;
+        this.refresh();
 
-            }
-        });
+        // START - IPLs the Simulator
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Write the codes here
-                System.out.println("TestStart");     //A Test output for the listener method
-
+                context.powerOn((short) 100);
             }
         });
+
+        // RUN - Starts the Execution Loop
+        runButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                context.startExecutionLoop();
+            }
+        });
+
+        // HALT - Pauses the Execution Loop
+        haltButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (context.isRunning()){
+                    context.pauseExecutionLoop();
+                } else {
+                    System.out.println("Cannot Pause! System is not Running!");
+                }
+            }
+        });
+
+
+        // END - Stops the Execution Loop and Clears the Memory and Registers
         endButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Write the codes here
-                System.out.println("TestEnd");     //A Test output for the listener method
-
+                if (context.isRunning()){
+                    context.pauseExecutionLoop();
+                }
+                context.reset();
             }
         });
+
+        // Single Step - Advanced forward one step. This is roughly a "cycle"
         SSButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Write the codes here
-                System.out.println("TestSingle Step");     //A Test output for the listener method
-
+                context.singleStep();
             }
         });
+
         LRButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Write the codes here
                 System.out.println("TestLoad Register");     //A Test output for the listener method
-
             }
         });
         readButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Write the codes here
                 System.out.println("TestRead");     //A Test output for the listener method
-
             }
         });
+
     }
 }

@@ -8,49 +8,44 @@ import java.util.Arrays;
 class Main {
     public static void main(String[] args) {
         try {
-            Assembler assembler1 = new Assembler();
-            Assembler assembler2 = new Assembler();
-
             Simulator myComputer = new Simulator(2048);
 
-            // Pre-fill some data into the computer to be used by the demo assembly program
-            String basePath = new File("").getAbsolutePath(); //get current base directory
-            assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
-            myComputer.loadProgram(assembler1.input_arr, (short) 6);
-
-            // Load in the load/store demonstration program
-            assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
-            myComputer.loadProgram(assembler2.convertToMachineCode(), (short) 100);
-
             // See the program loaded in memory
-            myComputer.dumpMemoryToJavaConsole();
+            boolean isInteractive = true;
+            boolean isDebug = false;
 
-            LoadStoreInstruction load = new LoadStoreInstruction((short) 0b0000010111010101, myComputer);
-            load.print();
+            if (isDebug) {
+                myComputer.dumpMemoryToJavaConsole();
+            }
 
-            ArithmeticLogicInstruction arr = new ArithmeticLogicInstruction((short) 0b0101000001000000, myComputer);
-            arr.print();
+            if (isInteractive) {
+                JFrame frame = new JFrame("Test");
+                frame.setContentPane(new Test(myComputer).rootPanel);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setVisible(true);
+            } else {
+                // Not yet implemented, but saving this logic to run the simulator "headless"
+                Assembler assembler1 = new Assembler();
+                Assembler assembler2 = new Assembler();
 
-            ShiftRotateInstruction shift = new ShiftRotateInstruction((short) 0b0111110100001111, myComputer);
-            shift.print();
+                // Pre-fill some data into the computer to be used by the demo assembly program
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
+                myComputer.loadProgram(assembler1.input_arr, (short) 6);
 
-            InputOutputInstruction inOut = new InputOutputInstruction((short) 0b1111110100111111, myComputer);
-            inOut.print();
+                // Load in the load/store demonstration program
+                assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
+                myComputer.loadProgram(assembler2.convertToMachineCode(), (short) 100);
 
-            launchGUI();
+                // IPL and Start the Execution Loop
+                myComputer.powerOn((short) 100);
+                myComputer.startExecutionLoop();
+            }
 
-            myComputer.powerOn((short) 100);
-            //myComputer.startExecutionLoop();
         } catch (Exception e) {
             System.out.println("Simulator crashed with " + e);
         }
     }
 
-    static void launchGUI(){
-        JFrame frame = new JFrame("Test");
-        frame.setContentPane(new Test().rootPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
 }

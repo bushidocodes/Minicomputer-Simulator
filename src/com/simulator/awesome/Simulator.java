@@ -100,6 +100,31 @@ public class Simulator {
         this.x3 = 0;
     }
 
+    public void reset(){
+        // Allocate Linear Memory
+        this.wordCount = 2048;
+        this.memory = new Short[wordCount];
+
+        for (int i = 0; i < wordCount; i++) {
+            this.memory[i] = 0;
+        }
+
+        // Allocate and zero out all Registers
+        this.pc = 0;
+        this.cc = 0;
+        this.ir = 0;
+        this.mar = 0;
+        this.mbr = 0;
+        this.mfr = 0;
+        this.r0 = 0;
+        this.r1 = 0;
+        this.r2 = 0;
+        this.r3 = 0;
+        this.x1 = 0;
+        this.x2 = 0;
+        this.x3 = 0;
+    }
+
     public short getWord(int address) {
         if (address < 6) {
             // Illegally accessing protected memory
@@ -286,8 +311,6 @@ public class Simulator {
         }
     }
 
-
-
     public boolean isIllegalMemoryAccessToReservedLocations() {
         return getNthLeastSignificantBit(this.mfr, 0);
     }
@@ -414,7 +437,7 @@ public class Simulator {
      * 6. Next Instruction
      **/
 
-    private void singleStep(){
+    public void singleStep(){
         switch (this.executionStep){
             // Instruction Fetch
             case 1:
@@ -619,7 +642,6 @@ public class Simulator {
     }
 
     public void startExecutionLoop(){
-        System.out.println("Starting execution loop.");
         this.setIsRunning(true);
         while(this.isRunning){
             singleStep();
@@ -627,7 +649,6 @@ public class Simulator {
     }
 
     public void pauseExecutionLoop(){
-        System.out.println("Pausing execution loop.");
         this.setIsRunning(false);
     }
 }
