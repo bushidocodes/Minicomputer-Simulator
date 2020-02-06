@@ -170,6 +170,18 @@ public class Simulator {
         this.pc = (short) (unmaskedPC & Simulator.PC_MASK);
     }
 
+    public short getInstructionRegister() {
+        return (short) (this.ir);
+    }
+
+    public void setInstructionRegister(short instructionRegister) {
+        this.ir = (short) (instructionRegister);
+    }
+
+    public short getWordCount() {
+        return (short) (this.wordCount);
+    }
+
     /**
      * A Helper getter for bit arrays
      * @param bitArray - The integral value that we are treating as an array of bits
@@ -377,11 +389,15 @@ public class Simulator {
         return String.format("%1$16s", binaryString).replace(' ', '0');
     }
 
+    public static short stringToWord(String string){
+        return (short)Integer.parseUnsignedInt(string,2);
+    }
+
     public void loadProgram(String[] assembledMachineCode, int memoryLocation){
         // Iterate through memory line-by-line, loading in the corresponding machine code from the program.
         int computerMemoryLoc = memoryLocation;
         for (int inputMemoryLoc = 0; inputMemoryLoc<assembledMachineCode.length; inputMemoryLoc++){
-            this.setWord(computerMemoryLoc, (short)Integer.parseUnsignedInt(assembledMachineCode[inputMemoryLoc],2));
+            this.setWord(computerMemoryLoc, stringToWord(assembledMachineCode[inputMemoryLoc]));
             computerMemoryLoc++;
         }
     }

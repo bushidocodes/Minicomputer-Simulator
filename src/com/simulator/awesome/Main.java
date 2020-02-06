@@ -3,7 +3,6 @@ package com.simulator.awesome;
 import javax.swing.*;
 import java.io.File;
 import java.lang.String;
-import java.util.Arrays;
 
 class Main {
     public static void main(String[] args) {
@@ -19,8 +18,8 @@ class Main {
             }
 
             if (isInteractive) {
-                JFrame frame = new JFrame("Test");
-                frame.setContentPane(new Test(myComputer).rootPanel);
+                JFrame frame = new JFrame("CSCI 6461 Computer Simulator - Yellow Team");
+                frame.setContentPane(new Interface(myComputer).rootPanel);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.pack();
                 frame.setVisible(true);
