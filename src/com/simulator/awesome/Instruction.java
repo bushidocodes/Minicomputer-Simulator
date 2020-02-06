@@ -72,7 +72,10 @@ class Halt extends Instruction {
      */
     public void execute() {
         System.out.println("Halting...");
-        System.exit(0);
+        this.context.setIsRunning(false);
+        if (!this.context.isInteractive) {
+            System.exit(1);
+        }
     }
 
     public void storeResult(){

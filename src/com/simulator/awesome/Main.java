@@ -8,17 +8,18 @@ import java.util.Arrays;
 class Main {
     public static void main(String[] args) {
         try {
-            Simulator myComputer = new Simulator(2048);
-
-            // See the program loaded in memory
             boolean isInteractive = true;
             boolean isDebug = false;
+
+            Simulator myComputer = new Simulator(2048);
+
 
             if (isDebug) {
                 myComputer.dumpMemoryToJavaConsole();
             }
 
             if (isInteractive) {
+                myComputer.attachConsole();
                 JFrame frame = new JFrame("Test");
                 frame.setContentPane(new Test(myComputer).rootPanel);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

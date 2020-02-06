@@ -72,10 +72,13 @@ public class Simulator {
     private boolean isRunning = false;
     private short currentOpcode;
     private Instruction currentInstruction;
+    public boolean isInteractive = false;
+    public boolean isDebug = false;
 
     // TODO: What are the mystery registers we're missing?
 
     Simulator(int wordCount) {
+
         // Allocate Linear Memory
         this.wordCount = 2048;
         this.memory = new Short[wordCount];
@@ -98,6 +101,22 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+    }
+
+    public void attachConsole(){
+        this.isInteractive = true;
+    }
+
+    public void detachConsole(){
+        this.isInteractive = false;
+    }
+
+    public void activateDebugger() {
+        this.isDebug = true;
+    }
+
+    public void deactivateDebugger() {
+        this.isDebug = false;
     }
 
     public void reset(){
@@ -129,13 +148,21 @@ public class Simulator {
         if (address < 6) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            System.out.println("getWord - Illegally accessing protected address " + address + "! Halting");
-            System.exit(1);
+            System.out.println("Illegally accessing protected address " + address + "! Halting");
+
+            this.setIsRunning(false);
+            if (!this.isInteractive) {
+                System.out.println("Not Interactive");
+                System.exit(1);
+            }
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
             // In the future, we'll set MFT to 1xxx, but for now, we can just halt
             System.out.println("Illegally accessing address above highest memory address. Halting!");
-            System.exit(1);
+            this.setIsRunning(false);
+            if (!this.isInteractive) {
+                System.exit(1);
+            }
         }
 
         return this.memory[address];
@@ -146,12 +173,18 @@ public class Simulator {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
             System.out.println("setWord - Illegally accessing protecting address! Halting");
-            System.exit(1);
+            this.setIsRunning(false);
+            if (!this.isInteractive) {
+                System.exit(1);
+            }
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
             // In the future, we'll set MFT to 1xxx, but for now, we can just halt
             System.out.println("Illegally accessing address above highest memory address. Halting!");
-            System.exit(1);
+            this.setIsRunning(false);
+            if (!this.isInteractive) {
+                System.exit(1);
+            }
         } else {
             try {
                 this.memory[address] = value;
