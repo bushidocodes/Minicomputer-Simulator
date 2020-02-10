@@ -16,6 +16,7 @@ public class ShiftRotateInstruction extends Instruction{
     public ShiftRotateType type; // If not logical, is arithmetic
     public ShiftRotateDirection direction;
     public short count;
+    protected short buffer;
 
     ShiftRotateInstruction(short word, Simulator context) {
         super(word, context);
@@ -23,6 +24,8 @@ public class ShiftRotateInstruction extends Instruction{
         short logicalArithmeticMask  = (short) 0b0000000010000000;
         short leftRightMask          = (short) 0b0000000001000000;
         short countMask              = (short) 0b0000000000001111;
+        // This is effectively an implicit register, but these operations might be atomic and executed in place
+
 
         short countOffset            = 0;
         short registerOffset         = 8;
@@ -34,7 +37,7 @@ public class ShiftRotateInstruction extends Instruction{
     }
 
     public void fetchOperand(){
-        // NOOP
+        this.buffer = this.context.getGeneralRegister(this.registerId);
     }
 
     public void execute(){
@@ -42,7 +45,7 @@ public class ShiftRotateInstruction extends Instruction{
     }
 
     public void storeResult(){
-        // NOOP
+        this.context.setGeneralRegister(this.registerId, this.buffer);
     }
 
     public void print(){
@@ -54,43 +57,70 @@ public class ShiftRotateInstruction extends Instruction{
     }
 }
 
+/**
+ OPCODE 31 - Shift Register by Count
+ Octal: 037
+ SRC r, count, L/R, A/L
+ c(r) is shifted left (L/R =1) or right (L/R = 0) either logically (A/L = 1) or arithmetically (A/L = 0)
+ XX, XXX are ignored
+ Count = 0…15
+ If Count = 0, no shift occurs
+ */
 class ShiftRegisterByCount extends ShiftRotateInstruction {
     public ShiftRegisterByCount(short word, Simulator context) {
         super(word, context);
     }
-    /**
-     OPCODE 31 - Shift Register by Count
-     Octal: 037
-     SRC r, count, L/R, A/L
-     c(r) is shifted left (L/R =1) or right (L/R = 0) either logically (A/L = 1) or arithmetically (A/L = 0)
-     XX, XXX are ignored
-     Count = 0…15
-     If Count = 0, no shift occurs
-     */
+
     public void execute(){
-        System.out.println("SRC");
+        if (this.type == ShiftRotateType.ARITHMETIC) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.buffer <<= this.count;
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.buffer >>= this.count;
+            }
+        } else if (this.type == ShiftRotateType.LOGICAL) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                // Note: Logical and arithmetic left shifts operate identically.
+                // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
+                this.buffer <<= this.count;
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.buffer >>>= this.count;
+            }
+        }
     }
 
-    public void storeResult(){
-        // NOOP
-    }
 }
 
+/**
+ OPCODE 32 - Rotate Register by Count
+ Octal: 040
+ RRC r, count, L/R, A/L
+ c(r) is rotated left (L/R = 1) or right (L/R =0) either logically (A/L =1)
+ XX, XXX is ignored
+ Count = 0…15
+ If Count = 0, no rotate occurs
+ */
 class RotateRegisterByCount extends ShiftRotateInstruction {
     public RotateRegisterByCount(short word, Simulator context) {
         super(word, context);
     }
-    /**
-     OPCODE 32 - Rotate Register by Count
-     Octal: 040
-     RRC r, count, L/R, A/L
-     c(r) is rotated left (L/R = 1) or right (L/R =0) either logically (A/L =1)
-     XX, XXX is ignored
-     Count = 0…15
-     If Count = 0, no rotate occurs
-     */
+
     public void execute(){
-        System.out.println("RRC");
+        if (this.type == ShiftRotateType.ARITHMETIC) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.buffer = (short)((this.buffer << this.count) | (this.buffer >> (Short.SIZE - this.count)));
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.buffer = (short)((this.buffer >> this.count) | (this.buffer << (Short.SIZE - this.count)));
+            }
+        } else if (this.type == ShiftRotateType.LOGICAL) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                // Note: Logical and arithmetic left shifts operate identically.
+                // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
+                this.buffer = (short)((this.buffer << this.count) | (this.buffer >>> (Short.SIZE - this.count)));
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.buffer = (short)((this.buffer >>> this.count) | (this.buffer << (Short.SIZE - this.count)));
+            }
+        }
     }
 
     public void storeResult(){
