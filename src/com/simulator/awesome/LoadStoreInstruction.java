@@ -82,8 +82,6 @@ class LoadRegisterFromMemory extends LoadStoreInstruction {
     // If indirect is set, dereferences the pointer and writes the resulting value to the MBR
     public void fetchOperand(){
         super.fetchOperand();
-        // MAR <- IAR - Move the contents of the IAR to the MAR
-        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // Fetch the contents of the word in memory specified by the MAR into the MBR.
         this.context.fetchMemoryAddressRegister();
     }
@@ -151,8 +149,9 @@ class LoadRegisterWithAddress extends LoadStoreInstruction {
 /**
  OPCODE 41 - Load Index Register from Memory
  Octal: 051
- LDX x, address[,I]
- x = 1..3
+ LDX x0, x1, address[,I]
+ x0 is the  destination index register to be loaded from memory, where x0 = 1..3
+ x1 is the index register to be used for calculating the effective address, where x1 = 1..3
  Xx <- c(EA)
  */
 class LoadIndexRegisterFromMemory extends LoadStoreInstruction {
@@ -160,36 +159,26 @@ class LoadIndexRegisterFromMemory extends LoadStoreInstruction {
         super(word, context);
     }
 
-    // Evaluates the address and copies the data at that address to the MBR
-    // If indirect is set, dereferences the pointer and writes the resulting value to the MBE
-    // Note that we use the Index register as the source or destination, so it is not used for indexing
-    // This means that this operation CAN ONLY LOAD from words 0-32
-    // To use higher addresses, we have to use indirect addressing
-    public void fetchOperand(){
-        // No indexing possible, so just set IAR to address
-        this.context.setInternalAddressRegister(this.address);
-        if (this.isIndirect) this.evaluatePointerToAddress();
+    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
+    // (including chasing pointers as needed) and then store it in the MAR
 
-        // MAR <- IAR - Move the contents of the IAR to the MAR
-        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
+    public void execute() {
         // Fetch the contents of the word in memory specified by the MAR into the MBR.
         this.context.fetchMemoryAddressRegister();
     }
 
-    public void execute() {
-        // NOOP
-    }
-
     public void storeResult(){
-        this.context.setIndexRegister(this.indexRegisterId, this.context.getMemoryBufferRegister());
+        // Note: In this usage, registerId is actually the register of an index register, not a general purpose register
+        this.context.setIndexRegister(this.registerId, this.context.getMemoryBufferRegister());
     }
 }
 
 /**
  OPCODE 42 - Store Index Register to Memory
  Octal: 052
- STX x, address[,I]
- X = 1..3
+ STX x0, x1, address[,I]
+ x0 is the source or destination register to be loaded or stored, where x0 = 1..3
+ x1 is the indexing register to be used for calculating the effective address, where x1 = 1..3
  Memory(EA) <- c(Xx)
  */
 class StoreIndexRegisterToMemory extends LoadStoreInstruction {
@@ -199,14 +188,6 @@ class StoreIndexRegisterToMemory extends LoadStoreInstruction {
 
     // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
     // (including chasing pointers as needed) and then store it in the MAR
-    public void fetchOperand(){
-        // No indexing possible, so just set IAR to address
-        this.context.setInternalAddressRegister(this.address);
-        if (this.isIndirect) this.evaluatePointerToAddress();
-
-        // MAR <- IAR - Move the contents of the IAR to the MAR
-        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
-    }
 
     // Copies the index register value to the MBR
     public void execute() {
