@@ -117,93 +117,55 @@ public class Assembler {
         }
 
         switch (instruction){
-            case "HLT":
-                break;
             case "LDR":
             case "STR":
             case "LDA":
                 mc_r = "00".substring(instructionParams[0].length()) + instructionParams[0]; // add left padding 0s so that the parameter is 2 bits
                 mc_ix = "00".substring(instructionParams[1].length()) + instructionParams[1]; // add left padding 0s so that the parameter is 2 bits
                 mc_address = "00000".substring(instructionParams[2].length()) + instructionParams[2]; // add left padding 0s so that the parameter is 5 bits
-                if (instructionParamsLength>3){
-                    mc_i = instructionParams[3]; //if the Indirect bit is set, include it. Otherwise, default to 0.
-                } else {
-                    mc_i = "0";
-                }
+                mc_i = instructionParamsLength > 3 ? instructionParams[3]: "0"; //if the Indirect bit is set, include it. Otherwise, default to 0.
                 machineCode = mc_opcode + mc_r + mc_ix + mc_i + mc_address;
                 break;
             case "LDX":
             case "STX":
-                mc_r = "00"; // r is assumed to be zero for index register load and store
-                mc_ix = "00".substring(instructionParams[0].length()) + instructionParams[0]; // add left padding 0s so that the parameter is 2 bits
-                mc_address = "00000".substring(instructionParams[1].length()) + instructionParams[1]; // add left padding 0s so that the parameter is 5 bits
-                if (instructionParamsLength>2){
-                    mc_i = instructionParams[2]; //if the Indirect bit is set, include it. Otherwise, default to 0.
-                } else {
-                    mc_i = "0";
-                }
-                machineCode = mc_opcode + mc_r + mc_ix + mc_i + mc_address;
+                // For both index registers, add left padding 0s so that the parameter is 2 bits
+                String mc_x0 = "00".substring(instructionParams[0].length()) + instructionParams[0]; // the source or destination register to be loaded or stored, where x0 = x1..x3
+                String mc_x1 = "00".substring(instructionParams[1].length()) + instructionParams[1]; // the indexing register to be used for calculating the effective address
+                mc_address = "00000".substring(instructionParams[2].length()) + instructionParams[2]; // add left padding 0s so that the parameter is 5 bits
+                mc_i = instructionParamsLength > 3 ? instructionParams[3] : "0"; //if the Indirect bit is set, include it. Otherwise, default to 0.
+                machineCode = mc_opcode + mc_x0 + mc_x1 + mc_i + mc_address;
                 break;
+            case "HLT":
             case "AMR":
-                break;
             case "SMR":
-                break;
             case "AIR":
-                break;
             case "SIR":
-                break;
             case "JZ":
-                break;
             case "JNE":
-                break;
             case "JCC":
-                break;
             case "JMA":
-                break;
             case "JSR":
-                break;
             case "RFS":
-                break;
             case "SOB":
-                break;
             case "JGE":
-                break;
             case "MLT":
-                break;
             case "DVD":
-                break;
             case "TRR":
-                break;
             case "AND":
-                break;
             case "ORR":
-                break;
             case "NOT":
-                break;
             case "SRC":
-                break;
             case "RRC":
-                break;
             case "FADD":
-                break;
             case "FSUB":
-                break;
             case "VADD":
-                break;
             case "TRAP":
-                break;
             case "VSUB":
-                break;
             case "CNVRT":
-                break;
             case "LDFR":
-                break;
             case "STFR":
-                break;
             case "IN":
-                break;
             case "OUT":
-                break;
             case "CHK":
                 break;
         }
