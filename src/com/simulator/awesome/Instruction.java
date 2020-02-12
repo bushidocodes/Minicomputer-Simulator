@@ -10,7 +10,7 @@ public class Instruction {
         short opCodeOffset              = 10;
         this.word = word;
         this.context = context;
-        this.opCode = (short) (((word & opCodeMask) >>> opCodeOffset) & 0b0000000000111111);
+        this.opCode = Utils.short_unsigned_right_shift((short)(word & opCodeMask), opCodeOffset);
     }
 
     public void fetchOperand(){
