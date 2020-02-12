@@ -403,9 +403,7 @@ public class Simulator {
      */
     private static short extractOpCode(short word) {
         // OPCODE is 0-5bits, so right shift by 10
-        // the >>> operator is a bitshift that includes the "sign bit"
-        short opcode = (short)((word>>>10) & 0b0000000000111111);
-        return opcode;
+        return Utils.short_unsigned_right_shift(word, 10);
     }
 
     public void execute() {

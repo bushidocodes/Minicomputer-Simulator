@@ -30,10 +30,10 @@ public class ShiftRotateInstruction extends Instruction{
         short countOffset            = 0;
         short registerOffset         = 8;
 
-        this.count = (short)((word & countMask) >>> countOffset);
+        this.count = Utils.short_unsigned_right_shift((short)(word & countMask), countOffset );
         this.type = (word & logicalArithmeticMask) == logicalArithmeticMask ? ShiftRotateType.LOGICAL : ShiftRotateType.ARITHMETIC;
         this.direction = (word & leftRightMask) == leftRightMask ? ShiftRotateDirection.LEFT : ShiftRotateDirection.RIGHT;
-        this.registerId = (short)((word & registerMask) >>> registerOffset);
+        this.registerId = Utils.short_unsigned_right_shift((short)(word & registerMask), registerOffset );
     }
 
     public void fetchOperand(){
@@ -84,7 +84,7 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
                 // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
                 this.buffer <<= this.count;
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer >>>= this.count;
+                this.buffer = Utils.short_unsigned_right_shift(this.buffer, this.count );
             }
         }
     }
@@ -106,24 +106,12 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
     }
 
     public void execute(){
-        if (this.type == ShiftRotateType.ARITHMETIC) {
-            if (this.direction == ShiftRotateDirection.LEFT) {
-                this.buffer = (short)((this.buffer << this.count) | (this.buffer >> (Short.SIZE - this.count)));
-            } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer = (short)((this.buffer >> this.count) | (this.buffer << (Short.SIZE - this.count)));
-            }
-        } else if (this.type == ShiftRotateType.LOGICAL) {
-            if (this.direction == ShiftRotateDirection.LEFT) {
-                // Note: Logical and arithmetic left shifts operate identically.
-                // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
-                this.buffer = (short)((this.buffer << this.count) | (this.buffer >>> (Short.SIZE - this.count)));
-            } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer = (short)((this.buffer >>> this.count) | (this.buffer << (Short.SIZE - this.count)));
-            }
+        // Note: There is no such thing as a logical versus arithmetic rotate. I suspect this is an error in the spec, so ignore
+        if (this.direction == ShiftRotateDirection.LEFT) {
+            this.buffer = (short)((this.buffer << this.count) | Utils.short_unsigned_right_shift(this.buffer, (Short.SIZE - this.count)));
+        } else if (this.direction == ShiftRotateDirection.RIGHT) {
+            this.buffer = (short)(Utils.short_unsigned_right_shift(this.buffer, this.count) | (this.buffer << (Short.SIZE - this.count)));
         }
     }
 
-    public void storeResult(){
-        // NOOP
-    }
 }

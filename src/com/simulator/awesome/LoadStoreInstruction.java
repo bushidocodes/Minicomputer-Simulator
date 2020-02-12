@@ -17,10 +17,10 @@ public class LoadStoreInstruction extends Instruction {
         short indexRegisterOffset      = 6;
         short registerOffset           = 8;
 
-        this.address = (short)((word & addressMask) >>> addressOffset);
+        this.address = Utils.short_unsigned_right_shift((short)(word & addressMask), addressOffset);
         this.isIndirect = (word & indirectAddressingMask) == indirectAddressingMask;
-        this.indexRegisterId = (short)((word & indexRegisterMask) >>> indexRegisterOffset);
-        this.registerId = (short)((word & registerMask) >>> registerOffset);
+        this.indexRegisterId = Utils.short_unsigned_right_shift((short)(word & indexRegisterMask), indexRegisterOffset);
+        this.registerId = Utils.short_unsigned_right_shift((short)(word & registerMask), registerOffset);
     }
 
     // Resolves the appropriate index register and address offset, setting the result to IAR

@@ -14,8 +14,8 @@ public class InputOutputInstruction extends Instruction {
         short deviceOffset           = 0;
         short registerOffset         = 8;
 
-        this.deviceId = (short)((word & deviceMask) >>> deviceOffset);
-        this.registerId = (short)((word & registerMask) >>> registerOffset);
+        this.deviceId = Utils.short_unsigned_right_shift((short)(word & deviceMask), deviceOffset);
+        this.registerId = Utils.short_unsigned_right_shift((short)(word & registerMask), registerOffset);
     }
 
     public void fetchOperand(){

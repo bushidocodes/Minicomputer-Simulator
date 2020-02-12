@@ -14,8 +14,8 @@ public class ArithmeticLogicInstruction extends Instruction {
         short secondRegisterOffset      = 6;
         short firstRegisterOffset       = 8;
 
-        this.secondRegisterId = (short)((word & secondRegisterMask) >>> secondRegisterOffset);
-        this.firstRegisterId = (short)((word & firstRegisterMask) >>> firstRegisterOffset);
+        this.secondRegisterId = Utils.short_unsigned_right_shift((short)(word & secondRegisterMask), secondRegisterOffset);
+        this.secondRegisterId = Utils.short_unsigned_right_shift((short)(word & firstRegisterMask), firstRegisterOffset);
     }
 
     public void fetchOperand(){
