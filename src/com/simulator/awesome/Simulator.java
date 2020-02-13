@@ -72,8 +72,11 @@ public class Simulator {
     private boolean isRunning = false;
     private short currentOpcode;
     private Instruction currentInstruction;
+    private boolean didBranch = false;
+
     public boolean isInteractive = false;
     public boolean isDebug = false;
+
 
     // TODO: What are the mystery registers we're missing?
 
@@ -142,6 +145,10 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+    }
+
+    public void setDidBranch() {
+        this.didBranch = true;
     }
 
     public short getWord(int address) {
@@ -268,6 +275,22 @@ public class Simulator {
     public void setEqualOrNot(boolean isEqualOrNot) {
         this.cc = (byte)setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
     }
+
+    public boolean isCondition(int conditionCode){
+        switch (conditionCode) {
+            case 0:
+                return this.isOverflow();
+            case 1:
+                return this.isUnderflow();
+            case 2:
+                return this.isDivideByZero();
+            case 3:
+                return this.isEqualOrNot();
+            default:
+                return false;
+        }
+    }
+
 
     public short getInternalAddressRegister() {
         return this.iar;
@@ -664,12 +687,14 @@ public class Simulator {
     // Execution Step 6
     // Determine Next Instruction
     private void executionNextInstruction() {
-        // TODO: This will need to be expanded when we implement branching
-        // Increment the Program Counter
-        if (this.pc<this.wordCount-1){
-            this.pc++;
-        } else {
+        // Early out if we branched, because we handled setting the PC earlier...
+        if (this.didBranch) return;
+
+        if (this.pc + 1 >= this.wordCount) {
+            // TODO: Refactor as machine fault
             pauseExecutionLoop();
+        } else {
+            this.pc++;
         }
     }
 

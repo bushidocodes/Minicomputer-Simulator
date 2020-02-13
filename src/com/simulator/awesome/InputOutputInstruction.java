@@ -38,16 +38,16 @@ public class InputOutputInstruction extends Instruction {
 }
 
 
-class InputCharacterToRegisterFromDevice extends LoadStoreInstruction {
+/**
+ * OPCODE 61 - Input Character To Register from Device
+ * Octal: 075
+ * IN r, devid
+ * r = 0..3
+ */
+class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
     public InputCharacterToRegisterFromDevice(short word, Simulator context) {
         super(word, context);
     }
-    /**
-     * OPCODE 61 - Input Character To Register from Device
-     * Octal: 075
-     * IN r, devid
-     * r = 0..3
-     */
     public void execute(){
         System.out.println("IN");
     }
@@ -57,16 +57,16 @@ class InputCharacterToRegisterFromDevice extends LoadStoreInstruction {
     }
 }
 
-class OutputCharacterToDeviceFromRegister extends LoadStoreInstruction {
+/**
+ OPCODE 62 - Output Character to Device from Register
+ Octal: 076
+ OUT r, devid
+ r = 0..3
+ */
+class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
     public OutputCharacterToDeviceFromRegister(short word, Simulator context) {
         super(word, context);
     }
-    /**
-     OPCODE 62 - Output Character to Device from Register
-     Octal: 076
-     OUT r, devid
-     r = 0..3
-     */
     public void execute(){
         System.out.println("OUT");
     }
@@ -76,17 +76,17 @@ class OutputCharacterToDeviceFromRegister extends LoadStoreInstruction {
     }
 }
 
-class CheckDeviceStatusToRegister extends LoadStoreInstruction {
+/**
+ OPCODE 63 - Check Device Status to Register
+ Octal: 077
+ CHK r, devid
+ r = 0..3
+ c(r) <- device status
+ */
+class CheckDeviceStatusToRegister extends InputOutputInstruction {
     public CheckDeviceStatusToRegister(short word, Simulator context) {
         super(word, context);
     }
-    /**
-     OPCODE 63 - Check Device Status to Register
-     Octal: 077
-     CHK r, devid
-     r = 0..3
-     c(r) <- device status
-     */
     public void execute(){
         System.out.println("CHK");
     }
