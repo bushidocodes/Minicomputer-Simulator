@@ -36,6 +36,7 @@ public class Simulator {
     private short mar;
     static final short MAR_MASK = (short)0b0000111111111111;
 
+
     // Memory Buffer Register.
     // Holds the word just fetched or the word to be stored into memory.
     // If this is a word we're writing to memory, it can either be something to be written
@@ -57,6 +58,14 @@ public class Simulator {
 
     // The three index registers
     private short x1, x2, x3;
+
+    // Internal register used to buffer an input value into the ALU
+    private short y;
+
+    // Internal register used to buffer the output from the ALU
+    // It's an int because it can contain results for multiplication
+    private int z;
+
 
     /** The execution step, 1-6
      * 1. Instruction Fetch
@@ -104,6 +113,8 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+        this.y = 0;
+        this.z = 0;
     }
 
     public void attachConsole(){
@@ -145,6 +156,8 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+        this.y = 0;
+        this.z = 0;
     }
 
     public void setDidBranch() {
@@ -377,6 +390,22 @@ public class Simulator {
         } else {
             throw new RuntimeException("Invalid Index Register!");
         }
+    }
+
+    public void setY(short value) {
+        this.y = value;
+    }
+
+    public short getY() {
+        return this.y;
+    }
+
+    public void setZ(int value) {
+        this.z = value;
+    }
+
+    public int getZ() {
+        return this.z;
     }
 
     public boolean isIllegalMemoryAccessToReservedLocations() {
