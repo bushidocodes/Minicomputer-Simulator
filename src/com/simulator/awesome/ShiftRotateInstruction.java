@@ -26,7 +26,6 @@ public class ShiftRotateInstruction extends Instruction{
         short countMask              = (short) 0b0000000000001111;
         // This is effectively an implicit register, but these operations might be atomic and executed in place
 
-
         short countOffset            = 0;
         short registerOffset         = 8;
 
@@ -83,6 +82,9 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
     // A <- RX, B <- count
 
     public void execute(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         if (this.type == ShiftRotateType.ARITHMETIC) {
             if (this.direction == ShiftRotateDirection.LEFT) {
                 this.context.alu.arithmeticShiftLeft();
@@ -115,6 +117,8 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
     public RotateRegisterByCount(short word, Simulator context) {
         super(word, context);
     }
+    // Default fetchOperand
+    // Y <- RX
 
     // Default fetchOperand
     // A <- RX, B <- count

@@ -15,6 +15,21 @@ public class Simulator {
     private short pc;
     static final short PC_MASK = (short)0b0000111111111111;
 
+    // Memory Address Register. Holds the address of the word to be fetched from memory
+    private short mar;
+    static final short MAR_MASK = (short)0b0000111111111111;
+
+    // Memory Buffer Register. Holds the word just fetched or the word to be stored into memory.
+    // Also known as the Memory Data Register (MDR) in certain architectures
+    private short mbr;
+
+    // Instruction register. Holds the instruction to be executed
+    // In certain architectures, also known as the current instruction register (CIR)
+    private short ir;
+
+    // Internal Address Register. Used for moving data around in the CPU.
+    private short iar;
+
     // Condition code.
     // Uses the least significant 4 bits
     // set when arithmetic/logical operations are executed
@@ -28,23 +43,6 @@ public class Simulator {
     // Note: Adding Upper bits that cannot be addressed by OPCODE 12 - Jump If Condition Code
     // 10000 |   Greater Than
     private byte cc;
-
-    // Instruction register. Holds the instruction to be executed
-    private short ir;
-
-    // Internal Address Register. Used for moving data around in the CPU.
-    private short iar;
-
-    // Memory Address Register. Holds the address of the word to be fetched from memory
-    private short mar;
-    static final short MAR_MASK = (short)0b0000111111111111;
-
-
-    // Memory Buffer Register.
-    // Holds the word just fetched or the word to be stored into memory.
-    // If this is a word we're writing to memory, it can either be something to be written
-    // or something that we've already written, ya dig?
-    private short mbr;
 
     // Machine Fault Register.
     // Contains the ID code of a machine fault after it occurs
@@ -68,28 +66,26 @@ public class Simulator {
 
     public ALU alu;
 
+    // TODO: Phase 3: Add registers to interact with the FPU
 
-    /** The execution step, 1-6
+    /**
+     * Simulator State without direct HW equivalent
+     */
+
+    private boolean isRunning = false;
+    private Instruction currentInstruction;
+    private boolean didBranch = false;
+    public boolean isInteractive = false;
+    public boolean isDebug = false;
+
+    /** The execution step, 1-5
      * 1. Instruction Fetch
      * 2. Instruction Decode
      * 3. Operand Fetch
      * 4. Execute
      * 5. Result Store
-     * 6. Next Instruction
      **/
     private int executionStep = 1;
-
-    // Loop state
-    private boolean isRunning = false;
-    private short currentOpcode;
-    private Instruction currentInstruction;
-    private boolean didBranch = false;
-
-    public boolean isInteractive = false;
-    public boolean isDebug = false;
-
-
-    // TODO: What are the mystery registers we're missing?
 
     Simulator(int wordCount) {
 
@@ -332,9 +328,6 @@ public class Simulator {
         return (short) (this.mar & Simulator.MAR_MASK);
     }
 
-    public void fetchMemoryAddressRegister() {
-        this.mbr = this.getWord(this.mar);
-    }
 
     public void setMemoryAddressRegister(short unmaskedMAR) {
         this.mar = (short) (unmaskedMAR & Simulator.PC_MASK);
@@ -346,6 +339,16 @@ public class Simulator {
 
     public void setMemoryBufferRegister(short mbr) {
         this.mbr = mbr;
+    }
+
+    // MBR <- c(MAR)
+    public void fetchMemoryAddressRegister() {
+        this.mbr = this.getWord(this.mar);
+    }
+
+    // MAR <- MBR
+    public void storeMemoryAddressRegister() {
+        this.setWord(this.mar, this.mbr);
     }
 
     public short getGeneralRegister(short registerId) {
@@ -508,7 +511,7 @@ public class Simulator {
         System.out.println("Index Register 1: " + Simulator.wordToString(this.x1));
         System.out.println("Index Register 2: " + Simulator.wordToString(this.x2));
         System.out.println("Index Register 3: " + Simulator.wordToString(this.x3));
-        System.out.println("Current OPCODE: " + Simulator.wordToString(this.currentOpcode));
+        System.out.println("Current OPCODE: " + Simulator.wordToString(this.currentInstruction.opCode));
         System.out.println("=======================================");
     }
 
@@ -526,13 +529,12 @@ public class Simulator {
         System.out.println("=======================================");
     }
 
-    /** The execution step, 1-6
+    /** The execution step, 1-5
      * 1. Instruction Fetch
      * 2. Instruction Decode
      * 3. Operand Fetch
      * 4. Execute
      * 5. Result Store
-     * 6. Next Instruction
      **/
 
     public void singleStep(){
@@ -562,12 +564,8 @@ public class Simulator {
                  **/
                 this.currentInstruction.storeResult();
                 break;
-            // Next Instruction
-            case 6:
-                this.executionNextInstruction();
-                break;
         }
-        if (this.executionStep == 6){
+        if (this.executionStep == 5){
             this.dumpRegistersToJavaConsole();
             this.dumpMemoryToJavaConsole();
             this.executionStep = 1;
@@ -581,21 +579,26 @@ public class Simulator {
     private void executionInstructionFetch() {
         System.out.println("PC: " + this.pc);
         // MAR <- PC
-        // Transfer Program Counter to Memory Address Register
+        if (this.pc < 0 || this.pc >= this.wordCount){
+            // TODO: Refactor as machine fault
+            pauseExecutionLoop();
+        }
         this.mar = this.pc;
 
-        // MBR <-MEM[MAR]
-        // Fetch the word located at the MAR location from memory and transfer it to Memory Buffer Register.
+        // PC++
+        this.pc++;
+
+        // MBR <- c[MAR]
         this.fetchMemoryAddressRegister();
+
+        // IR <- MBR
+        // Transfer Memory Buffer Register to Instruction Register
+        this.ir = this.mbr;
     }
 
     // Execution Step 2
     // Determine Operation Required
     private void executionInstructionDecode() {
-        // IR <- MBR
-        // Transfer Memory Buffer Register to Instruction Register
-        this.ir = this.mbr;
-
         // Extract the opcode from the IR and use to set currentInstruction
         switch(Simulator.extractOpCode(this.ir)) {
             case 0:
@@ -709,20 +712,6 @@ public class Simulator {
             case 63:
                 this.currentInstruction = new CheckDeviceStatusToRegister(this.ir, this);
                 break;
-        }
-    }
-
-    // Execution Step 6
-    // Determine Next Instruction
-    private void executionNextInstruction() {
-        // Early out if we branched, because we handled setting the PC earlier...
-        if (this.didBranch) return;
-
-        if (this.pc + 1 >= this.wordCount) {
-            // TODO: Refactor as machine fault
-            pauseExecutionLoop();
-        } else {
-            this.pc++;
         }
     }
 

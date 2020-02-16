@@ -32,7 +32,7 @@ public class RegisterMemoryInstruction extends Instruction {
     }
 
     public void evaluatePointerToAddress() {
-        // MAR <- IAR
+        // MAR <- IAR (storing address of pointer)
         this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
@@ -40,8 +40,7 @@ public class RegisterMemoryInstruction extends Instruction {
         this.context.setInternalAddressRegister(this.context.getMemoryBufferRegister());
     }
 
-    // Resolves the operand address, resolving the pointer (indirect) to the address it contains if needed
-    // The end state is that the operand is loaded as an address to the IAR
+    // MAR <- EA
     public void fetchOperand(){
         // Fault Handling and Validation
         if (this.didFault) return;
@@ -272,6 +271,7 @@ class JumpIfZero extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
+
         // a <- RX
         this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
         // b <- 0
@@ -321,7 +321,6 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
         this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
         // b <- 0
         this.context.alu.setB((short) 0);
-
     }
 
     public void execute() {
@@ -362,7 +361,11 @@ class JumpIfConditionCode extends RegisterMemoryInstruction {
     }
 
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         if (this.context.isCondition(this.conditionCode)){
+            // IAR <- EA
             this.computeEffectiveAddress();
             if (this.isIndirect) this.evaluatePointerToAddress();
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
@@ -392,6 +395,10 @@ class UnconditionalJumpToAddress extends RegisterMemoryInstruction {
     }
 
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
         // PC <- IAR
@@ -426,6 +433,9 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
     }
 
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
@@ -448,13 +458,13 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
 /**
  OPCODE 15 - Return From Subroutine
  Octal: 017
- w/ return code as Immed portion (optional) stored in the instruction’s address field.
- RFS Immed
- R0 <- Immed; PC <- c(R3)
+ w/ return code as Immediate portion (optional) stored in the instruction’s address field.
+ RFS Immediate
+ R0 <- Immediate; PC <- c(R3)
  IX, I fields are ignored.
  */
 class ReturnFromSubroutine extends RegisterMemoryInstruction {
-    short immediateValue;
+    final short immediateValue;
 
     public ReturnFromSubroutine(short word, Simulator context) {
         super(word, context);
@@ -494,6 +504,9 @@ class SubtractOneAndBranch extends RegisterMemoryInstruction {
     }
 
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
@@ -535,6 +548,9 @@ class JumpGreaterThanOrEqualTo extends RegisterMemoryInstruction {
     }
 
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
