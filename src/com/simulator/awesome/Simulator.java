@@ -23,7 +23,10 @@ public class Simulator {
     // 0001 |   Overflow
     // 0010 |   Underflow
     // 0100 |   Division by Zero
-    // 1000 |   Equal Or Not
+    // 1000 |   Equal
+
+    // Note: Adding Upper bits that cannot be addressed by OPCODE 12 - Jump If Condition Code
+    // 10000 |   Greater Than
     private byte cc;
 
     // Instruction register. Holds the instruction to be executed
@@ -59,12 +62,11 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
-    // Internal register used to buffer an input value into the ALU
-    private short y;
+    /**
+     * ALU Registers
+     */
 
-    // Internal register used to buffer the output from the ALU
-    // It's an int because it can contain results for multiplication
-    private int z;
+    public ALU alu;
 
 
     /** The execution step, 1-6
@@ -91,13 +93,15 @@ public class Simulator {
 
     Simulator(int wordCount) {
 
-        // Allocate Linear Memory
+        // Allocate and zero out Linear Memory
         this.wordCount = 2048;
         this.memory = new Short[wordCount];
-
         for (int i = 0; i < wordCount; i++) {
             this.memory[i] = 0;
         }
+
+        // Allocate Arithmetic Logic Unit
+        this.alu = new ALU(this);
 
         // Allocate and zero out all Registers
         this.pc = 0;
@@ -113,8 +117,6 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
-        this.y = 0;
-        this.z = 0;
     }
 
     public void attachConsole(){
@@ -134,13 +136,15 @@ public class Simulator {
     }
 
     public void reset(){
-        // Allocate Linear Memory
+        // Allocate and zero out Linear Memory
         this.wordCount = 2048;
         this.memory = new Short[wordCount];
-
         for (int i = 0; i < wordCount; i++) {
             this.memory[i] = 0;
         }
+
+        // Allocate Arithmetic Logic Unit
+        this.alu = new ALU(this);
 
         // Allocate and zero out all Registers
         this.pc = 0;
@@ -156,8 +160,6 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
-        this.y = 0;
-        this.z = 0;
     }
 
     public void setDidBranch() {
@@ -281,12 +283,25 @@ public class Simulator {
         this.cc = (byte)setNthLeastSignificantBit(this.cc, 2, isDivideByZero);
     }
 
-    public boolean isEqualOrNot() {
+    public boolean isEqual() {
         return getNthLeastSignificantBit(this.cc, 3);
     }
 
-    public void setEqualOrNot(boolean isEqualOrNot) {
+    public void setEqual(boolean isEqualOrNot) {
         this.cc = (byte)setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
+    }
+
+    public boolean isGreaterThan() {
+        return getNthLeastSignificantBit(this.cc, 4);
+    }
+
+    public void setGreaterThan(boolean isGreaterThan) {
+        this.cc = (byte)setNthLeastSignificantBit(this.cc, 4, isGreaterThan);
+    }
+
+    // There isn't a bit for this directly, but we can determine this if not greater than or equal
+    public boolean isLessThan() {
+        return !this.isEqual() && !this.isGreaterThan();
     }
 
     public boolean isCondition(int conditionCode){
@@ -298,7 +313,7 @@ public class Simulator {
             case 2:
                 return this.isDivideByZero();
             case 3:
-                return this.isEqualOrNot();
+                return this.isEqual();
             default:
                 return false;
         }
@@ -390,22 +405,6 @@ public class Simulator {
         } else {
             throw new RuntimeException("Invalid Index Register!");
         }
-    }
-
-    public void setY(short value) {
-        this.y = value;
-    }
-
-    public short getY() {
-        return this.y;
-    }
-
-    public void setZ(int value) {
-        this.z = value;
-    }
-
-    public int getZ() {
-        return this.z;
     }
 
     public boolean isIllegalMemoryAccessToReservedLocations() {

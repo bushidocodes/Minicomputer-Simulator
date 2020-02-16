@@ -37,7 +37,11 @@ public class ShiftRotateInstruction extends Instruction{
     }
 
     public void fetchOperand(){
-        this.buffer = this.context.getGeneralRegister(this.registerId);
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        this.context.alu.setB(this.count);
     }
 
     public void execute(){
@@ -45,7 +49,11 @@ public class ShiftRotateInstruction extends Instruction{
     }
 
     public void storeResult(){
-        this.context.setGeneralRegister(this.registerId, this.buffer);
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // RX <- Z
+        this.context.setGeneralRegister(this.registerId, this.context.alu.getYAsShort());
     }
 
     public void print(){
@@ -71,24 +79,27 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
         super(word, context);
     }
 
+    // Default fetchOperand
+    // A <- RX, B <- count
+
     public void execute(){
         if (this.type == ShiftRotateType.ARITHMETIC) {
             if (this.direction == ShiftRotateDirection.LEFT) {
-                this.buffer <<= this.count;
+                this.context.alu.arithmeticShiftLeft();
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer >>= this.count;
+                this.context.alu.arithmeticShiftRight();
             }
         } else if (this.type == ShiftRotateType.LOGICAL) {
             if (this.direction == ShiftRotateDirection.LEFT) {
-                // Note: Logical and arithmetic left shifts operate identically.
-                // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
-                this.buffer <<= this.count;
+                this.context.alu.logicalShiftLeft();
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer = Utils.short_unsigned_right_shift(this.buffer, this.count );
+                this.context.alu.logicalShiftRight();
             }
         }
     }
 
+    // Default storeResults
+    // RX <- Y
 }
 
 /**
@@ -105,13 +116,25 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
         super(word, context);
     }
 
+    // Default fetchOperand
+    // A <- RX, B <- count
+
     public void execute(){
-        // Note: There is no such thing as a logical versus arithmetic rotate. I suspect this is an error in the spec, so ignore
-        if (this.direction == ShiftRotateDirection.LEFT) {
-            this.buffer = (short)((this.buffer << this.count) | Utils.short_unsigned_right_shift(this.buffer, (Short.SIZE - this.count)));
-        } else if (this.direction == ShiftRotateDirection.RIGHT) {
-            this.buffer = (short)(Utils.short_unsigned_right_shift(this.buffer, this.count) | (this.buffer << (Short.SIZE - this.count)));
+        if (this.type == ShiftRotateType.ARITHMETIC) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.alu.arithmeticRotateLeft();
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.alu.arithmeticRotateRight();
+            }
+        } else if (this.type == ShiftRotateType.LOGICAL) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.alu.logicalRotateLeft();
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.alu.logicalRotateRight();
+            }
         }
     }
 
+    // Default storeResults
+    // RX <- Y
 }
