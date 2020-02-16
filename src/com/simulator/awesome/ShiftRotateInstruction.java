@@ -123,11 +123,31 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
     // Y <- RX
 
     public void execute(){
-        // Note: There is no such thing as a logical versus arithmetic rotate. I suspect this is an error in the spec, so ignore
-        if (this.direction == ShiftRotateDirection.LEFT) {
-            this.context.setZ((this.context.getY() << this.count) | Utils.short_unsigned_right_shift(this.context.getY(), (Short.SIZE - this.count)));
-        } else if (this.direction == ShiftRotateDirection.RIGHT) {
-            this.context.setZ(Utils.short_unsigned_right_shift(this.context.getY(), this.count) | (this.context.getY() << (Short.SIZE - this.count)));
+        // Arithmetic rotation - preserve the sign bit, rotating all other bits
+        if (this.type == ShiftRotateType.ARITHMETIC) {
+            short SIGN_BIT_MASK = (short)0b1000000000000000;
+            short LEAST_SIGNIFICANT_BITS_MASK = (short)0b0111111111111111;
+            // Save the sign bit
+            short signBit = (short) (SIGN_BIT_MASK & this.context.getY());
+
+            // Discard the left-most bit by shifting left by 1 and right by 1.
+            short leastSignificantBits = this.context.getY();
+            leastSignificantBits <<= 1;
+            leastSignificantBits >>>= 1;
+
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                // Sign Bit | (bitmask & (leastSignificantBits shifted left by count | leastSignificantBits shifted right by SIZE-count-1))
+                this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (leastSignificantBits << this.count) | Utils.short_unsigned_right_shift(leastSignificantBits, (Short.SIZE - this.count - 1))));
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.count) | (leastSignificantBits << (Short.SIZE - this.count - 1)))));
+            }
+            // Logical rotation - do not preserve the sign bit, rotating all bits
+        } else if (this.type == ShiftRotateType.LOGICAL) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.setZ((this.context.getY() << this.count) | Utils.short_unsigned_right_shift(this.context.getY(), (Short.SIZE - this.count)));
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.setZ(Utils.short_unsigned_right_shift(this.context.getY(), this.count) | (this.context.getY() << (Short.SIZE - this.count)));
+            }
         }
     }
 
