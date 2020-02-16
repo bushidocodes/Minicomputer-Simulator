@@ -26,7 +26,6 @@ public class ShiftRotateInstruction extends Instruction{
         short countMask              = (short) 0b0000000000001111;
         // This is effectively an implicit register, but these operations might be atomic and executed in place
 
-
         short countOffset            = 0;
         short registerOffset         = 8;
 
@@ -37,7 +36,11 @@ public class ShiftRotateInstruction extends Instruction{
     }
 
     public void fetchOperand(){
-        this.buffer = this.context.getGeneralRegister(this.registerId);
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // Y <- RX
+        this.context.setY(this.context.getGeneralRegister(this.registerId));
     }
 
     public void execute(){
@@ -45,7 +48,11 @@ public class ShiftRotateInstruction extends Instruction{
     }
 
     public void storeResult(){
-        this.context.setGeneralRegister(this.registerId, this.buffer);
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // RX <- Z
+        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
     }
 
     public void print(){
@@ -71,24 +78,32 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
         super(word, context);
     }
 
+    // Default fetchOperand
+    // Y <- RX
+
     public void execute(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         if (this.type == ShiftRotateType.ARITHMETIC) {
             if (this.direction == ShiftRotateDirection.LEFT) {
-                this.buffer <<= this.count;
+                this.context.setZ(this.context.getY() << this.count);
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer >>= this.count;
+                this.context.setZ(this.context.getY() >> this.count);
             }
         } else if (this.type == ShiftRotateType.LOGICAL) {
             if (this.direction == ShiftRotateDirection.LEFT) {
                 // Note: Logical and arithmetic left shifts operate identically.
                 // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
-                this.buffer <<= this.count;
+                this.context.setZ(this.context.getY() << this.count);
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.buffer = Utils.short_unsigned_right_shift(this.buffer, this.count );
+                this.context.setZ(Utils.short_unsigned_right_shift(this.context.getY(), this.count ));
             }
         }
     }
 
+    // Default storeResults
+    // RX <- Z
 }
 
 /**
@@ -104,14 +119,18 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
     public RotateRegisterByCount(short word, Simulator context) {
         super(word, context);
     }
+    // Default fetchOperand
+    // Y <- RX
 
     public void execute(){
         // Note: There is no such thing as a logical versus arithmetic rotate. I suspect this is an error in the spec, so ignore
         if (this.direction == ShiftRotateDirection.LEFT) {
-            this.buffer = (short)((this.buffer << this.count) | Utils.short_unsigned_right_shift(this.buffer, (Short.SIZE - this.count)));
+            this.context.setZ((this.context.getY() << this.count) | Utils.short_unsigned_right_shift(this.context.getY(), (Short.SIZE - this.count)));
         } else if (this.direction == ShiftRotateDirection.RIGHT) {
-            this.buffer = (short)(Utils.short_unsigned_right_shift(this.buffer, this.count) | (this.buffer << (Short.SIZE - this.count)));
+            this.context.setZ(Utils.short_unsigned_right_shift(this.context.getY(), this.count) | (this.context.getY() << (Short.SIZE - this.count)));
         }
     }
 
+    // Default storeResults
+    // RX <- Z
 }
