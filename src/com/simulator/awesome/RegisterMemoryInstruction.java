@@ -1,10 +1,10 @@
 package com.simulator.awesome;
 
 public class RegisterMemoryInstruction extends Instruction {
-    public short registerId;
-    public short indexRegisterId;   // Acts as base address
-    public boolean isIndirect;
-    public short address;           // Acts as offset
+    final public short registerId;
+    final public short indexRegisterId;   // Acts as base address
+    final public boolean isIndirect;
+    final public short address;           // Acts as offset
 
     RegisterMemoryInstruction(short word, Simulator context) {
         super(word, context);
@@ -21,37 +21,36 @@ public class RegisterMemoryInstruction extends Instruction {
         this.isIndirect = (word & indirectAddressingMask) == indirectAddressingMask;
         this.indexRegisterId = Utils.short_unsigned_right_shift((short)(word & indexRegisterMask), indexRegisterOffset);
         this.registerId = Utils.short_unsigned_right_shift((short)(word & registerMask), registerOffset);
+
+        this.validateGeneralRegisterIndex(this.registerId);
+        this.validateIndexRegisterIndex(this.indexRegisterId);
     }
 
-    // Resolves the appropriate index register and address offset, setting the result to IAR
-    // IAR <- IR(address field)
-    // Move the first operand address from the Instruction Register to the Internal Address Register
-    // IAR<- IAR + X(index field)
-    // If the operand is indexed, add the contents of the specified index register to the IAR
     public void computeEffectiveAddress() {
+        // IAR <- EA
         this.context.setInternalAddressRegister((short) (this.context.getIndexRegister(this.indexRegisterId) + this.address));
     }
 
-    // Given the address of a pointer stored in the IAR
-    // Moves the contests of the IAR to the MAR
-    // Retrieves the address the pointer is storing to the MBR
-    // Writes the address in the MBR to the IAR
     public void evaluatePointerToAddress() {
-        // Move the contents of the IAR to the MAR
+        // MAR <- IAR
         this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
-        // Fetch the contents of the word in memory specified by the MAR into the MBR.
+        // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
-        // Copy the MBR to the IAR
+        // IAR <- MBR
         this.context.setInternalAddressRegister(this.context.getMemoryBufferRegister());
     }
 
     // Resolves the operand address, resolving the pointer (indirect) to the address it contains if needed
     // The end state is that the operand is loaded as an address to the IAR
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // IAR <- EA
         computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
-        // MAR <- IR
-        // Move the contents of the IAR to the MAR
+
+        // MAR <- IAR
         this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
     }
 
@@ -76,21 +75,29 @@ public class RegisterMemoryInstruction extends Instruction {
 class LoadRegisterFromMemory extends RegisterMemoryInstruction {
     public LoadRegisterFromMemory(short word, Simulator context){
         super(word, context);
+        this.validateGeneralRegisterIndex(this.registerId);
+        this.validateIndexRegisterIndex(this.indexRegisterId);
     }
 
-    // Evaluates the address and copies the data at that address to the MBR
-    // If indirect is set, dereferences the pointer and writes the resulting value to the MBR
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // MAR <- EA
         super.fetchOperand();
-        // Fetch the contents of the word in memory specified by the MAR into the MBR.
+        // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
     }
 
     public void execute(){
-        // NOOP: We're just storing the operand in a register, so nothing to execute
+        // NOOP
     }
 
     public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // RX <- MBR
         this.context.setGeneralRegister(this.registerId, this.context.getMemoryBufferRegister());
     }
 }
@@ -107,16 +114,22 @@ class StoreRegisterToMemory extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
-    // (including chasing pointers as needed) and then store it in the MAR
+    // Default fetchOperand hook
+    // MAR <- EA
 
-    // Copies the register value to the MBR
     public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // MBR <- RX
         this.context.setMemoryBufferRegister(this.context.getGeneralRegister(this.registerId));
     }
 
-    // Copy the value of MBR to the address in memory stored in the MAR
     public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // c(MAR) <- MBR
         this.context.setWord(this.context.getMemoryAddressRegister(), this.context.getMemoryBufferRegister());
     }
 }
@@ -133,15 +146,21 @@ class LoadRegisterWithAddress extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to load
-    // (including chasing pointers as needed) and then store it in the MAR
+    // Default fetchOperand hook
+    // MAR <- EA
 
     public void execute(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         // NOOP
     }
 
-    // Write the address in the MAR to the register
     public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // RX <- MAR
         this.context.setGeneralRegister(this.registerId, this.context.getMemoryAddressRegister());
     }
 }
@@ -155,21 +174,29 @@ class LoadRegisterWithAddress extends RegisterMemoryInstruction {
  Xx <- c(EA)
  */
 class LoadIndexRegisterFromMemory extends RegisterMemoryInstruction {
+    final private short destinationIndexRegisterId;
     public LoadIndexRegisterFromMemory(short word, Simulator context) {
         super(word, context);
+        this.destinationIndexRegisterId = this.registerId;
     }
 
-    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
-    // (including chasing pointers as needed) and then store it in the MAR
+    // Default fetchOperand hook
+    // MAR <- EA
 
     public void execute() {
-        // Fetch the contents of the word in memory specified by the MAR into the MBR.
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
     }
 
     public void storeResult(){
-        // Note: In this usage, registerId is actually the register of an index register, not a general purpose register
-        this.context.setIndexRegister(this.registerId, this.context.getMemoryBufferRegister());
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // X0 <- MBR
+        this.context.setIndexRegister(this.destinationIndexRegisterId, this.context.getMemoryBufferRegister());
     }
 }
 
@@ -177,25 +204,35 @@ class LoadIndexRegisterFromMemory extends RegisterMemoryInstruction {
  OPCODE 42 - Store Index Register to Memory
  Octal: 052
  STX x0, x1, address[,I]
- x0 is the source or destination register to be loaded or stored, where x0 = 1..3
+ x0 is the source register to be loaded, where x0 = 1..3
  x1 is the indexing register to be used for calculating the effective address, where x1 = 1..3
  Memory(EA) <- c(Xx)
  */
 class StoreIndexRegisterToMemory extends RegisterMemoryInstruction {
+    final private short sourceIndexRegisterId;
+
     public StoreIndexRegisterToMemory(short word, Simulator context) {
         super(word, context);
+        this.sourceIndexRegisterId = this.registerId;
     }
 
-    // Uses the default fetchOperand hook, which resolve the Memory Address that we want to write to
-    // (including chasing pointers as needed) and then store it in the MAR
+    // Default fetchOperand hook
+    // MAR <- EA
 
     // Copies the index register value to the MBR
     public void execute() {
-        this.context.setMemoryBufferRegister(this.context.getIndexRegister(this.indexRegisterId));
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // MBR <- X0
+        this.context.setMemoryBufferRegister(this.context.getIndexRegister(this.sourceIndexRegisterId));
     }
 
-    // Copy the value of MBR to the address in memory stored in the MAR
     public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // c(MAR) <- MBR
         this.context.setWord(this.context.getMemoryAddressRegister(), this.context.getMemoryBufferRegister());
     }
 }
@@ -215,15 +252,22 @@ class JumpIfZero extends RegisterMemoryInstruction {
 
     // Sets the IAR with the address we conditionally might want to set the PC to
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         if (this.context.getGeneralRegister(this.registerId) == 0) {
+            // IAR <- EA
             computeEffectiveAddress();
             if (this.isIndirect) this.evaluatePointerToAddress();
         }
     }
 
     public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         if (this.context.getGeneralRegister(this.registerId) == 0) {
-            // I do not have a good grasp for how to get around the fact that we
+            // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
         }
@@ -248,7 +292,11 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
 
     // Sets the IAR with the address we conditionally might want to set the PC to
     public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
         if (this.context.getGeneralRegister(this.registerId) == 0) {
+            // IAR <- EA
             this.computeEffectiveAddress();
             if (this.isIndirect) this.evaluatePointerToAddress();
         }
@@ -256,7 +304,7 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
 
     public void execute() {
         if (this.context.getGeneralRegister(this.registerId) != 0) {
-            // I do not have a good grasp for how to get around the fact that we
+            // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
         }

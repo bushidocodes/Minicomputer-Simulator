@@ -4,6 +4,7 @@ public class Instruction {
     public short opCode;
     public short word;
     protected Simulator context;
+    protected boolean didFault = false;
 
     public Instruction(short word, Simulator context) {
         short opCodeMask                = (short) 0b1111110000000000;
@@ -23,6 +24,18 @@ public class Instruction {
 
     public void storeResult(){
         // NOOP
+    }
+
+    public void validateGeneralRegisterIndex(short index){
+        if (index < 0 || index > 3) {
+            this.didFault = true;
+        };
+    }
+
+    public void validateIndexRegisterIndex(short index){
+        if (index < 0 || index > 3) {
+            this.didFault = true;
+        };
     }
 
     public void print(){
