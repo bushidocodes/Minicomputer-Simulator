@@ -16,4 +16,26 @@ public class Utils {
         return (short)temp;
     }
 
+    /**
+     * A Helper getter for bit arrays
+     * @param bitArray - The integral value that we are treating as an array of bits
+     * @param offset - The offset from the least significant bit. 0 is b0001
+     * @return - True if bit is set
+     */
+    public static boolean getNthLeastSignificantBit(int bitArray, int offset) {
+        int getterMask = (0b00000001<<offset);
+        return (bitArray & getterMask) == getterMask;
+    }
+
+    /**
+     * A Helper setting for bit arrays
+     * @param bitArray - The integral that we are treating as an array of bits
+     * @param offset - The offset from the least significant bit. 0 is b0001
+     * @param isSet - The resulting bit array after manipulating the bit
+     */
+    public  static int setNthLeastSignificantBit(int bitArray, int offset, boolean isSet) {
+        int setterMask = (0b00000001<<offset);
+        return isSet ? (bitArray | setterMask) : (bitArray & ~setterMask);
+    }
+
 }

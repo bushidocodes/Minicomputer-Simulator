@@ -82,10 +82,15 @@ class LoadRegisterFromMemory extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // MAR <- EA
-        super.fetchOperand();
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
+        // RX <- MBR
+        this.context.setGeneralRegister(this.registerId, this.context.getMemoryBufferRegister());
     }
 
     public void execute(){
@@ -93,11 +98,7 @@ class LoadRegisterFromMemory extends RegisterMemoryInstruction {
     }
 
     public void storeResult(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        // RX <- MBR
-        this.context.setGeneralRegister(this.registerId, this.context.getMemoryBufferRegister());
+        // NOOP
     }
 }
 
@@ -113,23 +114,27 @@ class StoreRegisterToMemory extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    // Default fetchOperand hook
-    // MAR <- EA
-
-    public void execute() {
+    public void fetchOperand() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- RX
         this.context.setMemoryBufferRegister(this.context.getGeneralRegister(this.registerId));
+        // c(MAR) <- MBR
+        this.context.setWord(this.context.getMemoryAddressRegister(), this.context.getMemoryBufferRegister());
+    }
+
+    public void execute() {
+        // NOOP
     }
 
     public void storeResult(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        // c(MAR) <- MBR
-        this.context.setWord(this.context.getMemoryAddressRegister(), this.context.getMemoryBufferRegister());
+        // NOOP
     }
 }
 
@@ -145,22 +150,27 @@ class LoadRegisterWithAddress extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    // Default fetchOperand hook
-    // MAR <- EA
-
-    public void execute(){
+    public void fetchOperand() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
+        // IAR <- EA
+        computeEffectiveAddress();
+        // Note: If this is an indirect, this ends up being a memory seek with more than one cycle
+        // Disregarding this for simplicity
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
+        // RX <- MAR
+        this.context.setGeneralRegister(this.registerId, this.context.getMemoryAddressRegister());
+    }
+
+    public void execute(){
         // NOOP
     }
 
     public void storeResult(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        // RX <- MAR
-        this.context.setGeneralRegister(this.registerId, this.context.getMemoryAddressRegister());
+        // NOOP
     }
 }
 
@@ -179,23 +189,27 @@ class LoadIndexRegisterFromMemory extends RegisterMemoryInstruction {
         this.destinationIndexRegisterId = this.registerId;
     }
 
-    // Default fetchOperand hook
-    // MAR <- EA
-
-    public void execute() {
+    public void fetchOperand() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
+        // X0 <- MBR
+        this.context.setIndexRegister(this.destinationIndexRegisterId, this.context.getMemoryBufferRegister());
+    }
+
+    public void execute() {
+        // NOOP
     }
 
     public void storeResult(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        // X0 <- MBR
-        this.context.setIndexRegister(this.destinationIndexRegisterId, this.context.getMemoryBufferRegister());
+        // NOOP
     }
 }
 
@@ -215,24 +229,27 @@ class StoreIndexRegisterToMemory extends RegisterMemoryInstruction {
         this.sourceIndexRegisterId = this.registerId;
     }
 
-    // Default fetchOperand hook
-    // MAR <- EA
-
-    // Copies the index register value to the MBR
-    public void execute() {
+    public void fetchOperand() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- X0
         this.context.setMemoryBufferRegister(this.context.getIndexRegister(this.sourceIndexRegisterId));
+        // c(MAR) <- MBR
+        this.context.setWord(this.context.getMemoryAddressRegister(), this.context.getMemoryBufferRegister());
+    }
+
+    public void execute() {
+        // NOOP
     }
 
     public void storeResult(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        // c(MAR) <- MBR
-        this.context.setWord(this.context.getMemoryAddressRegister(), this.context.getMemoryBufferRegister());
+        // NOOP
     }
 }
 
@@ -254,28 +271,32 @@ class JumpIfZero extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // c(RX) == 0?
-        if (this.context.getGeneralRegister(this.registerId) == 0) {
-            // IAR <- EA
-            computeEffectiveAddress();
-            if (this.isIndirect) this.evaluatePointerToAddress();
-        }
+
+        // a <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        // b <- 0
+        this.context.alu.setB((short) 0);
     }
 
     public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // c(RX) == 0?
-        if (this.context.getGeneralRegister(this.registerId) == 0) {
+        this.context.alu.compare();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        if (this.context.isEqual()) {
+            // IAR <- EA
+            computeEffectiveAddress();
+            if (this.isIndirect) this.evaluatePointerToAddress();
             // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
         }
-    }
-
-    public void storeResult(){
-        // NOOP
     }
 }
 
@@ -296,27 +317,28 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // c(RX) != 0?
-        if (this.context.getGeneralRegister(this.registerId) != 0) {
-            // IAR <- EA
-            this.computeEffectiveAddress();
-            if (this.isIndirect) this.evaluatePointerToAddress();
-        }
+        // a <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        // b <- 0
+        this.context.alu.setB((short) 0);
     }
 
     public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // c(RX) != 0?
-        if (this.context.getGeneralRegister(this.registerId) != 0) {
+        this.context.alu.compare();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        if (this.context.isEqual() == false) {
             // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
         }
-    }
-
-    public void storeResult(){
         // NOOP
     }
 }
@@ -346,18 +368,13 @@ class JumpIfConditionCode extends RegisterMemoryInstruction {
             // IAR <- EA
             this.computeEffectiveAddress();
             if (this.isIndirect) this.evaluatePointerToAddress();
+            this.context.setProgramCounter(this.context.getInternalAddressRegister());
+            this.context.setDidBranch();
         }
     }
 
     public void execute() {
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        if (this.context.isCondition(this.conditionCode)){
-            // PC <- IAR
-            this.context.setProgramCounter(this.context.getInternalAddressRegister());
-            this.context.setDidBranch();
-        }
+        // NOOP
     }
 
     public void storeResult(){
@@ -384,15 +401,13 @@ class UnconditionalJumpToAddress extends RegisterMemoryInstruction {
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
-    }
-
-    public void execute() {
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
         // PC <- IAR
         this.context.setProgramCounter(this.context.getInternalAddressRegister());
         this.context.setDidBranch();
+    }
+
+    public void execute() {
+        // NOOP
     }
 
     public void storeResult(){
@@ -424,23 +439,19 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
-    }
-
-    public void execute() {
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
         // R3 <- PC+1
         this.context.setGeneralRegister((short) 3, (short) (this.context.getProgramCounter() + 1));
-    }
-
-    public void storeResult(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
         // PC <- IAR
         this.context.setProgramCounter(this.context.getInternalAddressRegister());
         this.context.setDidBranch();
+    }
+
+    public void execute() {
+        // NOOP
+    }
+
+    public void storeResult(){
+        // NOOP
     }
 }
 
@@ -461,22 +472,20 @@ class ReturnFromSubroutine extends RegisterMemoryInstruction {
     }
 
     public void fetchOperand(){
-        // NOOP
-    }
-
-    public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
         this.context.setGeneralRegister((short) 0, this.immediateValue);
+        this.context.setProgramCounter(this.context.getGeneralRegister((short) 3));
+        this.context.setDidBranch();
+    }
+
+    public void execute() {
+        // NOOP
     }
 
     public void storeResult() {
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        this.context.setProgramCounter(this.context.getGeneralRegister((short) 3));
-        this.context.setDidBranch();
+        // NOOP
     }
 }
 
@@ -501,6 +510,8 @@ class SubtractOneAndBranch extends RegisterMemoryInstruction {
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        this.context.alu.setB((short)0);
 
     }
 
@@ -508,20 +519,14 @@ class SubtractOneAndBranch extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Z <- RX - 1
-        this.context.setZ(this.context.getGeneralRegister(this.registerId) - 1);
+        this.context.alu.decrementAndCompare();
     }
 
     public void storeResult(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // RX <- Z
-        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
-
-        // c(RX) > 0?
-        // Note: IRL, this comparision would require a second pass through the ALU
-        if (this.context.getGeneralRegister(this.registerId) > 0){
+        if (this.context.isGreaterThan()){
             // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
@@ -549,30 +554,28 @@ class JumpGreaterThanOrEqualTo extends RegisterMemoryInstruction {
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        this.context.alu.setB((short) 0);
     }
 
     public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Y <- 0
-        this.context.setY((short)0);
-
-        // z <- 1 if true. 0 if false
-        this.context.setZ(this.context.getGeneralRegister(this.registerId) > this.context.getY() ? 1 : 0);
+        this.context.alu.compare();
     }
 
     public void storeResult(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // c(RX) >= 0?
-        if (this.context.getZ() == 1){
+        if (this.context.isGreaterThan()) {
             // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
         }
     }
+
 }
 
 /**
@@ -591,29 +594,34 @@ class AddMemoryToRegister extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // MAR <- EA
-        super.fetchOperand();
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
 
-        // Y <- MBR
-        this.context.setY(this.context.getMemoryBufferRegister());
+        // A <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        // B <- MBR
+        this.context.alu.setB(this.context.getMemoryBufferRegister());
     }
 
     public void execute(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Z <- RX + Y
-        this.context.setZ(this.context.getGeneralRegister(this.registerId) + this.context.getY());
+        // Y <- A + B
+        this.context.alu.add();
     }
 
     public void storeResult(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // RX <- Z
-        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
+        // RX <- Y
+        this.context.setGeneralRegister(this.registerId, this.context.alu.getYAsShort());
     }
 }
 
@@ -634,28 +642,34 @@ class SubtractMemoryFromRegister extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // MAR <- EA
-        super.fetchOperand();
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+        // MAR <- IAR
+        this.context.setMemoryAddressRegister(this.context.getInternalAddressRegister());
         // MBR <- c(MAR)
         this.context.fetchMemoryAddressRegister();
-        // Y <- MBR
-        this.context.setY(this.context.getMemoryBufferRegister());
+
+        // A <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        // B <- MBR
+        this.context.alu.setB(this.context.getMemoryBufferRegister());
     }
 
     public void execute(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Z <- RX - Y
-        this.context.setZ(this.context.getGeneralRegister(this.registerId) - this.context.getY());
+        // Y <- A + B
+        this.context.alu.subtract();
     }
 
     public void storeResult(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // RX <- Z
-        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
+        // RX <- Y
+        this.context.setGeneralRegister(this.registerId, this.context.alu.getYAsShort());
     }
 }
 
@@ -682,28 +696,31 @@ class AddImmediateToRegister extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Y <- Immediate
-        this.context.setY(this.immediate);
+        if (this.immediate == 0) return;
+
+        // A <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        // B <- MBR
+        this.context.alu.setB(this.immediate);
     }
 
     public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        if (this.context.getY() == 0) return;
+        if (this.immediate == 0) return;
 
-        // Z <- RX + Y
-        this.context.setZ(this.context.getGeneralRegister(this.registerId) + this.context.getY());
+        this.context.alu.add();
     }
 
     public void storeResult(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        if (this.context.getY() == 0) return;
+        if (this.immediate == 0) return;
 
         // RX <- Z
-        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
+        this.context.setGeneralRegister(this.registerId, (short)this.context.alu.getYAsShort());
     }
 }
 
@@ -730,28 +747,31 @@ class SubtractImmediateFromRegister extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Y <- Immediate
-        this.context.setY(this.immediate);
+        if (this.immediate == 0) return;
+
+        // A <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        // B <- MBR
+        this.context.alu.setB(this.immediate);
     }
 
     public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        if (this.context.getY() == 0) return;
+        if (this.immediate == 0) return;
 
-        // Z <- RX - Y
-        this.context.setZ(this.context.getGeneralRegister(this.registerId) - this.context.getY());
+        this.context.alu.subtract();
     }
 
     public void storeResult(){
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        if (this.context.getY() == 0) return;
+        if (this.immediate == 0) return;
 
         // RX <- Z
-        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
+        this.context.setGeneralRegister(this.registerId, (short)this.context.alu.getYAsShort());
     }
 }
 

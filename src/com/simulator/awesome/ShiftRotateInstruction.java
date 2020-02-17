@@ -39,8 +39,8 @@ public class ShiftRotateInstruction extends Instruction{
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        // Y <- RX
-        this.context.setY(this.context.getGeneralRegister(this.registerId));
+        this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
+        this.context.alu.setB(this.count);
     }
 
     public void execute(){
@@ -52,7 +52,7 @@ public class ShiftRotateInstruction extends Instruction{
         if (this.didFault) return;
 
         // RX <- Z
-        this.context.setGeneralRegister(this.registerId, (short)this.context.getZ());
+        this.context.setGeneralRegister(this.registerId, this.context.alu.getYAsShort());
     }
 
     public void print(){
@@ -79,7 +79,7 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
     }
 
     // Default fetchOperand
-    // Y <- RX
+    // A <- RX, B <- count
 
     public void execute(){
         // Fault Handling and Validation
@@ -87,23 +87,21 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
 
         if (this.type == ShiftRotateType.ARITHMETIC) {
             if (this.direction == ShiftRotateDirection.LEFT) {
-                this.context.setZ(this.context.getY() << this.count);
+                this.context.alu.arithmeticShiftLeft();
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.setZ(this.context.getY() >> this.count);
+                this.context.alu.arithmeticShiftRight();
             }
         } else if (this.type == ShiftRotateType.LOGICAL) {
             if (this.direction == ShiftRotateDirection.LEFT) {
-                // Note: Logical and arithmetic left shifts operate identically.
-                // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
-                this.context.setZ(this.context.getY() << this.count);
+                this.context.alu.logicalShiftLeft();
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.setZ(Utils.short_unsigned_right_shift(this.context.getY(), this.count ));
+                this.context.alu.logicalShiftRight();
             }
         }
     }
 
     // Default storeResults
-    // RX <- Z
+    // RX <- Y
 }
 
 /**
@@ -122,35 +120,25 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
     // Default fetchOperand
     // Y <- RX
 
+    // Default fetchOperand
+    // A <- RX, B <- count
+
     public void execute(){
-        // Arithmetic rotation - preserve the sign bit, rotating all other bits
         if (this.type == ShiftRotateType.ARITHMETIC) {
-            short SIGN_BIT_MASK = (short)0b1000000000000000;
-            short LEAST_SIGNIFICANT_BITS_MASK = (short)0b0111111111111111;
-            // Save the sign bit
-            short signBit = (short) (SIGN_BIT_MASK & this.context.getY());
-
-            // Discard the left-most bit by shifting left by 1 and right by 1.
-            short leastSignificantBits = this.context.getY();
-            leastSignificantBits <<= 1;
-            leastSignificantBits >>>= 1;
-
             if (this.direction == ShiftRotateDirection.LEFT) {
-                // Sign Bit | (bitmask & (leastSignificantBits shifted left by count | leastSignificantBits shifted right by SIZE-count-1))
-                this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (leastSignificantBits << this.count) | Utils.short_unsigned_right_shift(leastSignificantBits, (Short.SIZE - this.count - 1))));
+                this.context.alu.arithmeticRotateLeft();
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.count) | (leastSignificantBits << (Short.SIZE - this.count - 1)))));
+                this.context.alu.arithmeticRotateRight();
             }
-            // Logical rotation - do not preserve the sign bit, rotating all bits
         } else if (this.type == ShiftRotateType.LOGICAL) {
             if (this.direction == ShiftRotateDirection.LEFT) {
-                this.context.setZ((this.context.getY() << this.count) | Utils.short_unsigned_right_shift(this.context.getY(), (Short.SIZE - this.count)));
+                this.context.alu.logicalRotateLeft();
             } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.setZ(Utils.short_unsigned_right_shift(this.context.getY(), this.count) | (this.context.getY() << (Short.SIZE - this.count)));
+                this.context.alu.logicalRotateRight();
             }
         }
     }
 
     // Default storeResults
-    // RX <- Z
+    // RX <- Y
 }
