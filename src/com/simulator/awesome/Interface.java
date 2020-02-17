@@ -75,6 +75,12 @@ public class Interface {
         this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(11,15)); // only 4 bits
         this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
         this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(11,15)); // only 4 bits
+
+        // If there is a value in the output buffer, print it to the console printer and then clear the buffer
+        if (!this.context.isOutputBufferNull((short) 1)) {
+            this.consolePrinter.append(Simulator.wordToString(this.context.getOutputBuffer((short) 1)));
+            this.context.clearOutputBuffer((short) 1);
+        }
     }
 
     public Interface(Simulator context) {
@@ -288,6 +294,10 @@ public class Interface {
                 // Validate that the text entered contains ASCII values
                 if(consoleKeyboard.getText().matches("\\A\\p{ASCII}*\\z")){
                     // TODO: read the input using the IN function
+                    // Can we only read one character at a time?
+                    // How do we pause execution while waiting for user input?
+                    // We probably need better input validation than this
+                    // context.setInputBuffer((short) 1, Simulator.stringToWord(consoleKeyboard.getText()));
                 } else {
                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
                 }

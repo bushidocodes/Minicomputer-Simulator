@@ -60,6 +60,10 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
+    // IO buffers handle the connections between IO devices and the computer
+    private Short outputBuffer[] = new Short[32];
+    private Short inputBuffer[] = new Short[32];
+
     /**
      * ALU Registers
      */
@@ -235,6 +239,38 @@ public class Simulator {
 
     public short getWordCount() {
         return (short) (this.wordCount);
+    }
+
+    public void setOutputBuffer(short deviceId, short outputBuffer) {
+        this.outputBuffer[deviceId] = outputBuffer;
+    }
+
+    public short getOutputBuffer(short deviceId){
+        return outputBuffer[deviceId];
+    }
+
+    public void clearOutputBuffer(short deviceId){
+        outputBuffer[deviceId] = null;
+    }
+
+    public boolean isOutputBufferNull(short deviceId){
+        return outputBuffer[deviceId] == null ? true : false;
+    }
+
+    public void setInputBuffer(short deviceId, short inputBuffer) {
+        this.inputBuffer[deviceId] = inputBuffer;
+    }
+
+    public short getInputBuffer(short deviceId){
+        return inputBuffer[deviceId];
+    }
+
+    public void clearInputBuffer(short deviceId){
+        inputBuffer[deviceId] = null;
+    }
+
+    public boolean isInputBufferNull(short deviceId){
+        return inputBuffer[deviceId] == null ? true : false;
     }
 
     /**
