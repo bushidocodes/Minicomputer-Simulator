@@ -50,6 +50,9 @@ public class Interface {
     private JLabel X3Label;
     private JLabel selectedFileLabel;
     private JSpinner programMemoryLocSpinner;
+    private JButton returnButton;
+    private JTextArea consolePrinter;
+    private JFormattedTextField consoleKeyboard;
     private Simulator context;
     private File selectedFile;
 
@@ -66,12 +69,12 @@ public class Interface {
         this.X3TextField.setText(Simulator.wordToString(this.context.getIndexRegister((short)3)));
 
         // Refresh other registers and fields: PC, MAR, MBR, MFR (not implemented), IR, CC (not implemented)
-        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()));
-        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()));
+        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()).substring(3,15)); //only 12 bits
+        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()).substring(3,15)); //only 12 bits
         this.MBRTextField.setText(Simulator.wordToString(this.context.getMemoryBufferRegister()));
-        //this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()));
+        this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(11,15)); // only 4 bits
         this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
-        //this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode())));
+        this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(11,15)); // only 4 bits
     }
 
     public Interface(Simulator context) {
@@ -277,6 +280,17 @@ public class Interface {
                     selectedFile = chooser.getSelectedFile();
                 }
                 refresh();
+            }
+        });
+        returnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Validate that the text entered contains ASCII values
+                if(consoleKeyboard.getText().matches("\\A\\p{ASCII}*\\z")){
+                    // TODO: read the input using the IN function
+                } else {
+                    JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
+                }
             }
         });
     }

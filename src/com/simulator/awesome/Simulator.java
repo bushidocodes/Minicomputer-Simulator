@@ -221,6 +221,10 @@ public class Simulator {
         this.pc = (short) (unmaskedPC & Simulator.PC_MASK);
     }
 
+    public byte getConditionCode() { return (byte) (this.cc); };
+
+    public byte getMachineFaultRegister() { return (byte) (this.mfr); };
+
     public short getInstructionRegister() {
         return (short) (this.ir);
     }
