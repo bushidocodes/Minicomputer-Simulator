@@ -291,8 +291,8 @@ public class Interface {
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Validate that the text entered contains ASCII values
-                if(consoleKeyboard.getText().matches("\\A\\p{ASCII}*\\z")){
+                // Validate that the text entered contains one or more ASCII value
+                if(consoleKeyboard.getText().matches("[\\x00-\\x7F]+")){
                     // TODO: read the input using the IN function
                     // Can we only read one character at a time?
                     // How do we pause execution while waiting for user input?
