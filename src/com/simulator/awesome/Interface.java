@@ -78,8 +78,7 @@ public class Interface {
 
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
-            this.consolePrinter.append(Simulator.wordToString(this.context.getOutputBuffer((short) 1)));
-            this.context.clearOutputBuffer((short) 1);
+                this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
         }
     }
 

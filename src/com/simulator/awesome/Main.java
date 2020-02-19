@@ -19,11 +19,16 @@ class Main {
 
             if (isInteractive) {
                 myComputer.attachConsole();
+                myComputer.initializeIOBuffers();
+                Interface myInterface = new Interface(myComputer);
                 JFrame frame = new JFrame("CSCI 6461 Computer Simulator - Yellow Team");
-                frame.setContentPane(new Interface(myComputer).rootPanel);
+                frame.setContentPane(myInterface.rootPanel);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.pack();
                 frame.setVisible(true);
+                while(isInteractive){
+                    myInterface.refresh();
+                }
             } else {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();

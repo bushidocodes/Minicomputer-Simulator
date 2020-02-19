@@ -69,7 +69,7 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
         if (this.didFault) return;
 
         // c(Register) <- inputBuffer <- Device
-        this.context.setGeneralRegister(this.registerId,this.context.getInputBuffer(this.deviceId));
+        this.context.setGeneralRegister(this.registerId,this.context.getFirstWordFromInputBuffer(this.deviceId));
     }
 
     public void storeResult(){
@@ -94,7 +94,7 @@ class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
         if (this.didFault) return;
 
         // Device <- outputBuffer <- c(Register)
-        this.context.setOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
+        this.context.addWordToOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
     }
 
     public void storeResult(){

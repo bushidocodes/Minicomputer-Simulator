@@ -8,3 +8,4 @@ STX 1,0,19; store the value in index register 1 to memory location 19 -- stores 
 LDA 2,0,19; load the address 19 into register 2, no indexing -- loads '19' into general register 2
 STX 1,0,17; store the value of index register 2 into memory location 17 -- stores '32' in loc 17
 OUT 1,1; print the contents of R1 to the console printer
+OUT 1,1; print the contents of R1 to the console printer

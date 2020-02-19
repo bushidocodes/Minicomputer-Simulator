@@ -1,5 +1,6 @@
 package com.simulator.awesome;
 
+import java.util.concurrent.LinkedBlockingQueue;
 public class Simulator {
 
     // The number of 16-bit words we have in memory
@@ -61,8 +62,8 @@ public class Simulator {
     private short x1, x2, x3;
 
     // IO buffers handle the connections between IO devices and the computer
-    private Short outputBuffer[] = new Short[32];
-    private Short inputBuffer[] = new Short[32];
+    private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
+    private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
 
     /**
      * ALU Registers
@@ -241,36 +242,28 @@ public class Simulator {
         return (short) (this.wordCount);
     }
 
-    public void setOutputBuffer(short deviceId, short outputBuffer) {
-        this.outputBuffer[deviceId] = outputBuffer;
+    public void addWordToOutputBuffer(short deviceId, short word) {
+        this.outputBuffer[deviceId].add(word);
     }
 
-    public short getOutputBuffer(short deviceId){
-        return outputBuffer[deviceId];
-    }
-
-    public void clearOutputBuffer(short deviceId){
-        outputBuffer[deviceId] = null;
+    public short getFirstWordFromOutputBuffer(short deviceId){
+            return (short) outputBuffer[deviceId].remove();
     }
 
     public boolean isOutputBufferNull(short deviceId){
-        return outputBuffer[deviceId] == null ? true : false;
+        return outputBuffer[deviceId].peek() == null ? true : false;
     }
 
-    public void setInputBuffer(short deviceId, short inputBuffer) {
-        this.inputBuffer[deviceId] = inputBuffer;
+    public void addWordToInputBuffer(short deviceId, short inputBuffer) {
+        this.inputBuffer[deviceId].add(inputBuffer);
     }
 
-    public short getInputBuffer(short deviceId){
-        return inputBuffer[deviceId];
-    }
-
-    public void clearInputBuffer(short deviceId){
-        inputBuffer[deviceId] = null;
+    public short getFirstWordFromInputBuffer(short deviceId){
+        return (short) inputBuffer[deviceId].remove();
     }
 
     public boolean isInputBufferNull(short deviceId){
-        return inputBuffer[deviceId] == null ? true : false;
+        return inputBuffer[deviceId].peek() == null ? true : false;
     }
 
     /**
@@ -768,6 +761,14 @@ public class Simulator {
     // If program counter was not specified, default to 6.
     public void powerOn(){
         powerOn((short) 6);
+    }
+
+    public void initializeIOBuffers(){
+        // Initialize LinkedBlockingQueues for IO buffers
+        for(int i=0; i<outputBuffer.length; i++){
+            outputBuffer[i] = new LinkedBlockingQueue();
+            inputBuffer[i] = new LinkedBlockingQueue();
+        }
     }
 
     public void startExecutionLoop(){
