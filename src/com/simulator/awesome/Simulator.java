@@ -1,5 +1,6 @@
 package com.simulator.awesome;
 
+import java.util.concurrent.LinkedBlockingQueue;
 public class Simulator {
 
     // The number of 16-bit words we have in memory
@@ -59,6 +60,10 @@ public class Simulator {
 
     // The three index registers
     private short x1, x2, x3;
+
+    // IO buffers handle the connections between IO devices and the computer
+    private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
+    private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
 
     /**
      * ALU Registers
@@ -221,6 +226,10 @@ public class Simulator {
         this.pc = (short) (unmaskedPC & Simulator.PC_MASK);
     }
 
+    public byte getConditionCode() { return (byte) (this.cc); };
+
+    public byte getMachineFaultRegister() { return (byte) (this.mfr); };
+
     public short getInstructionRegister() {
         return (short) (this.ir);
     }
@@ -231,6 +240,30 @@ public class Simulator {
 
     public short getWordCount() {
         return (short) (this.wordCount);
+    }
+
+    public void addWordToOutputBuffer(short deviceId, short word) {
+        this.outputBuffer[deviceId].add(word);
+    }
+
+    public short getFirstWordFromOutputBuffer(short deviceId){
+            return (short) outputBuffer[deviceId].remove();
+    }
+
+    public boolean isOutputBufferNull(short deviceId){
+        return outputBuffer[deviceId].peek() == null ? true : false;
+    }
+
+    public void addWordToInputBuffer(short deviceId, short inputBuffer) {
+        this.inputBuffer[deviceId].add(inputBuffer);
+    }
+
+    public short getFirstWordFromInputBuffer(short deviceId){
+        return (short) inputBuffer[deviceId].remove();
+    }
+
+    public boolean isInputBufferNull(short deviceId){
+        return inputBuffer[deviceId].peek() == null ? true : false;
     }
 
     /**
@@ -728,6 +761,14 @@ public class Simulator {
     // If program counter was not specified, default to 6.
     public void powerOn(){
         powerOn((short) 6);
+    }
+
+    public void initializeIOBuffers(){
+        // Initialize LinkedBlockingQueues for IO buffers
+        for(int i=0; i<outputBuffer.length; i++){
+            outputBuffer[i] = new LinkedBlockingQueue();
+            inputBuffer[i] = new LinkedBlockingQueue();
+        }
     }
 
     public void startExecutionLoop(){

@@ -50,6 +50,9 @@ public class Interface {
     private JLabel X3Label;
     private JLabel selectedFileLabel;
     private JSpinner programMemoryLocSpinner;
+    private JButton returnButton;
+    private JTextArea consolePrinter;
+    private JFormattedTextField consoleKeyboard;
     private Simulator context;
     private File selectedFile;
 
@@ -66,12 +69,20 @@ public class Interface {
         this.X3TextField.setText(Simulator.wordToString(this.context.getIndexRegister((short)3)));
 
         // Refresh other registers and fields: PC, MAR, MBR, MFR (not implemented), IR, CC (not implemented)
-        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()));
-        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()));
+        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()).substring(3,15)); //only 12 bits
+        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()).substring(3,15)); //only 12 bits
         this.MBRTextField.setText(Simulator.wordToString(this.context.getMemoryBufferRegister()));
-        //this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()));
+        this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(11,15)); // only 4 bits
         this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
-        //this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode())));
+        this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(11,15)); // only 4 bits
+        pollOutputBuffer();
+    }
+
+    public void pollOutputBuffer(){
+        // If there is a value in the output buffer, print it to the console printer and then clear the buffer
+        if (!this.context.isOutputBufferNull((short) 1)) {
+            this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+        }
     }
 
     public Interface(Simulator context) {
@@ -277,6 +288,21 @@ public class Interface {
                     selectedFile = chooser.getSelectedFile();
                 }
                 refresh();
+            }
+        });
+        returnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Validate that the text entered contains one or more ASCII value
+                if(consoleKeyboard.getText().matches("[\\x00-\\x7F]+")){
+                    // TODO: read the input using the IN function
+                    // Can we only read one character at a time?
+                    // How do we pause execution while waiting for user input?
+                    // We probably need better input validation than this
+                    // context.setInputBuffer((short) 1, Simulator.stringToWord(consoleKeyboard.getText()));
+                } else {
+                    JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
+                }
             }
         });
     }

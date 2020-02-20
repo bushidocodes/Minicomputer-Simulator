@@ -9,7 +9,7 @@ public class InputOutputInstruction extends Instruction {
     InputOutputInstruction(short word, Simulator context) {
         super(word, context);
         short registerMask           = (short) 0b0000001100000000;
-        short deviceMask             = (short) 0b0000000000111111;
+        short deviceMask             = (short) 0b0000000000011111;
 
         short deviceOffset           = 0;
         short registerOffset         = 8;
@@ -30,6 +30,20 @@ public class InputOutputInstruction extends Instruction {
         // NOOP
     }
 
+    public void validateInputDevice(short devid){
+        // Input from console printer triggers a fault
+        if (devid == 1) {
+            this.didFault = true;
+        }
+    }
+
+    public void validateOutputDevice(short devid){
+        // Output to console keyboard or card reader triggers a fault
+        if (devid == 0 || devid == 2) {
+            this.didFault = true;
+        }
+    }
+
     public void print(){
         System.out.println("OpCode: " + Short.toUnsignedInt(this.opCode));
         System.out.println("Register ID: " + this.registerId);
@@ -47,9 +61,15 @@ public class InputOutputInstruction extends Instruction {
 class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
     public InputCharacterToRegisterFromDevice(short word, Simulator context) {
         super(word, context);
+        validateGeneralRegisterIndex(this.registerId);
+        validateInputDevice(this.deviceId);
     }
     public void execute(){
-        System.out.println("IN");
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // c(Register) <- inputBuffer <- Device
+        this.context.setGeneralRegister(this.registerId,this.context.getFirstWordFromInputBuffer(this.deviceId));
     }
 
     public void storeResult(){
@@ -66,9 +86,15 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
 class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
     public OutputCharacterToDeviceFromRegister(short word, Simulator context) {
         super(word, context);
+        validateGeneralRegisterIndex(this.registerId);
+        validateOutputDevice(this.deviceId);
     }
     public void execute(){
-        System.out.println("OUT");
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // Device <- outputBuffer <- c(Register)
+        this.context.addWordToOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
     }
 
     public void storeResult(){
