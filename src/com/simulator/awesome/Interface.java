@@ -53,6 +53,8 @@ public class Interface {
     private JButton returnButton;
     private JTextArea consolePrinter;
     private JFormattedTextField consoleKeyboard;
+    private JTabbedPane tabbedPane1;
+    private JTextArea fieldEngineerConsole;
     private Simulator context;
     private File selectedFile;
 
@@ -83,9 +85,17 @@ public class Interface {
         if (!this.context.isOutputBufferNull((short) 1)) {
             this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
         }
+
+        // If there a value in the engineer's console buffer, print it to the engineer's console and then clear the buffer
+        if (!this.context.isEngineersConsoleBufferNull()) {
+            this.fieldEngineerConsole.append(context.getFirstLineFromEngineersOutputBuffer());
+        }
+
+        // If the computer is ready for input, enable the console keyboard
         if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
             consoleKeyboard.setEnabled(true);
             returnButton.setEnabled(true);
+            this.context.engineerConsolePrintLn("Waiting for user input.");
         }
     }
 

@@ -1,5 +1,7 @@
 package com.simulator.awesome;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
 public class Simulator {
 
@@ -64,6 +66,7 @@ public class Simulator {
     // IO buffers handle the connections between IO devices and the computer
     private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
     private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
+    private LinkedBlockingQueue engineerConsoleOutputBuffer = new LinkedBlockingQueue();
 
     // State for when computer is ready to accept input
     private boolean readyForInput = false;
@@ -275,6 +278,21 @@ public class Simulator {
 
     public void setReadyForInput(boolean state){
         this.readyForInput = state;
+    }
+
+    public boolean isEngineersConsoleBufferNull(){
+        return engineerConsoleOutputBuffer.peek() == null ? true : false;
+    }
+
+    // Prints a line of text to the engineer's console
+    public void engineerConsolePrintLn(String outputString){
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+        Date timestamp = new Date();
+        engineerConsoleOutputBuffer.add("["+formatter.format(timestamp)+"]: "+outputString+"\n");
+    }
+
+    public String getFirstLineFromEngineersOutputBuffer(){
+        return String.valueOf(engineerConsoleOutputBuffer.remove());
     }
 
     /**
