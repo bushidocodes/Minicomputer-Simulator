@@ -75,10 +75,13 @@ public class Interface {
         this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(11,15)); // only 4 bits
         this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
         this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(11,15)); // only 4 bits
+        pollOutputBuffer();
+    }
 
+    public void pollOutputBuffer(){
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
-                this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+            this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
         }
     }
 
