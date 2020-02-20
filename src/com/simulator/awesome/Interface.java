@@ -75,13 +75,17 @@ public class Interface {
         this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(11,15)); // only 4 bits
         this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
         this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(11,15)); // only 4 bits
-        pollOutputBuffer();
+        pollIOStatus();
     }
 
-    public void pollOutputBuffer(){
+    public void pollIOStatus(){
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
             this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+        }
+        if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
+            consoleKeyboard.setEnabled(true);
+            returnButton.setEnabled(true);
         }
     }
 
@@ -295,11 +299,13 @@ public class Interface {
             public void actionPerformed(ActionEvent e) {
                 // Validate that the text entered contains one or more ASCII value
                 if(consoleKeyboard.getText().matches("[\\x00-\\x7F]+")){
-                    // TODO: read the input using the IN function
-                    // Can we only read one character at a time?
-                    // How do we pause execution while waiting for user input?
-                    // We probably need better input validation than this
-                    // context.setInputBuffer((short) 1, Simulator.stringToWord(consoleKeyboard.getText()));
+                    // Get the entered text and store it in the input buffer
+                    context.addWordToInputBuffer((short) 0, context.stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
+                    // Disable the console keyboard
+                    consoleKeyboard.setEnabled(false);
+                    returnButton.setEnabled(false);
+                    // Continue execution
+                    context.startExecutionLoop();
                 } else {
                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
                 }

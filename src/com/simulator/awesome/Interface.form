@@ -656,13 +656,14 @@
           <grid row="1" column="1" row-span="6" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <border type="none" title="Console"/>
+        <border type="none" title="Operator's Console"/>
         <children>
           <component id="e9c25" class="javax.swing.JButton" binding="returnButton">
             <constraints>
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <enabled value="false"/>
               <text value="Return"/>
             </properties>
           </component>
@@ -690,6 +691,7 @@
               </grid>
             </constraints>
             <properties>
+              <enabled value="false"/>
               <text value=""/>
             </properties>
           </component>

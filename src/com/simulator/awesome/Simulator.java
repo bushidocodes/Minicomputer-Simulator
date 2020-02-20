@@ -65,6 +65,9 @@ public class Simulator {
     private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
     private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
 
+    // State for when computer is ready to accept input
+    private boolean readyForInput = false;
+
     /**
      * ALU Registers
      */
@@ -264,6 +267,14 @@ public class Simulator {
 
     public boolean isInputBufferNull(short deviceId){
         return inputBuffer[deviceId].peek() == null ? true : false;
+    }
+
+    public boolean getReadyForInput(){
+        return this.readyForInput;
+    }
+
+    public void setReadyForInput(boolean state){
+        this.readyForInput = state;
     }
 
     /**
