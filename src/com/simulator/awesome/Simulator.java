@@ -167,6 +167,12 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+
+        // Clear IO buffers and states
+        setReadyForInput(false);
+        emptyInputBuffer();
+        emptyOutputBuffer();
+        emptyEngineersConsoleBuffer();
     }
 
     public void setDidBranch() {
@@ -177,17 +183,17 @@ public class Simulator {
         if (address < 6) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            System.out.println("Illegally accessing protected address " + address + "! Halting");
+            engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
 
             this.setIsRunning(false);
             if (!this.isInteractive) {
-                System.out.println("Not Interactive");
+                engineerConsolePrintLn("Not Interactive");
                 System.exit(1);
             }
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
             // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            System.out.println("Illegally accessing address above highest memory address. Halting!");
+            engineerConsolePrintLn("Illegally accessing address above highest memory address. Halting!");
             this.setIsRunning(false);
             if (!this.isInteractive) {
                 System.exit(1);
@@ -201,7 +207,7 @@ public class Simulator {
         if (address < 6) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            System.out.println("setWord - Illegally accessing protecting address! Halting");
+            engineerConsolePrintLn("setWord - Illegally accessing protecting address! Halting");
             this.setIsRunning(false);
             if (!this.isInteractive) {
                 System.exit(1);
@@ -209,7 +215,7 @@ public class Simulator {
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
             // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            System.out.println("Illegally accessing address above highest memory address. Halting!");
+            engineerConsolePrintLn("Illegally accessing address above highest memory address. Halting!");
             this.setIsRunning(false);
             if (!this.isInteractive) {
                 System.exit(1);
@@ -260,6 +266,12 @@ public class Simulator {
         return outputBuffer[deviceId].peek() == null ? true : false;
     }
 
+    public void emptyOutputBuffer(){
+        for (int i=0; i<outputBuffer.length; i++) {
+            outputBuffer[i].clear();
+        }
+    }
+
     public void addWordToInputBuffer(short deviceId, short inputBuffer) {
         this.inputBuffer[deviceId].add(inputBuffer);
     }
@@ -272,6 +284,12 @@ public class Simulator {
         return inputBuffer[deviceId].peek() == null ? true : false;
     }
 
+    public void emptyInputBuffer(){
+        for (int i=0; i<inputBuffer.length; i++) {
+            inputBuffer[i].clear();
+        }
+    }
+
     public boolean getReadyForInput(){
         return this.readyForInput;
     }
@@ -282,6 +300,10 @@ public class Simulator {
 
     public boolean isEngineersConsoleBufferNull(){
         return engineerConsoleOutputBuffer.peek() == null ? true : false;
+    }
+
+    public void emptyEngineersConsoleBuffer(){
+        engineerConsoleOutputBuffer.clear();
     }
 
     // Prints a line of text to the engineer's console
@@ -556,39 +578,40 @@ public class Simulator {
     }
 
     public void dumpRegistersToJavaConsole(){
-        System.out.println("=======================================");
-        System.out.println("Registers");
-        System.out.println("=======================================");
-        System.out.println("Program Counter: " + Simulator.wordToString(this.pc));
-        System.out.println("Condition Code: " + Simulator.wordToString(this.cc));
-        System.out.println("Instruction Register: " + Simulator.wordToString(this.ir));
-        System.out.println("Internal Address Register: " + Simulator.wordToString(this.iar));
-        System.out.println("Memory Address Register: " + Simulator.wordToString(this.mar));
-        System.out.println("Memory Buffer Register: " + Simulator.wordToString(this.mbr));
-        System.out.println("Memory Fault Register: " + Simulator.wordToString(this.mfr));
-        System.out.println("General Register 0: " + Simulator.wordToString(this.r0));
-        System.out.println("General Register 1: " + Simulator.wordToString(this.r1));
-        System.out.println("General Register 2: " + Simulator.wordToString(this.r2));
-        System.out.println("General Register 3: " + Simulator.wordToString(this.r3));
-        System.out.println("Index Register 1: " + Simulator.wordToString(this.x1));
-        System.out.println("Index Register 2: " + Simulator.wordToString(this.x2));
-        System.out.println("Index Register 3: " + Simulator.wordToString(this.x3));
-        System.out.println("Current OPCODE: " + Simulator.wordToString(this.currentInstruction.opCode));
-        System.out.println("=======================================");
+        engineerConsolePrintLn("===============================");
+        engineerConsolePrintLn("Registers");
+        engineerConsolePrintLn("===============================");
+        engineerConsolePrintLn("Program Counter: " + Simulator.wordToString(this.pc));
+        engineerConsolePrintLn("Condition Code: " + Simulator.wordToString(this.cc));
+        engineerConsolePrintLn("Instruction Register: " + Simulator.wordToString(this.ir));
+        engineerConsolePrintLn("Internal Address Register: " + Simulator.wordToString(this.iar));
+        engineerConsolePrintLn("Memory Address Register: " + Simulator.wordToString(this.mar));
+        engineerConsolePrintLn("Memory Buffer Register: " + Simulator.wordToString(this.mbr));
+        engineerConsolePrintLn("Memory Fault Register: " + Simulator.wordToString(this.mfr));
+        engineerConsolePrintLn("General Register 0: " + Simulator.wordToString(this.r0));
+        engineerConsolePrintLn("General Register 1: " + Simulator.wordToString(this.r1));
+        engineerConsolePrintLn("General Register 2: " + Simulator.wordToString(this.r2));
+        engineerConsolePrintLn("General Register 3: " + Simulator.wordToString(this.r3));
+        engineerConsolePrintLn("Index Register 1: " + Simulator.wordToString(this.x1));
+        engineerConsolePrintLn("Index Register 2: " + Simulator.wordToString(this.x2));
+        engineerConsolePrintLn("Index Register 3: " + Simulator.wordToString(this.x3));
+        engineerConsolePrintLn("Current OPCODE: " + Simulator.wordToString(this.currentInstruction.opCode));
+        engineerConsolePrintLn("===============================");
     }
 
     public void dumpMemoryToJavaConsole(){
-        System.out.println("=======================================");
-        System.out.println("Memory Dump (Excluding zeroed out words");
-        System.out.println("=======================================");
+        engineerConsolePrintLn("===============================");
+        engineerConsolePrintLn("Memory Dump (Excluding zeroed out words");
+        engineerConsolePrintLn("===============================");
         for (int i=0; i<this.wordCount; i++) {
             try{
-                if (memory[i] != 0) System.out.printf("Address: %4d: %s\n",  i, Simulator.wordToString(memory[i]));
+                //if (memory[i] != 0) System.out.printf("Address: %4d: %s\n",  i, Simulator.wordToString(memory[i]));
+                if (memory[i] != 0) engineerConsolePrintLn(String.format("Address: %4d: %s",  i, Simulator.wordToString(memory[i])));
             } catch(NullPointerException e) {
                 //null value in memory-- carry on
             }
         }
-        System.out.println("=======================================");
+        engineerConsolePrintLn("===============================");
     }
 
     /** The execution step, 1-5
@@ -639,7 +662,7 @@ public class Simulator {
     // Execution Step 1
     // Obtain Instruction from Program Storage
     private void executionInstructionFetch() {
-        System.out.println("PC: " + this.pc);
+        engineerConsolePrintLn("PC: " + this.pc);
         // MAR <- PC
         if (this.pc < 0 || this.pc >= this.wordCount){
             // TODO: Refactor as machine fault

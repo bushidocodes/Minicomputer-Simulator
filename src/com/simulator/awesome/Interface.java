@@ -84,18 +84,37 @@ public class Interface {
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
             this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+            // Automatically scroll the console to the bottom
+            this.consolePrinter.setCaretPosition(consolePrinter.getDocument().getLength());
         }
 
         // If there a value in the engineer's console buffer, print it to the engineer's console and then clear the buffer
         if (!this.context.isEngineersConsoleBufferNull()) {
             this.fieldEngineerConsole.append(context.getFirstLineFromEngineersOutputBuffer());
+            // Automatically scroll the console to the bottom
+            this.fieldEngineerConsole.setCaretPosition(fieldEngineerConsole.getDocument().getLength());
         }
 
         // If the computer is ready for input, enable the console keyboard
         if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
             consoleKeyboard.setEnabled(true);
+            consoleKeyboard.setEditable(true);
             returnButton.setEnabled(true);
             this.context.engineerConsolePrintLn("Waiting for user input.");
+        }
+
+        // If the computer is not running or waiting for input, disable the HALT button
+        if(!this.context.isRunning() && !this.context.getReadyForInput()){
+            haltButton.setEnabled(false);
+        }
+
+        // If the computer is running or is waiting for input, disable the run button
+        if(this.context.isRunning() || this.context.getReadyForInput()){
+            runButton.setEnabled(false);
+            runButton.setText("RUNNING");
+        } else {
+            runButton.setEnabled(true);
+            runButton.setText("RUN");
         }
     }
 
@@ -118,6 +137,8 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 context.startExecutionLoop();
+                // Enable the halt button
+                haltButton.setEnabled(true);
                 refresh();
             }
         });
@@ -126,7 +147,7 @@ public class Interface {
         haltButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (context.isRunning()){
+                if (context.isRunning() || context.getReadyForInput()){
                     context.pauseExecutionLoop();
                     refresh();
                 } else {
@@ -197,10 +218,15 @@ public class Interface {
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Pause execution
                 if (context.isRunning()){
                     context.pauseExecutionLoop();
                 }
+                // Reset the computer
                 context.reset();
+                // Clear the console printers
+                consolePrinter.setText("");
+                fieldEngineerConsole.setText("");
                 refresh();
             }
         });
@@ -311,8 +337,12 @@ public class Interface {
                 if(consoleKeyboard.getText().matches("[\\x00-\\x7F]+")){
                     // Get the entered text and store it in the input buffer
                     context.addWordToInputBuffer((short) 0, context.stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
-                    // Disable the console keyboard
+                    // Change input waiting state
+                    context.setReadyForInput(false);
+                    // Clear the console keyboard and disable it
+                    consoleKeyboard.setText("");
                     consoleKeyboard.setEnabled(false);
+                    consoleKeyboard.setEditable(false);
                     returnButton.setEnabled(false);
                     // Continue execution
                     context.startExecutionLoop();
