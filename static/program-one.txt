@@ -1,0 +1,9 @@
+AIR 2,20; add immediate 20 to register 2 for loop variable.
+AIR 3,31; add immediate 31 to register 3 for memory location variable.
+STR 3,0,20; store 31 from R3 into memory loc 20
+IN 1,0; LOOP store the input from console keyboard in R1
+STR 1,0,20,1; store the input value in register 1 into memory location variable (mem loc 20 indirect)
+LDR 3,0,20; load memory location variable into R3
+AIR 3,1; increment memory location variable by 1
+STR 3,0,20; store memory location variable from R3 back into memory loc 20
+SOB 2,0,7; END LOOP subtract 1 from R2. if c(R2) > 0, set PC to address 9 (beginning of loop)
