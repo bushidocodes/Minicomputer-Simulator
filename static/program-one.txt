@@ -1,9 +1,58 @@
-AIR 2,20; add immediate 20 to register 2 for loop variable.
-AIR 3,31; add immediate 31 to register 3 for memory location variable.
-STR 3,0,20; store 31 from R3 into memory loc 20
-IN 1,0; LOOP store the input from console keyboard in R1
-STR 1,0,20,1; store the input value in register 1 into memory location variable (mem loc 20 indirect)
-LDR 3,0,20; load memory location variable into R3
-AIR 3,1; increment memory location variable by 1
-STR 3,0,20; store memory location variable from R3 back into memory loc 20
-SOB 2,0,7; END LOOP subtract 1 from R2. if c(R2) > 0, set PC to address 9 (beginning of loop)
+AIR 2,20; add immediate 20 to register 2 for loop COUNTER variable.
+AIR 3,31; add immediate 31 to register 3 for DATALOC variable.
+AIR 1,32; add immediate 32 to R1 to be loaded into X1
+AIR 1,32; add immediate 32 to R1 (total 64) to be loaded into X1
+AIR 1,32; add immediate 32 to R1 (total 96) to be loaded into X1
+AIR 1,32; add immediate 32 to R1 (total 128) to be loaded into X1
+STR 1,0,27; store value 128 from R1 into mem loc 27
+LDX 1,27; load value 128 from mem loc 27 into X1
+AIR 1,31; add immediate 31 to R1 to be loaded into X2
+STR 1,0,27; store immediate 31 from R1 into mem loc 27
+LDX 2,27; load immediate 31 from mem loc 27 into X2
+AIR 1,32; add immediate 32 to R1 for calculating the maximum possible distance (aka initialize the closest distance variable)
+SRC 1,10,1,0; shift R1 LEFT by 10 bits to get 1000 0000 0000 0000
+AIR 0,32; add immediate 32 to R0 for calculating maximum possible distance
+SRC 0,10,1,0; shift R0 LEFT by 10 bits to get 1000 0000 0000 0000
+NOT 0; logical NOT of R0 to get 0111 1111 1111 1111
+ORR 1,0; logical OR of R1,R0 to get 1111 1111 1111 1111, maximum possible value
+STR 1,1,1; store closest distance variable from R1 into memory loc X1+1
+STR 3,1,2; store DATALOC from R3 into memory loc X1+2
+IN 1,0; LOOP_1: store the input from console keyboard in R1
+OUT 1,1; print the value in R1 to the console printer
+STR 1,1,2,1; store the input value in register 1 into mem(DATALOC) indirect
+LDR 3,1,2; load DATALOC variable into R3
+AIR 3,1; increment DATALOC variable by 1
+STR 3,1,2; store DATALOC variable from R3 back into memory loc X1+2
+SOB 2,0,26; END LOOP_1: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 26 (beginning of loop_1)
+IN 0,0; read one additional number USER_NUM from the user into R0
+STR 0,1,3; store USER_NUM in memory loc X1+3
+AIR 2,20; add immediate 20 to register 2 to reset loop COUNTER variable.
+SIR 3,20; subtract immediate 20 from register 3 to set DATALOC variable back to 31
+STR 3,1,2; store DATALOC from R3 into memory loc X1+2
+LDR 0,1,3; LOOP_2: load R0 with USER_NUM (which is in loc X1+3)
+SMR 0,1,2,1; subtract the mem(DATALOC) from R0(USER_NUM)
+JGE 0,2,9; if the diff that remains in R0 is >= 0 then jump to LT (address 40 -- X2+9)
+LDR 1,1,2,1; GT: else the diff is < 0. NUM_DATALOC is greater than USER_NUM so DISTANCE = NUM_DATALOC - USER_NUM. load NUM_DATALOC into R1
+SMR 1,1,3; subtract USER_NUM from R1(NUM_DATALOC) -- distance between numbers is in R1 now
+STR 1,1,4; store the distance in memory location X1+4
+JMA 2,20; jump to CHECKDISTANCE (address 51)
+JZ 0,2,19; LT: if the value in R0 is zero, jump to ZERO (address 50)
+LDR 1,1,3; else the diff is < 0. NUM_DATALOC is less than USER_NUM so DISTANCE = USER_NUM - NUM_DATALOC. load USER_NUM (memloc X1+3) into R1
+SMR 1,0,30,1; subtract R1(USER_NUM) from NUM_DATALOC -- distance between numbers is in R1 now
+STR 1,1,4; store the distance in memory location X1+4
+JMA 2,20; jump to CHECKDISTANCE (address 51)
+STR 1,1,4; ZERO: USER_NUM is exactly equal to NUM_DATALOC. Store the distance (0) in memory location X1+4.
+LDR 0,1,1; CHECKDISTANCE: load the closest distance variable (mem loc X1+1) into R0
+SMR 0,1,4; subtract the current number distance (memloc X1+4) from the closest distance number (R0)
+JGE 0,2,26; if the diff that remains in R0 is >= 0 then jump to LOOP2COUNTERS (address 57)
+STR 0,1,1; otherwise, the current number distance is less than closest distance, therefore curr number is closer so replace it in mem loc X1+1
+LDR 1,1,2,1; load the current number (X1+2 indirect) in R1
+STR 1,1,1; store the number from R1 (closest number) into mem loc X1+1
+LDR 3,1,2; LOOP2COUNTERS: load DATALOC (mem loc X1+2) variable into R3
+AIR 3,1; increment DATALOC variable by 1
+STR 3,1,2; store DATALOC variable from R3 back into memory loc X1+2
+SOB 2,2,7; END LOOP_2: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 38 (beginning of loop_2)
+LDR 1,1,3; load the user number (mem loc X1+3) into register 1
+OUT 1,1; print user number
+LDR 1,1,1; load the closest number (mem loc X1+1) into register 1
+OUT 1,1; print user number
