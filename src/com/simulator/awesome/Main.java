@@ -27,7 +27,7 @@ class Main {
                 frame.pack();
                 frame.setVisible(true);
                 while(isInteractive){
-                    myInterface.pollOutputBuffer();
+                    myInterface.pollIOStatus();
                 }
             } else {
                 // Not yet implemented, but saving this logic to run the simulator "headless"

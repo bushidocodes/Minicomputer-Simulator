@@ -64,6 +64,12 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
         validateGeneralRegisterIndex(this.registerId);
         validateInputDevice(this.deviceId);
     }
+    public void fetchOperand(){
+        // Pause the execution loop and wait for user input
+        this.context.setReadyForInput(true);
+        this.context.pauseExecutionLoop();
+    }
+
     public void execute(){
         // Fault Handling and Validation
         if (this.didFault) return;
