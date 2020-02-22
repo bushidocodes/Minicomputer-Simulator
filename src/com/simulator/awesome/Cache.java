@@ -5,8 +5,10 @@ import java.util.ArrayList;
 public class Cache {
     private ArrayList<CacheLine> contents;
     static final short capacity = 16;
+    private Simulator context;
 
-    Cache(){
+    Cache(Simulator context){
+        this.context = context;
         this.contents = new ArrayList<>();
     }
 
@@ -43,15 +45,16 @@ public class Cache {
     }
 
     public void dump(){
-        System.out.println("=======================================");
-        System.out.println("Cache");
-        System.out.println("=======================================");
+        this.context.engineerConsolePrintLn("===============================");
+        this.context.engineerConsolePrintLn("Cache");
+        this.context.engineerConsolePrintLn("===============================");
+        if (this.contents.size() == 0) this.context.engineerConsolePrintLn("Cache Empty!");
         this.contents.stream().forEach(cacheLine -> {
-            System.out.println("Tag: " + cacheLine.getTag());
-            System.out.println("    Word 0: " + cacheLine.getWord((short)0));
-            System.out.println("    Word 1: " + cacheLine.getWord((short)1));
-            System.out.println("    Word 2: " + cacheLine.getWord((short)2));
-            System.out.println("    Word 3: " + cacheLine.getWord((short)3));
+            this.context.engineerConsolePrintLn("Tag: " + cacheLine.getTag());
+            this.context.engineerConsolePrintLn("    Word 0: " + Simulator.wordToString(cacheLine.getWord((short)0)));
+            this.context.engineerConsolePrintLn("    Word 1: " + Simulator.wordToString(cacheLine.getWord((short)1)));
+            this.context.engineerConsolePrintLn("    Word 2: " + Simulator.wordToString(cacheLine.getWord((short)2)));
+            this.context.engineerConsolePrintLn("    Word 3: " + Simulator.wordToString(cacheLine.getWord((short)3)));
         });
     }
 

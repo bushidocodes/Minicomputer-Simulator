@@ -64,7 +64,7 @@ public class Simulator {
     private short x1, x2, x3;
 
     // Cache
-    public Cache cache = new Cache();
+    public Cache cache = new Cache(this);
 
     // IO buffers handle the connections between IO devices and the computer
     private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
@@ -218,11 +218,11 @@ public class Simulator {
 
         Short cacheResult = this.cache.fetch((short)address);
         if (cacheResult != null) {
-            System.out.println("Cache Hit! " + address + " was in cache!");
+            this.engineerConsolePrintLn("Cache Hit! " + address + " was in cache!");
             return cacheResult;
         } else {
             short tag = Utils.short_unsigned_right_shift((short)address, 2);
-            System.out.println("Cache Miss! Adding " + address + " as tag " + tag);
+            this.engineerConsolePrintLn("Cache Miss! Adding " + address + " as tag " + tag);
             this.cache.store(tag, this.getBlock((short)address));
             return this.memory[address];
         }
