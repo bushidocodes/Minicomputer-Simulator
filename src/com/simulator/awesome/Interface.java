@@ -55,6 +55,7 @@ public class Interface {
     private JFormattedTextField consoleKeyboard;
     private JTabbedPane tabbedPane1;
     private JTextArea fieldEngineerConsole;
+    private JButton loadProgram1Button;
     private Simulator context;
     private File selectedFile;
 
@@ -349,6 +350,22 @@ public class Interface {
                 } else {
                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
                 }
+            }
+        });
+        loadProgram1Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Not yet implemented, but saving this logic to run the simulator "headless"
+                Assembler assembler1 = new Assembler();
+
+                // Pre-fill some data into the computer to be used by the demo assembly program
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler1.loadFile(basePath.concat("/static/program-one.txt"));
+                context.loadProgram(assembler1.convertToMachineCode(), (short) 6);
+
+                // IPL and Start the Execution Loop
+                context.powerOn((short) 6);
+                refresh();
             }
         });
     }
