@@ -187,10 +187,10 @@ public class Simulator {
         // Get the base block-aligned address
         short base = (short)(address & 0b1111111111111100);
         short[] result = {
-                this.getWord(base),
-                this.getWord(base + 1),
-                this.getWord(base + 2),
-                this.getWord(base + 3)
+                this.memory[base],
+                this.memory[base + 1],
+                this.memory[base + 2],
+                this.memory[base + 3]
         };
         return result;
     }
@@ -221,8 +221,9 @@ public class Simulator {
             System.out.println("Cache Hit! " + address + " was in cache!");
             return cacheResult;
         } else {
-            System.out.println("Cache Miss! Adding " + address);
-            this.cache.store(this.getBlock((short)address));
+            short tag = Utils.short_unsigned_right_shift((short)address, 2);
+            System.out.println("Cache Miss! Adding " + address + " as tag " + tag);
+            this.cache.store(tag, this.getBlock((short)address));
             return this.memory[address];
         }
     }
@@ -246,8 +247,8 @@ public class Simulator {
             }
         } else {
             try {
+                this.cache.updateIfPresent((short)address, value);
                 this.memory[address] = value;
-
             } catch (Exception err) {
                 System.err.println("Accessing " + address + " causes " + err);
             }
@@ -677,6 +678,7 @@ public class Simulator {
         if (this.executionStep == 5){
             this.dumpRegistersToJavaConsole();
             this.dumpMemoryToJavaConsole();
+            this.cache.dump();
             this.executionStep = 1;
         } else {
             this.executionStep++;

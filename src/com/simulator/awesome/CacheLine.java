@@ -5,15 +5,13 @@ package com.simulator.awesome;
 public class CacheLine {
     short header;
     short words[];
-    static short validBit = 0b100000;
+    static short validBit = (short) 0b100000;
 
-    CacheLine(short tag, short firstWord, short secondWord, short thirdWord, short fourthWord){
-        this.header = (short)((tag << 6 ) & CacheLine.validBit);
-        this.words = new short[4];
-        this.words[0] = firstWord;
-        this.words[1] = secondWord;
-        this.words[2] = thirdWord;
-        this.words[3] = fourthWord;
+    CacheLine(short tag, short words[]){
+        if (words.length != 4) throw new Error("A cache line must be four words!");
+
+        this.header = (short)((tag << 6 ) | CacheLine.validBit);
+        this.words = words;
     }
 
     public void clear() {
@@ -30,11 +28,13 @@ public class CacheLine {
     }
 
     public short getWord(short nth){
-        if (nth < 0 || nth > 3){
-            throw new Error("Invalid index. Cache Line Expected 0 - 3");
-        }
-
+        if (nth < 0 || nth > 3) throw new Error("Invalid index. Cache Line Expected 0 - 3");
         return this.words[nth];
+    }
+
+    public void setWord(short nth, short word){
+        if (nth < 0 || nth > 3) throw new Error("Invalid index. Cache Line Expected 0 - 3");
+        this.words[nth] = word;
     }
 
     public void invalidateWord(){
