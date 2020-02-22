@@ -63,6 +63,9 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
+    // Cache
+    public Cache cache = new Cache();
+
     // IO buffers handle the connections between IO devices and the computer
     private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
     private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
@@ -179,6 +182,19 @@ public class Simulator {
         this.didBranch = true;
     }
 
+    // Given an address, get the block containing that word
+    public short[] getBlock(short address){
+        // Get the base block-aligned address
+        short base = (short)(address & 0b1111111111111100);
+        short[] result = {
+                this.getWord(base),
+                this.getWord(base + 1),
+                this.getWord(base + 2),
+                this.getWord(base + 3)
+        };
+        return result;
+    }
+
     public short getWord(int address) {
         if (address < 6) {
             // Illegally accessing protected memory
@@ -200,7 +216,15 @@ public class Simulator {
             }
         }
 
-        return this.memory[address];
+        Short cacheResult = this.cache.fetch((short)address);
+        if (cacheResult != null) {
+            System.out.println("Cache Hit! " + address + " was in cache!");
+            return cacheResult;
+        } else {
+            System.out.println("Cache Miss! Adding " + address);
+            this.cache.store(this.getBlock((short)address));
+            return this.memory[address];
+        }
     }
 
     public void setWord(int address, short value){
