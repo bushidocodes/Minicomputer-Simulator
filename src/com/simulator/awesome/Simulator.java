@@ -63,6 +63,9 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
+    // Cache
+    public Cache cache = new Cache(this);
+
     // IO buffers handle the connections between IO devices and the computer
     private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
     private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
@@ -179,6 +182,19 @@ public class Simulator {
         this.didBranch = true;
     }
 
+    // Given an address, get the block containing that word
+    public short[] getBlock(short address){
+        // Get the base block-aligned address
+        short base = (short)(address & 0b1111111111111100);
+        short[] result = {
+                this.memory[base],
+                this.memory[base + 1],
+                this.memory[base + 2],
+                this.memory[base + 3]
+        };
+        return result;
+    }
+
     public short getWord(int address) {
         if (address < 6) {
             // Illegally accessing protected memory
@@ -200,7 +216,16 @@ public class Simulator {
             }
         }
 
-        return this.memory[address];
+        Short cacheResult = this.cache.fetch((short)address);
+        if (cacheResult != null) {
+            this.engineerConsolePrintLn("Cache Hit! " + address + " was in cache!");
+            return cacheResult;
+        } else {
+            short tag = Utils.short_unsigned_right_shift((short)address, 2);
+            this.engineerConsolePrintLn("Cache Miss! Adding " + address + " as tag " + tag);
+            this.cache.store(tag, this.getBlock((short)address));
+            return this.memory[address];
+        }
     }
 
     public void setWord(int address, short value){
@@ -222,8 +247,8 @@ public class Simulator {
             }
         } else {
             try {
+                this.cache.updateIfPresent((short)address, value);
                 this.memory[address] = value;
-
             } catch (Exception err) {
                 System.err.println("Accessing " + address + " causes " + err);
             }
@@ -653,6 +678,7 @@ public class Simulator {
         if (this.executionStep == 5){
             this.dumpRegistersToJavaConsole();
             this.dumpMemoryToJavaConsole();
+            this.cache.dump();
             this.executionStep = 1;
         } else {
             this.executionStep++;
