@@ -36,7 +36,7 @@ class Main {
 
                 // Pre-fill some data into the computer to be used by the demo assembly program
                 String basePath = new File("").getAbsolutePath(); //get current base directory
-                assembler1.loadFile(basePath.concat("/static/hello-word.txt"));
+                assembler1.loadFile(basePath.concat("/static/hello-world.txt"));
                 myComputer.loadProgram(assembler1.input_arr, (short) 6);
 
 
