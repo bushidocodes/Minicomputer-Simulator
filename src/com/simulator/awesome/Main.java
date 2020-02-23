@@ -36,8 +36,12 @@ class Main {
 
                 // Pre-fill some data into the computer to be used by the demo assembly program
                 String basePath = new File("").getAbsolutePath(); //get current base directory
-                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
+                assembler1.loadFile(basePath.concat("/static/hello-word.txt"));
                 myComputer.loadProgram(assembler1.input_arr, (short) 6);
+
+
+//                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
+//                myComputer.loadProgram(assembler1.input_arr, (short) 6);
 
                 // Load in the load/store demonstration program
                 assembler2.loadFile(basePath.concat("/static/demo-program.txt"));

@@ -1,0 +1,57 @@
+LDX 1,0,10; load index 1 with address 10 (32)
+LDX 2,1,10; load index 2 with 32 + 10 (1056)
+LDR 0,2,16; load ASCII H from 1072
+OUT 0,1;    print H to console
+LDX 2,1,11; load index 2 with 32 + 10 (1056)
+LDR 0,2,13; load ASCII e from 1072
+OUT 0,1;    print e to console
+LDR 0,2,20; load ASCII l from 1072
+OUT 0,1;    print l to console
+OUT 0,1;    print l to console
+LDR 0,2,23; load ASCII o from 1072
+OUT 0,1;    print o to console
+LDX 2,1,9;  load index 2 with 32 + 9 (1024)
+LDR 0,2,8;  load ASCII space from 1032
+OUT 0,1;    print space to console
+LDX 2,1,10; load index 2 with 32 + 10 (1056)
+LDR 0,2,31; load ASCII W from 1087
+OUT 0,1;    print W to console
+LDX 2,1,11; load index 2 with 32 + 11 (1088)
+LDR 0,2,23; load ASCII o from 1072
+OUT 0,1;    print o to console
+LDR 0,2,26; load ASCII r from 1072
+OUT 0,1;    print r to console
+LDR 0,2,20; load ASCII l from 1072
+OUT 0,1;    print l to console
+LDR 0,2,12; load ASCII l from 1072
+OUT 0,1;    print l to console
+LDX 2,1,8; load index 2 with 32 + 8 (992)
+LDR 0,2,18; load LF
+OUT 0,1;    print LF to console
+LDX 1,0,10; load index 1 with address 10 (32)
+LDX 2,1,10; load index 2 with 32 + 10 (1056)
+LDR 0,2,16; load ASCII H from 1072
+OUT 0,1;    print H to console
+LDX 2,1,11; load index 2 with 32 + 10 (1056)
+LDR 0,2,13; load ASCII e from 1072
+OUT 0,1;    print e to console
+LDR 0,2,20; load ASCII l from 1072
+OUT 0,1;    print l to console
+OUT 0,1;    print l to console
+LDR 0,2,23; load ASCII o from 1072
+OUT 0,1;    print o to console
+LDX 2,1,9;  load index 2 with 32 + 9 (1024)
+LDR 0,2,8;  load ASCII space from 1032
+OUT 0,1;    print space to console
+LDX 2,1,10; load index 2 with 32 + 10 (1056)
+LDR 0,2,31; load ASCII W from 1087
+OUT 0,1;    print W to console
+LDX 2,1,11; load index 2 with 32 + 11 (1088)
+LDR 0,2,23; load ASCII o from 1072
+OUT 0,1;    print o to console
+LDR 0,2,26; load ASCII r from 1072
+OUT 0,1;    print r to console
+LDR 0,2,20; load ASCII l from 1072
+OUT 0,1;    print l to console
+LDR 0,2,12; load ASCII l from 1072
+OUT 0,1;    print l to console
