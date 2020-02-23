@@ -5,6 +5,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Interface {
     private JTextField withValueInput;
@@ -58,6 +60,7 @@ public class Interface {
     private JButton loadProgram1Button;
     private Simulator context;
     private File selectedFile;
+    private Integer consolePrinterLineNumber = 0;
 
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
@@ -84,7 +87,9 @@ public class Interface {
     public void pollIOStatus(){
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
-            this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+            consolePrinterLineNumber++;
+            // Print the line number (left padded to 2 spaces) followed by the word from the output buffer
+            this.consolePrinter.append("["+ String.format("%" + 2 + "s", Integer.toString(consolePrinterLineNumber))+"]: "+Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
             // Automatically scroll the console to the bottom
             this.consolePrinter.setCaretPosition(consolePrinter.getDocument().getLength());
         }
@@ -100,6 +105,7 @@ public class Interface {
         if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
             consoleKeyboard.setEnabled(true);
             consoleKeyboard.setEditable(true);
+            consoleKeyboard.requestFocus();
             returnButton.setEnabled(true);
             this.context.engineerConsolePrintLn("Waiting for user input.");
         }
@@ -228,6 +234,8 @@ public class Interface {
                 // Clear the console printers
                 consolePrinter.setText("");
                 fieldEngineerConsole.setText("");
+                // Reset the console printer line number counter
+                consolePrinterLineNumber = 0;
                 refresh();
             }
         });
@@ -361,11 +369,18 @@ public class Interface {
                 // Pre-fill some data into the computer to be used by the demo assembly program
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler1.loadFile(basePath.concat("/static/program-one.txt"));
-                context.loadProgram(assembler1.convertToMachineCode(), (short) 6);
+                context.loadProgram(assembler1.convertToMachineCode(), (short) 8);
 
                 // IPL and Start the Execution Loop
-                context.powerOn((short) 6);
+                context.powerOn((short) 8);
                 refresh();
+            }
+        });
+        // Allow pressing the ENTER key on the keyboard to input data
+        consoleKeyboard.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                returnButton.doClick();
             }
         });
     }
