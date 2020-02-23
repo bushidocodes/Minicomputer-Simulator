@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import static java.lang.Character.forDigit;
+
 public class Interface {
     private JTextField withValueInput;
     public JPanel rootPanel;
@@ -83,7 +85,10 @@ public class Interface {
     public void pollIOStatus(){
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
-            this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+//            this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
+            short charCode = this.context.getFirstWordFromOutputBuffer((short) 1);
+            char poppedChar = (char)charCode;
+            this.consolePrinter.append(String.valueOf(poppedChar));
             // Automatically scroll the console to the bottom
             this.consolePrinter.setCaretPosition(consolePrinter.getDocument().getLength());
         }
@@ -295,14 +300,19 @@ public class Interface {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
                 Assembler assembler2 = new Assembler();
+                Assembler assembler3 = new Assembler();
 
-                // Pre-fill some data into the computer to be used by the demo assembly program
+                // Load Base Addresses representing every 32nd address from 10-73
                 String basePath = new File("").getAbsolutePath(); //get current base directory
-                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
-                context.loadProgram(assembler1.input_arr, (short) 6);
+                assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
+                context.loadProgram(assembler1.input_arr, (short) 10);
+
+                // Load the ASCII table starting at address 1000
+                assembler3.loadFile(basePath.concat("/static/ascii.txt"));
+                context.loadProgram(assembler3.input_arr, (short) 1000);
 
                 // Load in the load/store demonstration program
-                assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
+                assembler2.loadFile(basePath.concat("/static/hello-world.txt"));
                 context.loadProgram(assembler2.convertToMachineCode(), (short) 100);
 
                 // IPL and Start the Execution Loop

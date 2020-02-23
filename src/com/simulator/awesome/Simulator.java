@@ -54,7 +54,7 @@ public class Simulator {
     // 0001 |   Illegal Memory Address to Reserved Locations
     // 0010 |   Illegal TRAP code
     // 0100 |   Illegal Operation Code
-    // 1000 |   Illegal Memory Address beyond 2048 (or higher is memory is expanded)
+    // 1000 |   Illegal Memory Address beyond Config.WORD_COUNT - 1
     private byte mfr;
 
     // The four general purpose registers
@@ -67,8 +67,8 @@ public class Simulator {
     public Cache cache = new Cache(this);
 
     // IO buffers handle the connections between IO devices and the computer
-    private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[32];
-    private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[32];
+    private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[Config.OUTPUT_IO_BUFFER_SIZE];
+    private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[Config.INPUT_IO_BUFFER_SIZE];
     private LinkedBlockingQueue engineerConsoleOutputBuffer = new LinkedBlockingQueue();
 
     // State for when computer is ready to accept input
@@ -104,9 +104,9 @@ public class Simulator {
     Simulator(int wordCount) {
 
         // Allocate and zero out Linear Memory
-        this.wordCount = 2048;
-        this.memory = new Short[wordCount];
-        for (int i = 0; i < wordCount; i++) {
+        this.wordCount = Config.WORD_COUNT;
+        this.memory = new Short[this.wordCount];
+        for (int i = 0; i < this.wordCount; i++) {
             this.memory[i] = 0;
         }
 
@@ -147,9 +147,9 @@ public class Simulator {
 
     public void reset(){
         // Allocate and zero out Linear Memory
-        this.wordCount = 2048;
-        this.memory = new Short[wordCount];
-        for (int i = 0; i < wordCount; i++) {
+        this.wordCount = Config.WORD_COUNT;
+        this.memory = new Short[this.wordCount];
+        for (int i = 0; i < this.wordCount; i++) {
             this.memory[i] = 0;
         }
 
