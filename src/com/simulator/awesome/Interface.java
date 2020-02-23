@@ -5,6 +5,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
 
 import static java.lang.Character.forDigit;
 
@@ -262,7 +263,7 @@ public class Interface {
                                 case "Binary":
                                     // Load binary file into memory at the specified location
                                     Assembler assembler1 = new Assembler();
-                                    context.loadProgram(assembler1.input_arr, memoryLoc);
+                                    context.loadProgram(assembler1.input_arr, memoryLoc, false);
 
                                     // Set the PC to the first program instruction
                                     context.powerOn(memoryLoc);
@@ -272,7 +273,7 @@ public class Interface {
                                     // Convert assembly file to binary and load it into memory at the specified location
                                     Assembler assembler2 = new Assembler();
                                     assembler2.loadFile(selectedFile.getAbsolutePath());
-                                    context.loadProgram(assembler2.convertToMachineCode(), memoryLoc);
+                                    context.loadProgram(assembler2.convertToMachineCode(), memoryLoc, false);
 
                                     // Set the PC to the first program instruction
                                     context.powerOn(memoryLoc);
@@ -301,18 +302,23 @@ public class Interface {
                 Assembler assembler2 = new Assembler();
                 Assembler assembler3 = new Assembler();
 
-                // Load Base Addresses representing every 32nd address from 10-73
+                // Load Base Addresses representing every 32nd address from as a DataSet
+                // Place it at the topmost addresses
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
-                context.loadProgram(assembler1.input_arr, (short) 9);
 
-                // Load the ASCII table starting at address 1000
+                short baseAddressTableLocation = context.loadProgram(assembler1.input_arr, (short) -1, true);
+                // Assign Indirect to this dataset to address 30;
+                context.setWord(30, baseAddressTableLocation);
+
+                // Load the ASCII table
                 assembler3.loadFile(basePath.concat("/static/ascii.txt"));
-                context.loadProgram(assembler3.input_arr, (short) 1000);
+                short asciiTableLocation = context.loadProgram(assembler3.input_arr, (short) -65, true);
+                context.setWord(29, asciiTableLocation);
 
                 // Load in the load/store demonstration program
                 assembler2.loadFile(basePath.concat("/static/hello-world.txt"));
-                context.loadProgram(assembler2.convertToMachineCode(), (short) 100);
+                context.loadProgram(assembler2.convertToMachineCode(), (short) 100, false);
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 100);

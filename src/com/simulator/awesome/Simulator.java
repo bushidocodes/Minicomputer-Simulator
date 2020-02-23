@@ -587,20 +587,37 @@ public class Simulator {
         return (short)Integer.parseUnsignedInt(string,2);
     }
 
-    public void loadProgram(String[] assembledMachineCode, int memoryLocation){
-        // Iterate through memory line-by-line, loading in the corresponding machine code from the program.
-        int computerMemoryLoc = memoryLocation;
-        for (int inputMemoryLoc = 0; inputMemoryLoc<assembledMachineCode.length; inputMemoryLoc++){
-            this.setWord(computerMemoryLoc, stringToWord(assembledMachineCode[inputMemoryLoc]));
-            computerMemoryLoc++;
+    // If memory location is a negative, aligns end address of program from address offset from number of words
+    public short loadProgram(String[] assembledMachineCode, int memoryOffset, boolean wrapInDataSet){
+        // Convert machine code from strings to shorts
+        short[] words = new short[assembledMachineCode.length];
+        for (int i = 0; i < assembledMachineCode.length; i++){
+            words[i] =  stringToWord(assembledMachineCode[i]);
+        }
+
+        if (wrapInDataSet) {
+            DataSet ds = new DataSet(words);
+            short baseAddress = (memoryOffset >= 0) ? (short) memoryOffset : (short)((Config.WORD_COUNT - 1) + memoryOffset - ds.export().length);
+            ds.setBaseAddress(baseAddress);
+            words = ds.export();
+            for (int i = 0; i < words.length; i++) {
+                this.setWord(baseAddress + i, words[i]);
+            }
+            return baseAddress;
+        } else {
+            short baseAddress = (memoryOffset >= 0) ? (short) memoryOffset : (short)((Config.WORD_COUNT - 1) + memoryOffset - words.length);
+            for (int i = 0; i < words.length; i++) {
+                this.setWord(baseAddress + i, words[i]);
+            }
+            return baseAddress;
         }
     }
 
     // This function allows you to not specify a memory location for loading a program (default to location 6)
-    public void loadProgram(String[] assembledMachineCode){
-        // No memory location was specified, load the program into memory starting at the first location 6
-        loadProgram(assembledMachineCode, 6);
-    }
+//    public void loadProgram(String[] assembledMachineCode){
+//        // No memory location was specified, load the program into memory starting at the first location 6
+//        loadProgram(assembledMachineCode, 6);
+//    }
 
     public void dumpRegistersToJavaConsole(){
         engineerConsolePrintLn("===============================");

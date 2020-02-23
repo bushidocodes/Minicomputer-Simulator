@@ -1,57 +1,59 @@
-LDX 1,0,10; load index 1 with address 10 (32)
-LDX 2,1,10; load index 2 with 32 + 10 (1056)
-LDR 0,2,16; load ASCII H from 1072
-OUT 0,1;    print H to console
-LDX 2,1,11; load index 2 with 32 + 10 (1056)
-LDR 0,2,13; load ASCII e from 1072
-OUT 0,1;    print e to console
-LDR 0,2,20; load ASCII l from 1072
-OUT 0,1;    print l to console
-OUT 0,1;    print l to console
-LDR 0,2,23; load ASCII o from 1072
-OUT 0,1;    print o to console
-LDX 2,1,9;  load index 2 with 32 + 9 (1024)
-LDR 0,2,8;  load ASCII space from 1032
-OUT 0,1;    print space to console
-LDX 2,1,10; load index 2 with 32 + 10 (1056)
-LDR 0,2,31; load ASCII W from 1087
-OUT 0,1;    print W to console
-LDX 2,1,11; load index 2 with 32 + 11 (1088)
-LDR 0,2,23; load ASCII o from 1072
-OUT 0,1;    print o to console
-LDR 0,2,26; load ASCII r from 1072
-OUT 0,1;    print r to console
-LDR 0,2,20; load ASCII l from 1072
-OUT 0,1;    print l to console
-LDR 0,2,12; load ASCII l from 1072
-OUT 0,1;    print l to console
-LDX 2,1,8; load index 2 with 32 + 8 (992)
-LDR 0,2,18; load LF
-OUT 0,1;    print LF to console
-LDX 1,0,10; load index 1 with address 10 (32)
-LDX 2,1,10; load index 2 with 32 + 10 (1056)
-LDR 0,2,16; load ASCII H from 1072
-OUT 0,1;    print H to console
-LDX 2,1,11; load index 2 with 32 + 10 (1056)
-LDR 0,2,13; load ASCII e from 1072
-OUT 0,1;    print e to console
-LDR 0,2,20; load ASCII l from 1072
-OUT 0,1;    print l to console
-OUT 0,1;    print l to console
-LDR 0,2,23; load ASCII o from 1072
-OUT 0,1;    print o to console
-LDX 2,1,9;  load index 2 with 32 + 9 (1024)
-LDR 0,2,8;  load ASCII space from 1032
-OUT 0,1;    print space to console
-LDX 2,1,10; load index 2 with 32 + 10 (1056)
-LDR 0,2,31; load ASCII W from 1087
-OUT 0,1;    print W to console
-LDX 2,1,11; load index 2 with 32 + 11 (1088)
-LDR 0,2,23; load ASCII o from 1072
-OUT 0,1;    print o to console
-LDR 0,2,26; load ASCII r from 1072
-OUT 0,1;    print r to console
-LDR 0,2,20; load ASCII l from 1072
-OUT 0,1;    print l to console
-LDR 0,2,12; load ASCII l from 1072
-OUT 0,1;    print l to console
+LDX 1,0,29; load the the start of the ASCII Table in IX1
+LDX 2,1,3;  loads ASCII 64 in IX2
+LDR 0,2,8;  load and print H
+OUT 0,1;
+LDX 2,1,4;  loads ASCII 96 in IX2
+LDR 0,2,5;  load and print e
+OUT 0,1;
+LDR 0,2,12;  load and print l twice
+OUT 0,1;
+OUT 0,1;
+LDR 0,2,15;  load and print o
+OUT 0,1;
+LDX 2,1,2;   loads ASCII 32 in IX2
+LDR 0,2,0;  load and print a space
+OUT 0,1;
+LDX 2,1,3;   loads ASCII 64 in IX2
+LDR 0,2,23;  load and print W
+OUT 0,1;
+LDX 2,1,4;   loads ASCII 96 in IX2
+LDR 0,2,15;  load and print o
+OUT 0,1;
+LDX 2,1,4;   loads ASCII 96 in IX2
+LDR 0,2,18;  load and print r
+OUT 0,1;
+LDR 0,2,12;  load and print l
+OUT 0,1;
+LDR 0,2,4;  load and print d
+OUT 0,1;
+LDX 2,1,1;   loads ASCII 0 in IX2
+LDR 0,2,10;  load and print l
+OUT 0,1;
+LDX 1,0,29; load the the start of the ASCII Table in IX1
+LDX 2,1,3;  loads ASCII 64 in IX2
+LDR 0,2,8;  load and print H
+OUT 0,1;
+LDX 2,1,4;  loads ASCII 96 in IX2
+LDR 0,2,5;  load and print e
+OUT 0,1;
+LDR 0,2,12;  load and print l twice
+OUT 0,1;
+OUT 0,1;
+LDR 0,2,15;  load and print o
+OUT 0,1;
+LDX 2,1,2;   loads ASCII 32 in IX2
+LDR 0,2,0;  load and print a space
+OUT 0,1;
+LDX 2,1,3;   loads ASCII 64 in IX2
+LDR 0,2,23;  load and print W
+OUT 0,1;
+LDX 2,1,4;   loads ASCII 96 in IX2
+LDR 0,2,15;  load and print o
+OUT 0,1;
+LDX 2,1,4;   loads ASCII 96 in IX2
+LDR 0,2,18;  load and print r
+OUT 0,1;
+LDR 0,2,12;  load and print l
+OUT 0,1;
+LDR 0,2,4;  load and print d
+OUT 0,1;
