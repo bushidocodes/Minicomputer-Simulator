@@ -613,12 +613,6 @@ public class Simulator {
         }
     }
 
-    // This function allows you to not specify a memory location for loading a program (default to location 6)
-//    public void loadProgram(String[] assembledMachineCode){
-//        // No memory location was specified, load the program into memory starting at the first location 6
-//        loadProgram(assembledMachineCode, 6);
-//    }
-
     public void dumpRegistersToJavaConsole(){
         engineerConsolePrintLn("===============================");
         engineerConsolePrintLn("Registers");
