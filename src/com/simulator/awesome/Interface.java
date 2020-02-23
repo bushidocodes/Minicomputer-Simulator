@@ -57,12 +57,18 @@ public class Interface {
     private JButton returnButton;
     private JTextArea consolePrinter;
     private JFormattedTextField consoleKeyboard;
-    private JTabbedPane tabbedPane1;
     private JTextArea fieldEngineerConsole;
     private JButton loadProgram1Button;
+    private JTabbedPane tabbedPane1;
+    private JLabel readyForInputLabel;
     private Simulator context;
     private File selectedFile;
     private Integer consolePrinterLineNumber = 0;
+
+    // Initialize image icons for indicator light
+    String basePath = new File("").getAbsolutePath(); //get current base directory
+    ImageIcon redLight = new ImageIcon(basePath.concat("/static/lamp-red.png"));
+    ImageIcon greenLight = new ImageIcon(basePath.concat("/static/lamp-green.png"));
 
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
@@ -105,11 +111,7 @@ public class Interface {
 
         // If the computer is ready for input, enable the console keyboard
         if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
-            consoleKeyboard.setEnabled(true);
-            consoleKeyboard.setEditable(true);
-            consoleKeyboard.requestFocus();
-            returnButton.setEnabled(true);
-            this.context.engineerConsolePrintLn("Waiting for user input.");
+            setUIReadyForInput(true);
         }
 
         // If the computer is not running or waiting for input, disable the HALT button
@@ -124,6 +126,24 @@ public class Interface {
         } else {
             runButton.setEnabled(true);
             runButton.setText("RUN");
+        }
+    }
+
+    public void setUIReadyForInput(boolean state){
+        if (state==true){
+            consoleKeyboard.setEnabled(true);
+            consoleKeyboard.setEditable(true);
+            returnButton.setEnabled(true);
+            readyForInputLabel.setIcon(greenLight);
+            readyForInputLabel.setText("Ready for Input");
+            this.context.engineerConsolePrintLn("Waiting for user input.");
+        } else {
+            consoleKeyboard.setText("");
+            consoleKeyboard.setEnabled(false);
+            consoleKeyboard.setEditable(false);
+            returnButton.setEnabled(false);
+            readyForInputLabel.setIcon(redLight);
+            readyForInputLabel.setText("Not Ready for Input");
         }
     }
 
@@ -360,11 +380,8 @@ public class Interface {
                     context.addWordToInputBuffer((short) 0, context.stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
                     // Change input waiting state
                     context.setReadyForInput(false);
-                    // Clear the console keyboard and disable it
-                    consoleKeyboard.setText("");
-                    consoleKeyboard.setEnabled(false);
-                    consoleKeyboard.setEditable(false);
-                    returnButton.setEnabled(false);
+                    // Disable input from the UI
+                    setUIReadyForInput(false);
                     // Continue execution
                     context.startExecutionLoop();
                 } else {
