@@ -194,8 +194,8 @@ public class Assembler {
             case "RRC":
                 mc_r = "00".substring(instructionParams[0].length()) + instructionParams[0]; // add left padding 0s so that the parameter is 2 bits
                 String mc_count = "0000".substring(instructionParams[1].length()) + instructionParams[1]; // add left padding 0s so that the parameter is 4 bits
-                String mc_lr = "00".substring(instructionParams[2].length()) + instructionParams[2]; // add left padding 0s so that the parameter is 2 bits
-                String mc_al = "00".substring(instructionParams[3].length()) + instructionParams[3]; // add left padding 0s so that the parameter is 2 bits
+                String mc_lr = instructionParams[2]; // L/R is only 1 bit
+                String mc_al = instructionParams[3]; // A/L is only 1 bit
                 machineCode = mc_opcode + mc_r + mc_al + mc_lr + "00" + mc_count; // 2 empty bits in positions 10 and 11
                 break;
             case "IN":
