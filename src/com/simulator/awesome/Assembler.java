@@ -93,11 +93,24 @@ public class Assembler {
             // Get the instruction
             String instruction[] = strippedInstructions.split(" ");
 
-            // Get the parameters
-            String[] instructionParams = instruction[1].split(",");
+            try{
+                // Get the parameters
+                String[] instructionParams = instruction[1].split(",");
 
-            // Convert the data to machine code and save in the output array
-            output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+                // Convert the data to machine code and save in the output array
+                output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+            } catch(ArrayIndexOutOfBoundsException e){
+                if((instruction[0].equals("HLT") || instruction[0].equals("TRAP"))){
+                    // There are no parameters, pass any empty array
+                    String[] instructionParams = new String[0];
+
+                    // Convert the data to machine code and save in the output array
+                    output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+                } else {
+                    // Unless this is HALT or TRAP, at least one parameter is required.
+                    System.out.println("Assembler Error: Instruction "+instruction[0]+" does not have any parameters.");
+                }
+            }
         }
         return output_arr;
     }
@@ -210,7 +223,7 @@ public class Assembler {
                 machineCode = mc_opcode + "000000" + mc_trapCode; // 6 empty bits from positions 6 to 11
                 break;
             case "HLT":
-                machineCode = mc_opcode + "000000000000"; // 10 empty bits from positions 6 to 15
+                machineCode = mc_opcode + "0000000000"; // 10 empty bits from positions 6 to 15
                 break;
         }
         return machineCode;
