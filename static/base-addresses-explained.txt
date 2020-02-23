@@ -2,7 +2,8 @@ The intention of this table is to simplify the use of indexed addressing
 Since we have a 2^5 offset, we need to start base addresses every 32 words, up to our max.
 This is 62 words of addresses in total. Worth it I think!
 
-0000000000100000; 32
-0000000001000000; 64
+0000000000000000;    0
+0000000000100000;   32
+0000000001000000;   64
 ...
 0000011111100000; 2016

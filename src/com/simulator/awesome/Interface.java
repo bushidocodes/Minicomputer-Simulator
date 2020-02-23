@@ -85,7 +85,6 @@ public class Interface {
     public void pollIOStatus(){
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
         if (!this.context.isOutputBufferNull((short) 1)) {
-//            this.consolePrinter.append(Simulator.wordToString(this.context.getFirstWordFromOutputBuffer((short) 1))+"\n");
             short charCode = this.context.getFirstWordFromOutputBuffer((short) 1);
             char poppedChar = (char)charCode;
             this.consolePrinter.append(String.valueOf(poppedChar));
@@ -305,7 +304,7 @@ public class Interface {
                 // Load Base Addresses representing every 32nd address from 10-73
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
-                context.loadProgram(assembler1.input_arr, (short) 10);
+                context.loadProgram(assembler1.input_arr, (short) 9);
 
                 // Load the ASCII table starting at address 1000
                 assembler3.loadFile(basePath.concat("/static/ascii.txt"));
