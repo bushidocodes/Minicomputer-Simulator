@@ -93,11 +93,24 @@ public class Assembler {
             // Get the instruction
             String instruction[] = strippedInstructions.split(" ");
 
-            // Get the parameters
-            String[] instructionParams = instruction[1].split(",");
+            try{
+                // Get the parameters
+                String[] instructionParams = instruction[1].split(",");
 
-            // Convert the data to machine code and save in the output array
-            output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+                // Convert the data to machine code and save in the output array
+                output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+            } catch(ArrayIndexOutOfBoundsException e){
+                if((instruction[0].equals("HLT") || instruction[0].equals("TRAP"))){
+                    // There are no parameters, pass any empty array
+                    String[] instructionParams = new String[0];
+
+                    // Convert the data to machine code and save in the output array
+                    output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+                } else {
+                    // Unless this is HALT or TRAP, at least one parameter is required.
+                    System.out.println("Assembler Error: Instruction "+instruction[0]+" does not have any parameters.");
+                }
+            }
         }
         return output_arr;
     }
@@ -194,8 +207,8 @@ public class Assembler {
             case "RRC":
                 mc_r = "00".substring(instructionParams[0].length()) + instructionParams[0]; // add left padding 0s so that the parameter is 2 bits
                 String mc_count = "0000".substring(instructionParams[1].length()) + instructionParams[1]; // add left padding 0s so that the parameter is 4 bits
-                String mc_lr = "00".substring(instructionParams[2].length()) + instructionParams[2]; // add left padding 0s so that the parameter is 2 bits
-                String mc_al = "00".substring(instructionParams[3].length()) + instructionParams[3]; // add left padding 0s so that the parameter is 2 bits
+                String mc_lr = instructionParams[2]; // L/R is only 1 bit
+                String mc_al = instructionParams[3]; // A/L is only 1 bit
                 machineCode = mc_opcode + mc_r + mc_al + mc_lr + "00" + mc_count; // 2 empty bits in positions 10 and 11
                 break;
             case "IN":
@@ -210,7 +223,7 @@ public class Assembler {
                 machineCode = mc_opcode + "000000" + mc_trapCode; // 6 empty bits from positions 6 to 11
                 break;
             case "HLT":
-                machineCode = mc_opcode + "000000000000"; // 10 empty bits from positions 6 to 15
+                machineCode = mc_opcode + "0000000000"; // 10 empty bits from positions 6 to 15
                 break;
         }
         return machineCode;

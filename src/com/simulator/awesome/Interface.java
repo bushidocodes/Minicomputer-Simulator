@@ -6,8 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
-
 import static java.lang.Character.forDigit;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Interface {
     private JTextField withValueInput;
@@ -58,8 +59,10 @@ public class Interface {
     private JFormattedTextField consoleKeyboard;
     private JTabbedPane tabbedPane1;
     private JTextArea fieldEngineerConsole;
+    private JButton loadProgram1Button;
     private Simulator context;
     private File selectedFile;
+    private Integer consolePrinterLineNumber = 0;
 
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
@@ -104,6 +107,7 @@ public class Interface {
         if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
             consoleKeyboard.setEnabled(true);
             consoleKeyboard.setEditable(true);
+            consoleKeyboard.requestFocus();
             returnButton.setEnabled(true);
             this.context.engineerConsolePrintLn("Waiting for user input.");
         }
@@ -232,6 +236,8 @@ public class Interface {
                 // Clear the console printers
                 consolePrinter.setText("");
                 fieldEngineerConsole.setText("");
+                // Reset the console printer line number counter
+                consolePrinterLineNumber = 0;
                 refresh();
             }
         });
@@ -364,6 +370,29 @@ public class Interface {
                 } else {
                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
                 }
+            }
+        });
+        loadProgram1Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Not yet implemented, but saving this logic to run the simulator "headless"
+                Assembler assembler1 = new Assembler();
+
+                // Pre-fill some data into the computer to be used by the demo assembly program
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler1.loadFile(basePath.concat("/static/program-one.txt"));
+                context.loadProgram(assembler1.convertToMachineCode(), (short) 8, false);
+
+                // IPL and Start the Execution Loop
+                context.powerOn((short) 8);
+                refresh();
+            }
+        });
+        // Allow pressing the ENTER key on the keyboard to input data
+        consoleKeyboard.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                returnButton.doClick();
             }
         });
     }

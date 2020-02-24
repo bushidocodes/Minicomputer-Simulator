@@ -520,6 +520,7 @@ class SubtractOneAndBranch extends RegisterMemoryInstruction {
         if (this.didFault) return;
 
         this.context.alu.decrementAndCompare();
+        this.context.setGeneralRegister(this.registerId,this.context.alu.getYAsShort());
     }
 
     public void storeResult(){
