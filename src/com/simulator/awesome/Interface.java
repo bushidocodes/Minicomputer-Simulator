@@ -133,6 +133,7 @@ public class Interface {
         if (state==true){
             consoleKeyboard.setEnabled(true);
             consoleKeyboard.setEditable(true);
+            consoleKeyboard.requestFocus();
             returnButton.setEnabled(true);
             readyForInputLabel.setIcon(greenLight);
             readyForInputLabel.setText("Ready for Input");
@@ -149,6 +150,7 @@ public class Interface {
 
     public Interface(Simulator context) {
         this.context = context;
+        setUIReadyForInput(false);
         this.refresh();
 
         // START - IPLs the Simulator
