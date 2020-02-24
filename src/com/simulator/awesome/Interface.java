@@ -157,8 +157,24 @@ public class Interface {
         iplButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Pushing the IPL button loads the demonstration program, ready for the grader to press Single Step
-                loadLoadStoreDemoButton.doClick();
+                // Pushing the IPL button loads the based addresses and ascii tables, ready for a user program to be loaded
+                Assembler assembler1 = new Assembler();
+                Assembler assembler2 = new Assembler();
+
+                // Load Base Addresses representing every 32nd address from as a DataSet
+                // Place it at the topmost addresses
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
+
+                short baseAddressTableLocation = context.loadProgram(assembler1.input_arr, (short) -1, true);
+                // Assign Indirect to this dataset to address 30;
+                context.setWord(30, baseAddressTableLocation);
+
+                // Load the ASCII table
+                assembler2.loadFile(basePath.concat("/static/ascii.txt"));
+                short asciiTableLocation = context.loadProgram(assembler2.input_arr, (short) -129, true);
+                context.setWord(29, asciiTableLocation);
+
                 refresh();
             }
         });
@@ -281,7 +297,7 @@ public class Interface {
                 if(selectedFile != null && selectedFile.isFile()){
                     short memoryLoc = (short) Integer.parseInt(programMemoryLocSpinner.getValue().toString());
                     // Check that the desired memory location is within the valid range.
-                    if (memoryLoc > 5 && memoryLoc < context.getWordCount()-1) {
+                    if (memoryLoc > 31 && memoryLoc < context.getWordCount()-1) {
                         // Check that a file type has been selected.
                         if (fileTypeComboBox.getSelectedItem().toString().length() > 0) {
                             switch (fileTypeComboBox.getSelectedItem().toString()) {
@@ -312,7 +328,7 @@ public class Interface {
                     } else {
                         // Error: Invalid memory location
                         String maxLoc = Integer.toString(context.getWordCount()-1);
-                        JOptionPane.showMessageDialog(rootPanel, "ERROR: Memory location to insert the program must be within the valid range for unprotected memory (Minimum: "+6+") (Maximum: "+maxLoc+").");
+                        JOptionPane.showMessageDialog(rootPanel, "ERROR: Memory location to insert the program must be within the valid range for unprotected memory (Minimum: "+32+") (Maximum: "+maxLoc+").");
                     }
                 } else {
                     // Error: No file selected.
@@ -327,26 +343,10 @@ public class Interface {
             public void actionPerformed(ActionEvent e) {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
-                Assembler assembler2 = new Assembler();
-                Assembler assembler3 = new Assembler();
-
-                // Load Base Addresses representing every 32nd address from as a DataSet
-                // Place it at the topmost addresses
-                String basePath = new File("").getAbsolutePath(); //get current base directory
-                assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
-
-                short baseAddressTableLocation = context.loadProgram(assembler1.input_arr, (short) -1, true);
-                // Assign Indirect to this dataset to address 30;
-                context.setWord(30, baseAddressTableLocation);
-
-                // Load the ASCII table
-                assembler3.loadFile(basePath.concat("/static/ascii.txt"));
-                short asciiTableLocation = context.loadProgram(assembler3.input_arr, (short) -65, true);
-                context.setWord(29, asciiTableLocation);
 
                 // Load in the load/store demonstration program
-                assembler2.loadFile(basePath.concat("/static/hello-world.txt"));
-                context.loadProgram(assembler2.convertToMachineCode(), (short) 100, false);
+                assembler1.loadFile(basePath.concat("/static/hello-world.txt"));
+                context.loadProgram(assembler1.convertToMachineCode(), (short) 100, false);
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 100);
@@ -394,16 +394,23 @@ public class Interface {
         loadProgram1Button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Reset the simulation and call IPL to ensure a clean slate
+                resetButton.doClick();
+                iplButton.doClick();
+
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
 
                 // Pre-fill some data into the computer to be used by the demo assembly program
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler1.loadFile(basePath.concat("/static/program-one.txt"));
-                context.loadProgram(assembler1.convertToMachineCode(), (short) 8, false);
+                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, false);
+
+                // Assign Indirect to this dataset to address 30;
+                context.setWord(16, programLocation);
 
                 // IPL and Start the Execution Loop
-                context.powerOn((short) 8);
+                context.powerOn((short) 101);
                 refresh();
             }
         });
