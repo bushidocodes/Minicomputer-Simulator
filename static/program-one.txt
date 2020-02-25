@@ -1,12 +1,12 @@
-LDR 1,0,16;    initialize the DATALOC variable - load R1 with the first program instruction address
+LDR 1,0,16;    R1 (DATALOC) = Base Address of this program
 LDX 2,0,30;       load IX2 with the pointer to the start of the base address table
 LDX 3,2,1;        load IX3 with the pointer to the first data value in base address table
 LDX 2,3,3;        load IX2 with the third data value in the base address table (96)
 STX 2,0,17;       store value 96 into user reserved mem loc 17
 AMR 1,0,17;       add value 96 from mem loc 17 to register 1
 STR 1,0,19;       store the value of DATALOC (program start + 96) into reserved mem loc 19
-LDR 2,0,31;    initialize the COUNTER variable - zero out R2
-AIR 2,20;         add immediate 20 to register 2 for loop COUNTER variable
+LDR 2,0,31;    R2 (counter) = 20
+AIR 2,20;
 LDA 1,0,16,1;  initialize POINTERS - load program start address into R1
 AIR 1,20;         ptr_LOOP_1_START add immediate 20 to R1 (this is the address of LOOP_1 start)
 STR 1,0,23;       store ptr_LOOP_1_START in reserved memory location 23
@@ -19,10 +19,11 @@ STR 1,0,18;       store max value from R1 into user reserved memory loc 18
 LDX 1,0,29;    line break character -- load the pointer to the start of the ASCII Table into IX1
 LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
 IN 1,0;        LOOP_1: store the input from console keyboard in R1
-OUT 1,1;          print the value in R1 to the console printer
-LDR 0,3,10;       load ASCII new line character
-OUT 0,1;          print ASCII new line character
 STR 1,0,19,1;     store the input value from register 1 into mem(DATALOC) indirect
+LDA 0,0,19,1;     Load this address into R0 to use as an arg to PRINTINT
+JSR 0,28,1;
+LDR 0,3,10;       load and print \n
+OUT 0,1;
 LDR 3,0,19;       load DATALOC variable into R3 from mem loc 19
 AIR 3,1;          increment DATALOC variable by 1
 STR 3,0,19;       store DATALOC variable from R3 back into mem loc 19/
@@ -56,8 +57,12 @@ LDR 3,1,2;       LOOP2COUNTERS: load DATALOC (mem loc IX1+2) variable into R3
 AIR 3,1;           increment DATALOC variable by 1
 STR 3,1,2;         store DATALOC variable from R3 back into memory loc IX1+2
 SOB 2,2,2;     END LOOP_2: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 33 (beginning of loop_2)
-LDR 1,1,3;     load the user number (mem loc IX1+3) into register 1
-OUT 1,1;       print user number
-LDR 1,1,5;     load the closest number (mem loc IX1+5) into register 1
-OUT 1,1;       print user number
+LDA 0,1,3;     R0 = pointer to user number (mem loc IX1+3). Used as arg to PRINTINT
+JSR 0,28,1;    PRINTINT
+LDR 0,3,10;    load and print \n
+OUT 0,1;
+LDA 0,1,5;     R0 = pointer to closest number (mem loc IX1+5). Used as arg to PRINTINT
+JSR 0,28,1;    PRINTINT
+LDR 0,3,10;    load and print \n
+OUT 0,1;
 HLT;           end of program
