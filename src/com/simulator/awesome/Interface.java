@@ -5,10 +5,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Arrays;
-import static java.lang.Character.forDigit;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Interface {
     private JTextField withValueInput;
@@ -45,7 +41,7 @@ public class Interface {
     private JLabel withValueLabel;
     private JLabel MFRLabel;
     private JLabel CCLabel;
-    private JButton loadLoadStoreDemoButton;
+    private JButton loadInstructionDemoButton;
     private JComboBox fileTypeComboBox;
     private JLabel R0Label;
     private JLabel IRLabel;
@@ -83,12 +79,12 @@ public class Interface {
         this.X3TextField.setText(Simulator.wordToString(this.context.getIndexRegister((short)3)));
 
         // Refresh other registers and fields: PC, MAR, MBR, MFR (not implemented), IR, CC (not implemented)
-        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()).substring(3,15)); //only 12 bits
-        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()).substring(3,15)); //only 12 bits
+        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()).substring(4,16)); //only 12 bits
+        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()).substring(4,16)); //only 12 bits
         this.MBRTextField.setText(Simulator.wordToString(this.context.getMemoryBufferRegister()));
-        this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(11,15)); // only 4 bits
+        this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(12,16)); // only 4 bits
         this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
-        this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(11,15)); // only 4 bits
+        this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(12,16)); // only 4 bits
         pollIOStatus();
     }
 
@@ -338,15 +334,18 @@ public class Interface {
             }
         });
 
-        loadLoadStoreDemoButton.addActionListener(new ActionListener() {
+        loadInstructionDemoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
 
-                // Load in the load/store demonstration program
-                assembler1.loadFile(basePath.concat("/static/hello-world.txt"));
-                context.loadProgram(assembler1.convertToMachineCode(), (short) 100, false);
+                // Load in the instruction demonstration program
+                assembler1.loadFile(basePath.concat("/static/demo-program.txt"));
+                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 100, false);
+
+                // Assign Indirect to this dataset to address 16;
+                context.setWord(16, programLocation);
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 100);
@@ -401,12 +400,12 @@ public class Interface {
                 // Not yet implemented, but saving this logic to run the simulator "headless"
                 Assembler assembler1 = new Assembler();
 
-                // Pre-fill some data into the computer to be used by the demo assembly program
+                // Assemble the program and load it into the computer at memory location 101.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler1.loadFile(basePath.concat("/static/program-one.txt"));
                 short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, false);
 
-                // Assign Indirect to this dataset to address 30;
+                // Assign Indirect to this dataset to address 16;
                 context.setWord(16, programLocation);
 
                 // IPL and Start the Execution Loop
