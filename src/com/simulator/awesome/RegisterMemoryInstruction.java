@@ -447,8 +447,8 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
         // IAR <- EA
         this.computeEffectiveAddress();
         if (this.isIndirect) this.evaluatePointerToAddress();
-        // R3 <- PC+1
-        this.context.setGeneralRegister((short) 3, (short) (this.context.getProgramCounter() + 1));
+        // R3 <- PC (we've already incremented PC at this point)
+        this.context.setGeneralRegister((short) 3, this.context.getProgramCounter());
         // IX3 <- IAR. This is
         this.context.setIndexRegister((short) 3, this.context.getInternalAddressRegister());
         // PC <- IAR
