@@ -687,9 +687,10 @@ public class Simulator {
                 break;
         }
         if (this.executionStep == 5){
-            this.dumpRegistersToJavaConsole();
-            this.dumpMemoryToJavaConsole();
-            this.cache.dump();
+            // Commenting out because this causing the program to hang
+            // this.dumpRegistersToJavaConsole();
+            // this.dumpMemoryToJavaConsole();
+            // this.cache.dump();
             this.executionStep = 1;
         } else {
             this.executionStep++;
