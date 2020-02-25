@@ -90,6 +90,12 @@ public class Assembler {
             // Strip out the comments, if any
             String strippedInstructions = currLine.split(";")[0];
 
+            // If the stripped Instruction is an empty string, pad with a NULL word to allow use for locals
+            if (strippedInstructions.length() == 0){
+                output_arr[lineCounter] = "0000000000000000";
+                continue;
+            }
+
             // Get the instruction
             String instruction[] = strippedInstructions.split(" ");
 

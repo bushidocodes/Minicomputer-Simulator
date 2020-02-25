@@ -339,6 +339,9 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
         if (this.didFault) return;
 
         if (this.context.isEqual() == false) {
+            // IAR <- EA
+            computeEffectiveAddress();
+            if (this.isIndirect) this.evaluatePointerToAddress();
             // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
@@ -427,6 +430,7 @@ class UnconditionalJumpToAddress extends RegisterMemoryInstruction {
  Octal: 016
  JSR x, address[,I]
  R3 <- PC+1;
+ IX3 <- EA (added to spec to allow the subroutine to use relative addresses)
  PC <- EA
  R0 should contain pointer to arguments
  Argument list should end with –1 (all 1s) value
@@ -445,6 +449,8 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
         if (this.isIndirect) this.evaluatePointerToAddress();
         // R3 <- PC+1
         this.context.setGeneralRegister((short) 3, (short) (this.context.getProgramCounter() + 1));
+        // IX3 <- IAR. This is
+        this.context.setIndexRegister((short) 3, this.context.getInternalAddressRegister());
         // PC <- IAR
         this.context.setProgramCounter(this.context.getInternalAddressRegister());
         this.context.setDidBranch();
