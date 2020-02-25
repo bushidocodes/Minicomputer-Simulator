@@ -7,26 +7,30 @@ AMR 1,0,17;       add value 96 from mem loc 17 to register 1
 STR 1,0,19;       store the value of DATALOC (program start + 96) into reserved mem loc 19
 LDR 2,0,31;    R2 (counter) = 20
 AIR 2,20;
+STR 1,0,20;       store counter in mem loc 20
 LDA 1,0,16,1;  initialize POINTERS - load program start address into R1
-AIR 1,20;         ptr_LOOP_1_START add immediate 20 to R1 (this is the address of LOOP_1 start)
+AIR 1,19;         ptr_LOOP_1_START add immediate 19 to R1 (this is the address of LOOP_1 start)
 STR 1,0,23;       store ptr_LOOP_1_START in reserved memory location 23
-AIR 1,31;         add immediate 11 to R1 (total 31) to calculate the instruction offset for instructions >31
+AIR 1,12;         add immediate 12 to R1 (total 31) to calculate the instruction offset for instructions >31
 STR 1,0,17;       ptr_INSTRUCTION_OFFSET store value (program start + 31) into user reserved mem loc 17
 LDX 2,0,17;       load value (program start + 31) into IX2. this is the address of the 32nd instruction
 SRC 1,8,1,0;   initialize CLOSEST_DISTANCE variable to max value (65535). Lsh R1 by 8 bits to get 1000 0100 0000 0000
 SRC 1,15,0,0;     Rsh R1 arithmetically 15 bits to get 1111 1111 1111 1111 (max value)
 STR 1,0,18;       store max value from R1 into user reserved memory loc 18
-LDX 1,0,29;    line break character -- load the pointer to the start of the ASCII Table into IX1
-LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
-IN 1,0;        LOOP_1: store the input from console keyboard in R1
+STR 2,0,20;    LOOP_1: store counter in mem loc 20
+IN 1,0;           store the input from console keyboard in R1
 STR 1,0,19,1;     store the input value from register 1 into mem(DATALOC) indirect
 LDA 0,0,19,1;     Load this address into R0 to use as an arg to PRINTINT
 JSR 0,28,1;
+LDX 1,0,29;       BUG: the first instruction after a JSR is skipped. this line has been duplicated as a workaround.
+LDX 1,0,29;       line break character -- load the pointer to the start of the ASCII Table into IX1
+LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
 LDR 0,3,10;       load and print \n
 OUT 0,1;
 LDR 3,0,19;       load DATALOC variable into R3 from mem loc 19
 AIR 3,1;          increment DATALOC variable by 1
 STR 3,0,19;       store DATALOC variable from R3 back into mem loc 19/
+LDR 2,0,20;       load counter from mem loc 20
 SOB 2,0,23,1;     END LOOP_1: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to beginning of loop_1
 HLT; only debugged up until this point. abandon all hope ye who pass this point.
 IN 0,0;        read one additional number USER_NUM from the user into R0
