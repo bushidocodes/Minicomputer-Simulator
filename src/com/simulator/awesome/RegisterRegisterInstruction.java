@@ -66,7 +66,7 @@ class MultiplyRegisterByRegister extends RegisterRegisterInstruction {
         // A <- RX
         this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
         // B <- RY
-        this.context.alu.setA(this.context.getGeneralRegister(this.secondRegisterId));
+        this.context.alu.setB(this.context.getGeneralRegister(this.secondRegisterId));
     }
 
     public void execute() {
