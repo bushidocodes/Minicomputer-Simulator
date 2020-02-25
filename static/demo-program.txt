@@ -1,12 +1,61 @@
-LDR 1,0,6; load register 1 with the contents of memory location 6 -- loads '8'
-STR 1,0,9; store the value in register 1 to memory location 9 -- stores '8' into loc 9
-LDR 2,0,6,1; load register 2 with the contents of memory location 6, indirect (no indexing) -- loads '32'
-LDX 1,0,8; load index register 1 with the contents of memory location 8 -- loads '32'
-STR 2,1,7,1; store the value in register 2 to memory location 11, indirect with indexing (x1) -- stores value '32' into loc 37 (EA(7+32)=39) and word 39 contains 11
-STR 2,1,8; store the value in register 2 to memory location 8 with indexing (x1) -- stores value '32' into loc 40 (EA(8+32)=40)
-STX 1,0,19; store the value in index register 1 to memory location 19 -- stores '32' into loc 19
-LDA 2,0,19; load the address 19 into register 2, no indexing -- loads '19' into general register 2
-STX 1,0,17; store the value of index register 2 into memory location 17 -- stores '32' in loc 17
-OUT 1,1; print the contents of R1 to the console printer
-IN 2,0; store the input from console keyboard in R2
-OUT 2,1; print the contents of R2 to the console printer
+AIR 1,31;     add immediate 31 to R1.
+AIR 1,5;      add immediate 5 to R1. c(R1) is now 36.
+STR 1,0,17;   store c(R1) into memory location 17. mem[17] is now 36.
+SIR 1,4;      subtract immediate 4 from R1. c(R1) is now 32.
+STR 1,0,17,1; store c(R1) into memory location 17 indirect. c(mem[17])=36 so 32 is stored in mem[36].
+AMR 1,0,17;   add c(mem[17]) to R1. c(R1) is now 68.
+LDX 1,0,17;   load IX1 with the value in memory location 17 (36).
+STR 1,1,5;    store c(R1) into mem[IX1+5]. stores value 68 into mem[41].
+SMR 1,1,5;    subtract memory[IX1+5] from R1. c(R1) is now 0.
+LDR 2,1,0;    load R2 with the value at mem[IX1+0]. c(R2) is now 32.
+LDR 2,0,17,1; load R2 with the contents of mem[17] indirect. c(R2) is now 32.
+LDR 1,0,17;   load R1 with the contents of mem[17]. c(R1) is now 36.
+LDX 2,1,5;    load IX2 with the value in mem[IX1+5]. c(IX2) is now 68.
+LDX 3,0,17,1; load IX3 with the value in mem[17] indirect. c(IX3) is now 32.
+LDA 0,0,17;   load the address 17 into R0. c(R0) is now 17.
+LDA 0,3,9;    load the address I3X+9 into R0. R0 is now 41.
+LDA 0,3,4,1;  load the address IX3+4 indirect into R0. c(r0) is now 32.
+STX 2,0,17;   store the value of IX2 to mem[17]. c(mem[17]) is now 68.
+IN 1,0;       store input from the console keyboard into R1.
+OUT 1,1;      print the contents of R1 to the console printer.
+LDX 1,0,16;   the bootstrap program stores a reference to the beginning of the user program at mem[16]. load the reference into IX1.
+LDR 1,0,31;   load R1 with 0. mem[31] is a special reserved location that holds the value 0.
+AIR 1,9;      add immediate 9 to R1. c(R1) is now 8. This will be used as a counter for the SOB instruction.
+LDR 0,3,9;    load R0 with the value in mem[IX3+9]. c(R0) is now 68. (0000 0000 0100 0100)_2
+SRC 0,1,1,0;  shift R0 left logically by 1 bit.
+SOB 1,1,24;   subtract 1 from R1. if R1 > 0, set PC to the 24th instruction in the program (the SRC instruction immediately preceding this). R0 Lsh 1 was performed 9 times.
+STR 0,3,8;    stores the shifted value of R0 into IX3+8, which is mem[40]. c(mem[40]) = (1000 1000 0000 0000)_2
+SRC 0,1,0,0;  shift R0 right arithmetically by 1 bit. c(R0) = (1100 0100 0000 0000)_2
+SRC 0,1,0,1;  shift R0 right logically by 1 bit.      c(R0) = (0110 0010 0000 0000)_2
+RRC 0,2,1,1;  rotate R0 left logically by 2 bits.     c(R0) = (1000 1000 0000 0001)_2
+RRC 0,3,0,0;  rotate R0 right arithmetically 3 bits.  c(R0) = (1001 0001 0000 0000)_2
+ORR 0,2;      logical OR of R0 || R2. c(R2)=32        c(R0) = (1001 0001 0010 0000)_2
+NOT 0;        logical NOT of R0.                      c(R0) = (0110 1110 1101 1111)_2
+AND 0,2;      logical AND of R0 && R2. c(R2)=32       c(R0) = (0000 0000 0000 0000)_2
+LDR 0,0,31;   load R0 with 0. mem[31] is a special reserved location that holds the value 0.
+TRR 0,1;      test equality of R0 and R1. c(R0) = c(R1) = 0. cc(4) <- 1
+AIR 0,2;      add immediate 2 to R0. c(R0) = 2.
+STR 2,0,17;   store R2 into mem[17]. mem[17]=32
+MLT 2,0;      multiply R2 by R0. (32*2)=64. c(R3)=64.
+LDR 2,0,17;   load mem[17] into R2. c(R2)=32
+DVD 2,0;      divide R2 by R0. (32/2)=16. c(R2)=16.
+LDR 1,0,16;   load program start address into R1.
+AIR 1,31;     add immediate 31 to program start.
+STR 1,0,17;   store program start+31 into mem[17].
+LDX 2,0,17;   load program start+31 into IX2. this will be used to for jumps past the 31st instruction.
+JMA 2,16;     unconditional jump to 48th instruction.
+HLT;          program execution would stop if the previous jump failed.
+JGE 1,2,18;   if R1 is greater than 0, jump to the 50th instruction.
+HLT;          program execution would stop if the previous jump failed.
+JNE 1,2,20;   if R1 is not equal to 0, jump to the 52nd instruction.
+HLT;          program execution would stop if the previous jump failed.
+LDR 0,0,31;   load R0 with 0. mem[31] is a special reserved location that holds the value 0.
+JZ 0,2,23;    if R0 is equal to 0, jump to the 55th instruction.
+HLT;          program execution would stop if the previous jump failed.
+JCC 3,2,25;   if cc(4)==1, jump to the 57th instruction. cc(4) was set in instruction 36.
+HLT;          program execution would stop if the previous jump failed.
+JSR 2,28;     jump to subroutine at instruction 60 and save return address. this increments R2 by 1 so c(R2=33).
+AIR 0,1;      add immediate 1 to R0 to show that the previous jump and return worked.   //never executed?? some sort of caching issue?
+HLT;          END OF PROGRAM
+AIR 2,1;      subroutine -- unreachable via normal execution due to preceding halt. adds 1 to R2.
+RFS 0;        return from subroutine with code 0.
