@@ -244,7 +244,7 @@ public class ALU {
     }
 
     public short[] getYAsShorts() {
-        short[] results = {};
+        short[] results = new short[2];
         results[0] = (short)(this.y >>> 16);
         results[1] = (short)(this.y << 16 >>> 16);
         return results;
