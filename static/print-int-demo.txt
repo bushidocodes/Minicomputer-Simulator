@@ -1,0 +1,7 @@
+LDR 0,0,31; load R0 with 0. 31 is a special address that always stores 0
+AIR 0,31; add 31 to R2
+AIR 0,11; add 11 to R2, yielding 42 the magic number
+STR 0,0,18; write the magic number to address 18
+LDR 0,0,31; load R0 with 0. 31 is a special address that always stores 0
+AIR 0,18; add 18 to R2
+JSR 0,28,1;

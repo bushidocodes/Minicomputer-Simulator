@@ -171,6 +171,12 @@ public class Interface {
                 short asciiTableLocation = context.loadProgram(assembler2.input_arr, (short) -129, true);
                 context.setWord(29, asciiTableLocation);
 
+                // Load the print-int subroutine
+                assembler2.loadFile(basePath.concat("/static/print-int.txt"));
+                assembler2.convertToMachineCode();
+                short printIntLocation = context.loadProgram(assembler2.output_arr, (short) -330, false);
+                context.setWord(28, printIntLocation);
+
                 refresh();
             }
         });
