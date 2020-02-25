@@ -4,3 +4,4 @@ AIR 0,11;
 STR 0,0,18;         c(18) = R0
 LDA 0,0,18;         R0 = 18, the address of my argument
 JSR 0,28,1;         PRINTINT(c(18))
+HLT;
