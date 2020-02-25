@@ -317,6 +317,10 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
+        // IAR <- EA
+        this.computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+
         // a <- RX
         this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
         // b <- 0
