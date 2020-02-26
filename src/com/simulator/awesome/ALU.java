@@ -32,8 +32,8 @@ public class ALU {
         int result = this.a + this.b;
 
         // Set Condition Variables
-        this.context.setOverflow(result > Short.MAX_VALUE);
-        this.context.setUnderflow(result < Short.MIN_VALUE);
+        this.context.setOverflow(result > Config.MAX_VALUE);
+        this.context.setUnderflow(result < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -47,8 +47,8 @@ public class ALU {
         int result = this.a - this.b;
 
         // Set Condition Variables
-        this.context.setOverflow(result > Short.MAX_VALUE);
-        this.context.setUnderflow(result < Short.MIN_VALUE);
+        this.context.setOverflow(result > Config.MAX_VALUE);
+        this.context.setUnderflow(result < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -63,7 +63,7 @@ public class ALU {
         this.context.setUnderflow(false);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setGreaterThan(Integer.parseUnsignedInt(context.wordToString(this.a),2) > Integer.parseUnsignedInt(context.wordToString(this.b),2)); // ensure values are unsigned
 
         // Just clear Y
         this.y = 0;
@@ -74,8 +74,8 @@ public class ALU {
         int result = this.a - 1;
 
         // Set Condition Variables
-        this.context.setOverflow(result > Short.MAX_VALUE);
-        this.context.setUnderflow(result < Short.MIN_VALUE);
+        this.context.setOverflow(result > Config.MAX_VALUE);
+        this.context.setUnderflow(result < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(result == this.b);
         this.context.setGreaterThan(result > this.b);
@@ -99,8 +99,8 @@ public class ALU {
         this.y = this.a / this.b;
         this.y2 = this.a % this.b;
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE || this.y2 > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE || this.y2 < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE || this.y2 > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE || this.y2 < Config.MIN_VALUE);
         this.context.setDivideByZero(this.b == 0);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -108,8 +108,8 @@ public class ALU {
 
     public void and(){
         this.y = this.a & this.b;
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -117,8 +117,8 @@ public class ALU {
 
     public void or(){
         this.y = this.a | this.b;
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -126,8 +126,8 @@ public class ALU {
 
     public void not(){
         this.y = ~this.a;
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(false);
         this.context.setGreaterThan(false);
@@ -137,8 +137,8 @@ public class ALU {
     public void arithmeticShiftLeft(){
         this.y = this.a << this.b;
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -147,8 +147,8 @@ public class ALU {
     public void arithmeticShiftRight(){
         this.y = this.a >> this.b;
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -158,8 +158,8 @@ public class ALU {
         // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
         this.y = this.a << this.b;
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -168,8 +168,8 @@ public class ALU {
     public void logicalShiftRight(){
         this.y = Utils.short_unsigned_right_shift(this.a, this.b );
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -190,8 +190,8 @@ public class ALU {
 
 //        this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.count) | (leastSignificantBits << (Short.SIZE - this.count - 1)))));
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -210,8 +210,8 @@ public class ALU {
 
         this.y = (signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.b) | (leastSignificantBits << (Short.SIZE - this.b - 1)))));
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -219,8 +219,8 @@ public class ALU {
     public void logicalRotateLeft(){
         this.y = ((this.a << this.b) | Utils.short_unsigned_right_shift(this.a, (Short.SIZE - this.b)));
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -228,8 +228,8 @@ public class ALU {
     public void logicalRotateRight(){
         this.y = Utils.short_unsigned_right_shift(this.a, this.b) | (this.a << (Short.SIZE - this.b));
 
-        this.context.setOverflow(this.y > Short.MAX_VALUE);
-        this.context.setUnderflow(this.y < Short.MIN_VALUE);
+        this.context.setOverflow(this.y > Config.MAX_VALUE);
+        this.context.setUnderflow(this.y < Config.MIN_VALUE);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
         this.context.setGreaterThan(this.a > this.b);
@@ -258,5 +258,6 @@ public class ALU {
         return this.y == 1;
     }
 
+    public int getAAsInt() { return this.a; }
 
 }

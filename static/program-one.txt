@@ -1,63 +1,91 @@
-LDR 1,0,16;    initialize the DATALOC variable - load R1 with the first program instruction address
+LDR 1,0,16;    R1 (DATALOC) = Base Address of this program
 LDX 2,0,30;       load IX2 with the pointer to the start of the base address table
 LDX 3,2,1;        load IX3 with the pointer to the first data value in base address table
 LDX 2,3,3;        load IX2 with the third data value in the base address table (96)
 STX 2,0,17;       store value 96 into user reserved mem loc 17
 AMR 1,0,17;       add value 96 from mem loc 17 to register 1
 STR 1,0,19;       store the value of DATALOC (program start + 96) into reserved mem loc 19
-LDR 2,0,31;    initialize the COUNTER variable - zero out R2
-AIR 2,20;         add immediate 20 to register 2 for loop COUNTER variable
+LDR 2,0,31;    R2 (counter) = 20
+AIR 2,20;
+STR 1,0,20;       store counter in mem loc 20
 LDA 1,0,16,1;  initialize POINTERS - load program start address into R1
-AIR 1,20;         ptr_LOOP_1_START add immediate 20 to R1 (this is the address of LOOP_1 start)
+AIR 1,21;         ptr_LOOP_1_START add immediate 21 to R1 (this is the address of LOOP_1 start)
 STR 1,0,23;       store ptr_LOOP_1_START in reserved memory location 23
-AIR 1,31;         add immediate 11 to R1 (total 31) to calculate the instruction offset for instructions >31
-STR 1,0,17;       ptr_INSTRUCTION_OFFSET store value (program start + 31) into user reserved mem loc 17
-LDX 2,0,17;       load value (program start + 31) into IX2. this is the address of the 32nd instruction
+AIR 1,12;         add immediate 12 to R1 (total 31) to calculate the instruction offset for instructions >31
+STR 1,0,24;       ptr_INSTRUCTION_OFFSET store value (program start + 31) into user reserved mem loc 24
+LDX 2,0,24;       load value (program start + 31) into IX2. this is the address of the 32nd instruction
+AIR 1,31;         INSTRUCTION_OFFSET_2 (program start +62)
+STR 1,0,25;       store INSTRUCTION_OFFSET_2 into user reserved mem loc 25
 SRC 1,8,1,0;   initialize CLOSEST_DISTANCE variable to max value (65535). Lsh R1 by 8 bits to get 1000 0100 0000 0000
 SRC 1,15,0,0;     Rsh R1 arithmetically 15 bits to get 1111 1111 1111 1111 (max value)
 STR 1,0,18;       store max value from R1 into user reserved memory loc 18
-LDX 1,0,29;    line break character -- load the pointer to the start of the ASCII Table into IX1
-LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
-IN 1,0;        LOOP_1: store the input from console keyboard in R1
-OUT 1,1;          print the value in R1 to the console printer
-LDR 0,3,10;       load ASCII new line character
-OUT 0,1;          print ASCII new line character
+STR 2,0,20;    LOOP_1: store counter in mem loc 20
+IN 1,0;           store the input from console keyboard in R1
 STR 1,0,19,1;     store the input value from register 1 into mem(DATALOC) indirect
+LDA 0,0,19,1;     Load this address into R0 to use as an arg to PRINTINT
+JSR 0,28,1;
+LDX 1,0,29;       line break character -- load the pointer to the start of the ASCII Table into IX1
+LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
+LDR 0,3,10;       load and print \n
+OUT 0,1;
 LDR 3,0,19;       load DATALOC variable into R3 from mem loc 19
 AIR 3,1;          increment DATALOC variable by 1
-STR 3,0,19;       store DATALOC variable from R3 back into mem loc 19/
+STR 3,0,19;       store DATALOC variable from R3 back into mem loc 19
+LDR 2,0,20;       load counter from mem loc 20
 SOB 2,0,23,1;     END LOOP_1: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to beginning of loop_1
-HLT; only debugged up until this point. abandon all hope ye who pass this point.
+LDR 0,3,31;    load and print N
+AIR 0,31;
+AIR 0,16;
+OUT 0,1;
 IN 0,0;        read one additional number USER_NUM from the user into R0
-STR 0,1,3;     store USER_NUM in memory loc IX1+3
+STR 0,0,20;    store USER_NUM into user reserved memory location 20
 AIR 2,20;      add immediate 20 to register 2 to reset loop COUNTER variable.
-SIR 3,20;      subtract immediate 20 from register 3 to set DATALOC pointer back to 130
-STR 3,1,2;     store DATALOC from R3 into memory loc IX1+2
-LDR 0,1,3;     LOOP_2: load R0 with USER_NUM (which is in loc IX1+3)
-SMR 0,1,2,1;     subtract the current number (mem[DATALOC]) from R0(USER_NUM)
-JGE 0,2,10;      if the diff that remains in R0 is >= 0 then jump to LT (address 42)
-LDR 1,1,2,1;     GT: else the diff is < 0. NUM_DATALOC is greater than USER_NUM so DISTANCE = NUM_DATALOC - USER_NUM. load NUM_DATALOC into R1
-SMR 1,1,3;         subtract USER_NUM from R1(NUM_DATALOC) -- distance between numbers is in R1 now
-STR 1,1,4;         store the distance in memory location IX1+4
-JMA 2,14;          jump to CHECKDISTANCE (address 46)
-JZ 0,2,13;       LT: if the value in R0 is zero, jump to ZERO (address 45)
-STR 0,1,4;         else the diff is in R0 currently. store the current number distance in memory location IX1+4
-JMA 2,14;          jump to CHECKDISTANCE (address 46)
-STR 1,1,4;       ZERO: USER_NUM is exactly equal to NUM_DATALOC. Store the distance (0) in memory location IX1+4.
-LDR 0,1,1;       CHECKDISTANCE: load the closest distance variable (mem loc IX1+1) into R0
-SMR 0,1,4;         subtract the current number distance (memloc IX1+4) from the closest distance number (R0)
-JGE 0,2,21;        if the diff that remains in R0 is >= 0 then jump to NEWCLOSEST (address 52)
-JMA 2,22;          otherwise, this number is not closer, jump to LOOP2COUNTERS to increment loop
-LDR 0,1,4;       NEWCLOSEST: reload current number distance into R0 -- fixes an issue on the first iteration
-STR 0,1,1;         the current number distance is less than closest distance, therefore curr number distance is closer so replace it in mem loc IX1+1
-LDR 1,1,2,1;       load the current number (IX1+2 indirect) in R1
-STR 1,1,5;         store the number from R1 (which has been found as the new closest number) into mem loc IX1+5
-LDR 3,1,2;       LOOP2COUNTERS: load DATALOC (mem loc IX1+2) variable into R3
-AIR 3,1;           increment DATALOC variable by 1
-STR 3,1,2;         store DATALOC variable from R3 back into memory loc IX1+2
-SOB 2,2,2;     END LOOP_2: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 33 (beginning of loop_2)
-LDR 1,1,3;     load the user number (mem loc IX1+3) into register 1
-OUT 1,1;       print user number
-LDR 1,1,5;     load the closest number (mem loc IX1+5) into register 1
-OUT 1,1;       print user number
-HLT;           end of program
+LDR 3,0,19;    load register 3 with DATALOC, which is at mem[19]
+SIR 3,20;      subtract immediate 20 from register 3 to set DATALOC back to the beginning of the array
+STR 3,0,19;    store DATALOC from R3 back into user reserved mem loc 19
+LDX 2,0,24;    load value (program start + 31) into IX2. this is the address of the 32nd instruction
+LDX 1,0,25;    load instruction offset 2 into IX1 (program start + 63) into IX1. address of the 63rd instruction
+LDR 0,0,20;    LOOP_2: load R0 with USER_NUM (which is in user reserved mem loc 20)
+SMR 0,0,19,1;     subtract the current number (mem[DATALOC]) from R0(USER_NUM)
+JCC 1,2,18;       if underflow is set (difference is less than 0), jump to GT (address 52).
+JMA 2,22;         if the diff that remains in R0 is >= 0 then jump to LT (address 56) -- this used to be JGE 0,2,17
+LDR 1,0,19,1;     GT: else the diff is < 0. mem[DATALOC]>USER_NUM so DISTANCE=mem[DATALOC]-USER_NUM. R1<-mem[DATALOC]
+SMR 1,0,20;          subtract USER_NUM from R1-- distance between numbers is in R1 now
+STR 1,0,21;          store the distance in user reserved mem loc 21
+JMA 2,29;            jump to CHECKDISTANCE (address 63)
+JZ 0,2,25;        LT: if the value in R0 is zero, jump to ZERO (address 59)
+STR 0,0,21;          else the diff is in R0 currently. store the current number distance in user reserved mem loc 21
+JMA 2,29;            jump to CHECKDISTANCE (address 63)
+STR 0,0,21;       ZERO: USER_NUM is exactly equal to NUM_DATALOC. Store the distance (0) in user reserved mem loc 21
+LDR 0,0,19,1;         User number is the same as current number. load the current number into R0
+STR 0,0,22;           store the current number in closestNumValue (mem 22)
+JMA 1,14;             Jump to the end (after loop2) (address 79)
+LDR 0,0,26;       CHECKDISTANCE: load firstLoopFlag into R0 from mem[26]
+JZ 0,1,3;            if this is the first loop, jump to NEWCLOSEST (address 68)
+LDR 0,0,18;           load the closest distance variable (mem loc 18) into R0
+SMR 0,0,21;           subtract the current number distance (memloc 21) from the closest distance number (R0)
+JCC 1,1,10;            if underflow is set the number is not closer, jump to LOOP2COUNTERS (address 75).
+LDR 0,0,26;       NEWCLOSEST: load firstLoopFlag
+AIR 0,1;              increment firstLoopFlag
+STR 0,0,26;           store firstLoopFlag
+LDR 0,0,21;           reload current number distance into R0 -- fixes an issue on the first iteration
+STR 0,0,18;           the current number distance is less than closest distance, so replace it in mem[18]]
+LDR 1,0,19,1;         load the current number (mem loc 19 indirect) in R1
+STR 1,0,22;           store the number from R1 (which has been found as the new closest number) into mem loc 22
+LDR 3,0,19;       LOOP2COUNTERS: load DATALOC (mem loc 19) variable into R3
+AIR 3,1;              increment DATALOC variable by 1
+STR 3,0,19;           store DATALOC variable from R3 back into memory loc 19
+SOB 2,2,14;     END LOOP_2: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 48 (beginning of loop_2)
+LDA 0,0,20;    R0 = pointer to user number (mem loc 20). Used as arg to PRINTINT
+JSR 0,28,1;    PRINTINT
+LDX 1,0,29;    load ASCII table
+LDX 3,1,1;
+LDR 0,3,10;    load and print \n
+OUT 0,1;
+LDR 0,3,31;    load and print S
+AIR 0,31;
+AIR 0,21;
+OUT 0,1;
+LDA 0,0,22;    R0 = pointer to closest number (mem loc 22). Used as arg to PRINTINT
+JSR 0,28,1;    PRINTINT
+HLT;
