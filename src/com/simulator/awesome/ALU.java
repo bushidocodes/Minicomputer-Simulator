@@ -63,7 +63,7 @@ public class ALU {
         this.context.setUnderflow(false);
         this.context.setDivideByZero(false);
         this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setGreaterThan(Integer.parseUnsignedInt(context.wordToString(this.a),2) > Integer.parseUnsignedInt(context.wordToString(this.b),2)); // ensure values are unsigned
 
         // Just clear Y
         this.y = 0;
