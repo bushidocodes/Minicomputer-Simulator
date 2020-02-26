@@ -32,11 +32,11 @@ public class ALU {
         int result = this.a + this.b;
 
         // Set Condition Variables
-        this.context.setOverflow(result > Config.MAX_VALUE);
-        this.context.setUnderflow(result < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(result, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(result, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
         // Write result to proper output register
         this.y = result;
@@ -47,11 +47,11 @@ public class ALU {
         int result = this.a - this.b;
 
         // Set Condition Variables
-        this.context.setOverflow(result > Config.MAX_VALUE);
-        this.context.setUnderflow(result < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(result, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(result, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
         // Write result to proper output register
         this.y = result;
@@ -62,8 +62,8 @@ public class ALU {
         this.context.setOverflow(false);
         this.context.setUnderflow(false);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(Integer.parseUnsignedInt(context.wordToString(this.a),2) > Integer.parseUnsignedInt(context.wordToString(this.b),2)); // ensure values are unsigned
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
         // Just clear Y
         this.y = 0;
@@ -74,11 +74,11 @@ public class ALU {
         int result = this.a - 1;
 
         // Set Condition Variables
-        this.context.setOverflow(result > Config.MAX_VALUE);
-        this.context.setUnderflow(result < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(result, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(result, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(result == this.b);
-        this.context.setGreaterThan(result > this.b);
+        this.context.setEqual(Integer.compareUnsigned(result, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(result, this.b) > 0);
 
         this.y = result;
     }
@@ -86,48 +86,48 @@ public class ALU {
     public void multiply() {
         int result = this.a * this.b;
 
-        this.context.setOverflow(result > Integer.MAX_VALUE);
-        this.context.setUnderflow(result < Integer.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(result, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(result, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
         this.y = result;
     }
 
     public void divide() {
-        this.y = this.a / this.b;
-        this.y2 = this.a % this.b;
+        this.y = Integer.divideUnsigned(this.a, this.b);
+        this.y2 = Integer.remainderUnsigned(this.a, this.b);
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE || this.y2 > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE || this.y2 < Config.MIN_VALUE);
-        this.context.setDivideByZero(this.b == 0);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0 || Integer.compareUnsigned(this.y2, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0 || Integer.compareUnsigned(this.y2, Config.MIN_VALUE) < 0);
+        this.context.setDivideByZero(Integer.compareUnsigned(this.b, 0) == 0);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void and(){
         this.y = this.a & this.b;
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void or(){
         this.y = this.a | this.b;
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void not(){
         this.y = ~this.a;
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
         this.context.setEqual(false);
         this.context.setGreaterThan(false);
@@ -137,42 +137,42 @@ public class ALU {
     public void arithmeticShiftLeft(){
         this.y = this.a << this.b;
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void arithmeticShiftRight(){
         this.y = this.a >> this.b;
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void logicalShiftLeft(){
         // Note: Logical and arithmetic left shifts operate identically.
         // https://www.quora.com/Why-is-there-no-unsigned-left-shift-operator-in-Java
         this.y = this.a << this.b;
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void logicalShiftRight(){
         this.y = Utils.short_unsigned_right_shift(this.a, this.b );
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void arithmeticRotateLeft(){
         // Arithmetic rotation - preserve the sign bit, rotating all other bits
@@ -190,11 +190,11 @@ public class ALU {
 
 //        this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.count) | (leastSignificantBits << (Short.SIZE - this.count - 1)))));
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void arithmeticRotateRight(){
         // Arithmetic rotation - preserve the sign bit, rotating all other bits
@@ -210,29 +210,29 @@ public class ALU {
 
         this.y = (signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.b) | (leastSignificantBits << (Short.SIZE - this.b - 1)))));
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void logicalRotateLeft(){
         this.y = ((this.a << this.b) | Utils.short_unsigned_right_shift(this.a, (Short.SIZE - this.b)));
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void logicalRotateRight(){
         this.y = Utils.short_unsigned_right_shift(this.a, this.b) | (this.a << (Short.SIZE - this.b));
 
-        this.context.setOverflow(this.y > Config.MAX_VALUE);
-        this.context.setUnderflow(this.y < Config.MIN_VALUE);
+        this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
+        this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0);
         this.context.setDivideByZero(false);
-        this.context.setEqual(this.a == this.b);
-        this.context.setGreaterThan(this.a > this.b);
+        this.context.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
+        this.context.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public short getYAsShort() {

@@ -41,13 +41,13 @@ JNE 0,3,0;      if R0 (quotient) > 0 THEN Jump to base address + 32 (DVD).
 LDR 3,0,31;     R3 = 16
 AIR 3,16;
 LDA 0,2,2;      R0 = @local[2], @char[0]
-LDR 2,0,31;     R2 = NULL
+LDA 2,0,0;      R2 = NULL
 STR 0,0,17;     do {
 LDX 1,0,17;         IDX1 = R0, address of char[i]
 LDR 1,1,0;          R1 = c(IDX1), value of char[i]
 OUT 1,1;            print value of char[i]
 STR 2,1,0;          char[i] = NULL
 AIR 0,1;            R0++
-SOB 3,3,11;     } while (R3 > 0)
+SOB 3,3,11;     } while (--R3 > 0)
 LDR 3,2,1;      R3 = local[1] (return address)
 RFS 0;          Return from Subroutine with 0 error code
