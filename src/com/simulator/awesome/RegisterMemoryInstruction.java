@@ -580,7 +580,7 @@ class JumpGreaterThanOrEqualTo extends RegisterMemoryInstruction {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        if (this.context.isGreaterThan() || this.context.isEqual() && this.context.alu.getAAsInt() == 0) {
+        if (this.context.isGreaterThan() || (this.context.isEqual() && this.context.alu.getAAsInt() == 0)) {
             // PC <- IAR
             this.context.setProgramCounter(this.context.getInternalAddressRegister());
             this.context.setDidBranch();
