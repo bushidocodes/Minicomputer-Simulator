@@ -40,12 +40,12 @@ LDR 3,0,19;    load register 3 with DATALOC, which is at mem[19]
 SIR 3,20;      subtract immediate 20 from register 3 to set DATALOC back to the beginning of the array
 STR 3,0,19;    store DATALOC from R3 back into user reserved mem loc 19
 LDX 2,0,24;    load value (program start + 31) into IX2. this is the address of the 32nd instruction
-LDX 1,0,25;    load instruction offset 2 into IX1 (program start + 63) into IX1. this is the address of the 63rd instruction
+LDX 1,0,25;    load instruction offset 2 into IX1 (program start + 63) into IX1. address of the 63rd instruction
 LDR 0,0,20;    LOOP_2: load R0 with USER_NUM (which is in user reserved mem loc 20)
 SMR 0,0,19,1;     subtract the current number (mem[DATALOC]) from R0(USER_NUM)
 JCC 1,2,14;       if underflow is set (difference is less than 0), jump to GT (address 48).
 JMA 2,18;         if the diff that remains in R0 is >= 0 then jump to LT (address 52) -- this used to be JGE 0,2,17
-LDR 1,0,19,1;     GT: else the diff is < 0. mem[DATALOC] is greater than USER_NUM so DISTANCE = mem[DATALOC] - USER_NUM. load mem[DATALOC] into R1
+LDR 1,0,19,1;     GT: else the diff is < 0. mem[DATALOC]>USER_NUM so DISTANCE=mem[DATALOC]-USER_NUM. R1<-mem[DATALOC]
 SMR 1,0,20;          subtract USER_NUM from R1-- distance between numbers is in R1 now
 STR 1,0,21;          store the distance in user reserved mem loc 21
 JMA 2,25;            jump to CHECKDISTANCE (address 59)
@@ -65,9 +65,9 @@ LDR 0,0,26;       NEWCLOSEST: load firstLoopFlag
 AIR 0,1;              increment firstLoopFlag
 STR 0,0,26;           store firstLoopFlag
 LDR 0,0,21;           reload current number distance into R0 -- fixes an issue on the first iteration
-STR 0,0,18;           the current number distance is less than closest distance, therefore curr number distance is closer so replace it in mem loc 18
+STR 0,0,18;           the current number distance is less than closest distance, so replace it in mem[18]]
 LDR 1,0,19,1;         load the current number (mem loc 19 indirect) in R1
-STR 1,0,22;           store the number from R1 (which has been found as the new closest number) into mem loc 22 //
+STR 1,0,22;           store the number from R1 (which has been found as the new closest number) into mem loc 22
 LDR 3,0,19;       LOOP2COUNTERS: load DATALOC (mem loc 19) variable into R3
 AIR 3,1;              increment DATALOC variable by 1
 STR 3,0,19;           store DATALOC variable from R3 back into memory loc 19
@@ -88,3 +88,4 @@ AIR 0,21;
 OUT 0,1;
 LDA 0,0,22;    R0 = pointer to closest number (mem loc 22). Used as arg to PRINTINT
 JSR 0,28,1;    PRINTINT
+HLT;
