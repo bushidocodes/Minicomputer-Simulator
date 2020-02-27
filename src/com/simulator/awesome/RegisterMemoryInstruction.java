@@ -433,7 +433,6 @@ class UnconditionalJumpToAddress extends RegisterMemoryInstruction {
  IX3 <- EA (added to spec to allow the subroutine to use relative addresses)
  PC <- EA
  R0 should contain pointer to arguments
- Argument list should end with –1 (all 1s) value
  */
 class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
     public JumpAndSaveReturnAddress(short word, Simulator context) {
