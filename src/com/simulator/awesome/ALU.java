@@ -96,8 +96,8 @@ public class ALU {
     }
 
     public void divide() {
-        this.y = Integer.divideUnsigned(this.a, this.b);
-        this.y2 = Integer.remainderUnsigned(this.a, this.b);
+        this.y = Integer.divideUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
+        this.y2 = Integer.remainderUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
 
         this.context.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0 || Integer.compareUnsigned(this.y2, Config.MAX_VALUE) > 0);
         this.context.setUnderflow(Integer.compareUnsigned(this.y, Config.MIN_VALUE) < 0 || Integer.compareUnsigned(this.y2, Config.MIN_VALUE) < 0);
