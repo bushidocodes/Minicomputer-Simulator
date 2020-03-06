@@ -61,4 +61,12 @@ public class MachineStatusRegister {
     public void setIsDebugging(boolean isDebugging){
         this.msr = (byte)setNthLeastSignificantBit(this.msr, 4, isDebugging);
     }
+
+    public void reset() {
+        this.setSupervisorMode(false);
+        this.setReadyForInput(false);
+        this.setIsRunning(false);
+        // Do not reset isInteractive. This breaks the UI
+        // Do not reset isDebugging
+    }
 }

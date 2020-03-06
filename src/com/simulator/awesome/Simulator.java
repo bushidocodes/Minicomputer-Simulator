@@ -69,7 +69,7 @@ public class Simulator {
         this.alu = new ArithmeticLogicUnit(this);
         this.pc = new ProgramCounter();
         this.cc = new ConditionCode();
-        this.msr = new MachineStatusRegister();
+        this.msr.reset();
         this.mfr = new MachineFaultRegister();
         this.io.reset();
         this.iar = 0;
