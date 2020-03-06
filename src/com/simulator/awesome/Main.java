@@ -12,14 +12,13 @@ class Main {
 
             Simulator myComputer = new Simulator(2048);
 
-
             if (isDebug) {
-                myComputer.dumpMemoryToJavaConsole();
+                myComputer.memory.dump();
             }
 
             if (isInteractive) {
                 myComputer.attachConsole();
-                myComputer.initializeIOBuffers();
+                myComputer.io.initializeIOBuffers();
                 Interface myInterface = new Interface(myComputer);
                 JFrame frame = new JFrame("CSCI 6461 Computer Simulator - Yellow Team");
                 frame.setContentPane(myInterface.rootPanel);
@@ -49,7 +48,7 @@ class Main {
 
                 // IPL and Start the Execution Loop
                 myComputer.powerOn((short) 100);
-                myComputer.startExecutionLoop();
+                myComputer.cu.startExecutionLoop();
             }
 
         } catch (Exception e) {

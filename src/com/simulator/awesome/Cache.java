@@ -2,6 +2,8 @@ package com.simulator.awesome;
 
 import java.util.ArrayList;
 
+import static com.simulator.awesome.Utils.wordToString;
+
 public class Cache {
     private ArrayList<CacheLine> contents;
     static final short capacity = 16;
@@ -45,16 +47,16 @@ public class Cache {
     }
 
     public void dump(){
-        this.context.engineerConsolePrintLn("===============================");
-        this.context.engineerConsolePrintLn("Cache");
-        this.context.engineerConsolePrintLn("===============================");
-        if (this.contents.size() == 0) this.context.engineerConsolePrintLn("Cache Empty!");
+        this.context.io.engineerConsolePrintLn("===============================");
+        this.context.io.engineerConsolePrintLn("Cache");
+        this.context.io.engineerConsolePrintLn("===============================");
+        if (this.contents.size() == 0) this.context.io.engineerConsolePrintLn("Cache Empty!");
         this.contents.stream().forEach(cacheLine -> {
-            this.context.engineerConsolePrintLn("Tag: " + cacheLine.getTag());
-            this.context.engineerConsolePrintLn("    Word 0: " + Simulator.wordToString(cacheLine.getWord((short)0)));
-            this.context.engineerConsolePrintLn("    Word 1: " + Simulator.wordToString(cacheLine.getWord((short)1)));
-            this.context.engineerConsolePrintLn("    Word 2: " + Simulator.wordToString(cacheLine.getWord((short)2)));
-            this.context.engineerConsolePrintLn("    Word 3: " + Simulator.wordToString(cacheLine.getWord((short)3)));
+            this.context.io.engineerConsolePrintLn("Tag: " + cacheLine.getTag());
+            this.context.io.engineerConsolePrintLn("    Word 0: " + wordToString(cacheLine.getWord((short)0)));
+            this.context.io.engineerConsolePrintLn("    Word 1: " + wordToString(cacheLine.getWord((short)1)));
+            this.context.io.engineerConsolePrintLn("    Word 2: " + wordToString(cacheLine.getWord((short)2)));
+            this.context.io.engineerConsolePrintLn("    Word 3: " + wordToString(cacheLine.getWord((short)3)));
         });
     }
 

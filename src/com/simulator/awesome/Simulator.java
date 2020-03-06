@@ -1,61 +1,28 @@
 package com.simulator.awesome;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.LinkedBlockingQueue;
+import static com.simulator.awesome.Utils.*;
+
 public class Simulator {
 
-    // The number of 16-bit words we have in memory
-    private int wordCount;
+    // Control Unit, including the IR
+    public ControlUnit cu;
 
-    // The linear memory of our simulated system.
-    // Shorts in Java are 16-bit, so this is word addressable
-    // The index represents the nth word, zero indexed
-    private Short memory[];
+    // Memory Subsystem, including the MAR, MBR, Cache, and Linear Memory
+    public Memory memory;
 
     // Program Counter: Address of the next instruction to be executed
-    // Uses the least significant 12 bits
-    private short pc;
-    static final short PC_MASK = (short)0b0000111111111111;
-
-    // Memory Address Register. Holds the address of the word to be fetched from memory
-    private short mar;
-    static final short MAR_MASK = (short)0b0000111111111111;
-
-    // Memory Buffer Register. Holds the word just fetched or the word to be stored into memory.
-    // Also known as the Memory Data Register (MDR) in certain architectures
-    private short mbr;
-
-    // Instruction register. Holds the instruction to be executed
-    // In certain architectures, also known as the current instruction register (CIR)
-    private short ir;
+    public ProgramCounter pc;
 
     // Internal Address Register. Used for moving data around in the CPU.
     private short iar;
 
-    // Condition code.
-    // Uses the least significant 4 bits
-    // set when arithmetic/logical operations are executed
-    // it has four 1-bit elements: overflow, underflow, division by zero, equal-or-not.
-    // ID   |   Fault
-    // 0001 |   Overflow
-    // 0010 |   Underflow
-    // 0100 |   Division by Zero
-    // 1000 |   Equal
+    // Condition code: overflow, underflow, division by zero, equal-or-not.
+    public ConditionCode cc;
 
-    // Note: Adding Upper bits that cannot be addressed by OPCODE 12 - Jump If Condition Code
-    // 10000 |   Greater Than
-    private byte cc;
+    // Machine Fault Register: Illegal Access to Privileged memory, Illegal Trap, Illegal OpCode, Access beyond bounds
+    public MachineFaultRegister mfr;
 
-    // Machine Fault Register.
-    // Contains the ID code of a machine fault after it occurs
-    // DO NOT IMPLEMENT UNTIL PHASE 3
-    // ID   |   Fault
-    // 0001 |   Illegal Memory Address to Reserved Locations
-    // 0010 |   Illegal TRAP code
-    // 0100 |   Illegal Operation Code
-    // 1000 |   Illegal Memory Address beyond Config.WORD_COUNT - 1
-    private byte mfr;
+    public MachineStatusRegister msr;
 
     // The four general purpose registers
     private short r0, r1, r2, r3;
@@ -63,63 +30,22 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
-    // Cache
-    public Cache cache = new Cache(this);
+    // Arithmetic Logic Unit
+    public ArithmeticLogicUnit alu;
 
-    // IO buffers handle the connections between IO devices and the computer
-    private LinkedBlockingQueue[] outputBuffer = new LinkedBlockingQueue[Config.OUTPUT_IO_BUFFER_SIZE];
-    private LinkedBlockingQueue[] inputBuffer = new LinkedBlockingQueue[Config.INPUT_IO_BUFFER_SIZE];
-    private LinkedBlockingQueue engineerConsoleOutputBuffer = new LinkedBlockingQueue();
-
-    // State for when computer is ready to accept input
-    private boolean readyForInput = false;
-
-    /**
-     * ALU Registers
-     */
-
-    public ALU alu;
-
-    // TODO: Phase 3: Add registers to interact with the FPU
-
-    /**
-     * Simulator State without direct HW equivalent
-     */
-
-    private boolean isRunning = false;
-    private Instruction currentInstruction;
-    private boolean didBranch = false;
-    public boolean isInteractive = false;
-    public boolean isDebug = false;
-
-    /** The execution step, 1-5
-     * 1. Instruction Fetch
-     * 2. Instruction Decode
-     * 3. Operand Fetch
-     * 4. Execute
-     * 5. Result Store
-     **/
-    private int executionStep = 1;
+    // I/O Subsystem
+    public InputOutput io;
 
     Simulator(int wordCount) {
-
-        // Allocate and zero out Linear Memory
-        this.wordCount = Config.WORD_COUNT;
-        this.memory = new Short[this.wordCount];
-        for (int i = 0; i < this.wordCount; i++) {
-            this.memory[i] = 0;
-        }
-
-        // Allocate Arithmetic Logic Unit
-        this.alu = new ALU(this);
-
-        // Allocate and zero out all Registers
-        this.pc = 0;
-        this.cc = 0;
-        this.ir = 0;
-        this.mar = 0;
-        this.mbr = 0;
-        this.mfr = 0;
+        this.cu = new ControlUnit(this);
+        this.memory = new Memory(this, wordCount);
+        this.alu = new ArithmeticLogicUnit(this);
+        this.io = new InputOutput(this);
+        this.pc = new ProgramCounter();
+        this.cc = new ConditionCode();
+        this.msr = new MachineStatusRegister();
+        this.mfr = new MachineFaultRegister();
+        this.iar = 0;
         this.r0 = 0;
         this.r1 = 0;
         this.r2 = 0;
@@ -130,39 +56,23 @@ public class Simulator {
     }
 
     public void attachConsole(){
-        this.isInteractive = true;
+        this.msr.setIsInteractive(true);
     }
 
     public void detachConsole(){
-        this.isInteractive = false;
-    }
-
-    public void activateDebugger() {
-        this.isDebug = true;
-    }
-
-    public void deactivateDebugger() {
-        this.isDebug = false;
+        this.msr.setIsInteractive(false);
     }
 
     public void reset(){
-        // Allocate and zero out Linear Memory
-        this.wordCount = Config.WORD_COUNT;
-        this.memory = new Short[this.wordCount];
-        for (int i = 0; i < this.wordCount; i++) {
-            this.memory[i] = 0;
-        }
-
-        // Allocate Arithmetic Logic Unit
-        this.alu = new ALU(this);
-
-        // Allocate and zero out all Registers
-        this.pc = 0;
-        this.cc = 0;
-        this.ir = 0;
-        this.mar = 0;
-        this.mbr = 0;
-        this.mfr = 0;
+        this.cu = new ControlUnit(this);
+        this.memory.reset();
+        this.alu = new ArithmeticLogicUnit(this);
+        this.pc = new ProgramCounter();
+        this.cc = new ConditionCode();
+        this.msr = new MachineStatusRegister();
+        this.mfr = new MachineFaultRegister();
+        this.io.reset();
+        this.iar = 0;
         this.r0 = 0;
         this.r1 = 0;
         this.r2 = 0;
@@ -170,260 +80,7 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
-
-        // Clear IO buffers and states
-        setReadyForInput(false);
-        emptyInputBuffer();
-        emptyOutputBuffer();
-        emptyEngineersConsoleBuffer();
     }
-
-    public void setDidBranch() {
-        this.didBranch = true;
-    }
-
-    // Given an address, get the block containing that word
-    public short[] getBlock(short address){
-        // Get the base block-aligned address
-        short base = (short)(address & 0b1111111111111100);
-        short[] result = {
-                this.memory[base],
-                this.memory[base + 1],
-                this.memory[base + 2],
-                this.memory[base + 3]
-        };
-        return result;
-    }
-
-    public short getWord(int address) {
-        if (address < 6) {
-            // Illegally accessing protected memory
-            // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
-
-            this.setIsRunning(false);
-            if (!this.isInteractive) {
-                engineerConsolePrintLn("Not Interactive");
-                System.exit(1);
-            }
-        } else if (address > this.wordCount) {
-            // Illegally accessing protecting memory above limit
-            // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            engineerConsolePrintLn("Illegally accessing address above highest memory address. Halting!");
-            this.setIsRunning(false);
-            if (!this.isInteractive) {
-                System.exit(1);
-            }
-        }
-
-        Short cacheResult = this.cache.fetch((short)address);
-        if (cacheResult != null) {
-            this.engineerConsolePrintLn("Cache Hit! " + address + " was in cache!");
-            return cacheResult;
-        } else {
-            short tag = Utils.short_unsigned_right_shift((short)address, 2);
-            this.engineerConsolePrintLn("Cache Miss! Adding " + address + " as tag " + tag);
-            this.cache.store(tag, this.getBlock((short)address));
-            return this.memory[address];
-        }
-    }
-
-    public void setWord(int address, short value){
-        if (address < 6) {
-            // Illegally accessing protected memory
-            // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            engineerConsolePrintLn("setWord - Illegally accessing protecting address! Halting");
-            this.setIsRunning(false);
-            if (!this.isInteractive) {
-                System.exit(1);
-            }
-        } else if (address > this.wordCount) {
-            // Illegally accessing protecting memory above limit
-            // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            engineerConsolePrintLn("Illegally accessing address above highest memory address. Halting!");
-            this.setIsRunning(false);
-            if (!this.isInteractive) {
-                System.exit(1);
-            }
-        } else {
-            try {
-                this.cache.updateIfPresent((short)address, value);
-                this.memory[address] = value;
-            } catch (Exception err) {
-                System.err.println("Accessing " + address + " causes " + err);
-            }
-        }
-    }
-
-    public short getProgramCounter() {
-        return (short) (this.pc & Simulator.PC_MASK);
-    }
-
-    public void setProgramCounter(short unmaskedPC) {
-        this.pc = (short) (unmaskedPC & Simulator.PC_MASK);
-    }
-
-    public byte getConditionCode() { return (byte) (this.cc); };
-
-    public byte getMachineFaultRegister() { return (byte) (this.mfr); };
-
-    public short getInstructionRegister() {
-        return (short) (this.ir);
-    }
-
-    public void setInstructionRegister(short instructionRegister) {
-        this.ir = (short) (instructionRegister);
-    }
-
-    public short getWordCount() {
-        return (short) (this.wordCount);
-    }
-
-    public void addWordToOutputBuffer(short deviceId, short word) {
-        this.outputBuffer[deviceId].add(word);
-    }
-
-    public short getFirstWordFromOutputBuffer(short deviceId){
-            return (short) outputBuffer[deviceId].remove();
-    }
-
-    public boolean isOutputBufferNull(short deviceId){
-        return outputBuffer[deviceId].peek() == null ? true : false;
-    }
-
-    public void emptyOutputBuffer(){
-        for (int i=0; i<outputBuffer.length; i++) {
-            outputBuffer[i].clear();
-        }
-    }
-
-    public void addWordToInputBuffer(short deviceId, short inputBuffer) {
-        this.inputBuffer[deviceId].add(inputBuffer);
-    }
-
-    public short getFirstWordFromInputBuffer(short deviceId){
-        return (short) inputBuffer[deviceId].remove();
-    }
-
-    public boolean isInputBufferNull(short deviceId){
-        return inputBuffer[deviceId].peek() == null ? true : false;
-    }
-
-    public void emptyInputBuffer(){
-        for (int i=0; i<inputBuffer.length; i++) {
-            inputBuffer[i].clear();
-        }
-    }
-
-    public boolean getReadyForInput(){
-        return this.readyForInput;
-    }
-
-    public void setReadyForInput(boolean state){
-        this.readyForInput = state;
-    }
-
-    public boolean isEngineersConsoleBufferNull(){
-        return engineerConsoleOutputBuffer.peek() == null ? true : false;
-    }
-
-    public void emptyEngineersConsoleBuffer(){
-        engineerConsoleOutputBuffer.clear();
-    }
-
-    // Prints a line of text to the engineer's console
-    public void engineerConsolePrintLn(String outputString){
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-        Date timestamp = new Date();
-        engineerConsoleOutputBuffer.add("["+formatter.format(timestamp)+"]: "+outputString+"\n");
-    }
-
-    public String getFirstLineFromEngineersOutputBuffer(){
-        return String.valueOf(engineerConsoleOutputBuffer.remove());
-    }
-
-    /**
-     * A Helper getter for bit arrays
-     * @param bitArray - The integral value that we are treating as an array of bits
-     * @param offset - The offset from the least significant bit. 0 is b0001
-     * @return - True if bit is set
-     */
-    private static boolean getNthLeastSignificantBit(int bitArray, int offset) {
-        int getterMask = (0b00000001<<offset);
-        return (bitArray & getterMask) == getterMask;
-    }
-
-    /**
-     * A Helper setting for bit arrays
-     * @param bitArray - The integral that we are treating as an array of bits
-     * @param offset - The offset from the least significant bit. 0 is b0001
-     * @param isSet - The resulting bit array after manipulating the bit
-     */
-    private static int setNthLeastSignificantBit(int bitArray, int offset, boolean isSet) {
-        int setterMask = (0b00000001<<offset);
-        return isSet ? (bitArray | setterMask) : (bitArray & ~setterMask);
-    }
-
-    public boolean isOverflow() {
-        return getNthLeastSignificantBit(this.cc, 0);
-    }
-
-    public void setOverflow(boolean isOverflow) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 0, isOverflow);
-    }
-
-    public boolean isUnderflow() {
-        return getNthLeastSignificantBit(this.cc, 1);
-    }
-
-    public void setUnderflow(boolean isUnderflow) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 1, isUnderflow);
-    }
-
-    public boolean isDivideByZero() {
-        return getNthLeastSignificantBit(this.cc, 2);
-    }
-
-    public void setDivideByZero(boolean isDivideByZero) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 2, isDivideByZero);
-    }
-
-    public boolean isEqual() {
-        return getNthLeastSignificantBit(this.cc, 3);
-    }
-
-    public void setEqual(boolean isEqualOrNot) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
-    }
-
-    public boolean isGreaterThan() {
-        return getNthLeastSignificantBit(this.cc, 4);
-    }
-
-    public void setGreaterThan(boolean isGreaterThan) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 4, isGreaterThan);
-    }
-
-    // There isn't a bit for this directly, but we can determine this if not greater than or equal
-    public boolean isLessThan() {
-        return !this.isEqual() && !this.isGreaterThan();
-    }
-
-    public boolean isCondition(int conditionCode){
-        switch (conditionCode) {
-            case 0:
-                return this.isOverflow();
-            case 1:
-                return this.isUnderflow();
-            case 2:
-                return this.isDivideByZero();
-            case 3:
-                return this.isEqual();
-            default:
-                return false;
-        }
-    }
-
 
     public short getInternalAddressRegister() {
         return this.iar;
@@ -431,33 +88,6 @@ public class Simulator {
 
     public void setInternalAddressRegister(short value) {
         this.iar = value;
-    }
-
-    public short getMemoryAddressRegister() {
-        return (short) (this.mar & Simulator.MAR_MASK);
-    }
-
-
-    public void setMemoryAddressRegister(short unmaskedMAR) {
-        this.mar = (short) (unmaskedMAR & Simulator.PC_MASK);
-    }
-
-    public short getMemoryBufferRegister() {
-        return this.mbr;
-    }
-
-    public void setMemoryBufferRegister(short mbr) {
-        this.mbr = mbr;
-    }
-
-    // MBR <- c(MAR)
-    public void fetchMemoryAddressRegister() {
-        this.mbr = this.getWord(this.mar);
-    }
-
-    // MAR <- MBR
-    public void storeMemoryAddressRegister() {
-        this.setWord(this.mar, this.mbr);
     }
 
     public short getGeneralRegister(short registerId) {
@@ -519,74 +149,6 @@ public class Simulator {
         }
     }
 
-    public boolean isIllegalMemoryAccessToReservedLocations() {
-        return getNthLeastSignificantBit(this.mfr, 0);
-    }
-
-    public void setIllegalMemoryAccessToReservedLocations(boolean isIllegalMemoryAccessToReservedLocations) {
-        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 0, isIllegalMemoryAccessToReservedLocations);
-    }
-
-    public boolean isIllegalTrapCode() {
-        return getNthLeastSignificantBit(this.mfr, 1);
-    }
-
-    public void setIllegalTrapCode(boolean isIllegalTrapCode) {
-        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 1, isIllegalTrapCode);
-    }
-
-    public boolean isIllegalOpcode() {
-        return getNthLeastSignificantBit(this.mfr, 2);
-    }
-
-    public void setIsIllegalOpcode(boolean isIllegalOpcode) {
-        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 2, isIllegalOpcode);
-    }
-
-    public boolean isIllegalMemoryAddressBeyondLimit() {
-        return getNthLeastSignificantBit(this.mfr, 3);
-    }
-
-    public void setIsIllegalMemoryAddressBeyondLimit(boolean isIllegalMemoryAddressBeyondLimit) {
-        this.mfr = (byte)setNthLeastSignificantBit(this.mfr, 3, isIllegalMemoryAddressBeyondLimit);
-    }
-
-    public boolean isRunning(){
-        return this.isRunning;
-    }
-
-    public void setIsRunning(boolean running){
-        this.isRunning = running;
-    }
-
-    /**
-     *
-     * @param word - the machine word you want to extract the OPCODE from
-     * @return - The value of the opcode from the word
-     */
-    private static short extractOpCode(short word) {
-        // OPCODE is 0-5bits, so right shift by 10
-        return Utils.short_unsigned_right_shift(word, 10);
-    }
-
-    public void execute() {
-        this.currentInstruction.execute();
-    }
-
-    /**
-     * Given a 16-bit short, generates a binary string
-     * @param word
-     * @return String of 1s and 0s showing binary layout of memory word
-     */
-    public static String wordToString(short word){
-        String binaryString = Integer.toBinaryString(Short.toUnsignedInt(word));
-        return String.format("%1$16s", binaryString).replace(' ', '0');
-    }
-
-    public static short stringToWord(String string){
-        return (short)Integer.parseUnsignedInt(string,2);
-    }
-
     // If memory location is a negative, aligns end address of program from address offset from number of words
     public short loadProgram(String[] assembledMachineCode, int memoryOffset, boolean wrapInDataSet){
         // Convert machine code from strings to shorts
@@ -601,274 +163,51 @@ public class Simulator {
             ds.setBaseAddress(baseAddress);
             words = ds.export();
             for (int i = 0; i < words.length; i++) {
-                this.setWord(baseAddress + i, words[i]);
+                this.memory.store((short)(baseAddress + i), words[i]);
             }
             return baseAddress;
         } else {
             short baseAddress = (memoryOffset >= 0) ? (short) memoryOffset : (short)((Config.WORD_COUNT - 1) + memoryOffset - words.length);
             for (int i = 0; i < words.length; i++) {
-                this.setWord(baseAddress + i, words[i]);
+                this.memory.store((short)(baseAddress + i), words[i]);
             }
             return baseAddress;
         }
     }
 
     public void dumpRegistersToJavaConsole(){
-        engineerConsolePrintLn("===============================");
-        engineerConsolePrintLn("Registers");
-        engineerConsolePrintLn("===============================");
-        engineerConsolePrintLn("Program Counter: " + Simulator.wordToString(this.pc));
-        engineerConsolePrintLn("Condition Code: " + Simulator.wordToString(this.cc));
-        engineerConsolePrintLn("Instruction Register: " + Simulator.wordToString(this.ir));
-        engineerConsolePrintLn("Internal Address Register: " + Simulator.wordToString(this.iar));
-        engineerConsolePrintLn("Memory Address Register: " + Simulator.wordToString(this.mar));
-        engineerConsolePrintLn("Memory Buffer Register: " + Simulator.wordToString(this.mbr));
-        engineerConsolePrintLn("Memory Fault Register: " + Simulator.wordToString(this.mfr));
-        engineerConsolePrintLn("General Register 0: " + Simulator.wordToString(this.r0));
-        engineerConsolePrintLn("General Register 1: " + Simulator.wordToString(this.r1));
-        engineerConsolePrintLn("General Register 2: " + Simulator.wordToString(this.r2));
-        engineerConsolePrintLn("General Register 3: " + Simulator.wordToString(this.r3));
-        engineerConsolePrintLn("Index Register 1: " + Simulator.wordToString(this.x1));
-        engineerConsolePrintLn("Index Register 2: " + Simulator.wordToString(this.x2));
-        engineerConsolePrintLn("Index Register 3: " + Simulator.wordToString(this.x3));
-        engineerConsolePrintLn("Current OPCODE: " + Simulator.wordToString(this.currentInstruction.opCode));
-        engineerConsolePrintLn("===============================");
-    }
-
-    public void dumpMemoryToJavaConsole(){
-        engineerConsolePrintLn("===============================");
-        engineerConsolePrintLn("Memory Dump (Excluding zeroed out words");
-        engineerConsolePrintLn("===============================");
-        for (int i=0; i<this.wordCount; i++) {
-            try{
-                //if (memory[i] != 0) System.out.printf("Address: %4d: %s\n",  i, Simulator.wordToString(memory[i]));
-                if (memory[i] != 0) engineerConsolePrintLn(String.format("Address: %4d: %s",  i, Simulator.wordToString(memory[i])));
-            } catch(NullPointerException e) {
-                //null value in memory-- carry on
-            }
-        }
-        engineerConsolePrintLn("===============================");
-    }
-
-    /** The execution step, 1-5
-     * 1. Instruction Fetch
-     * 2. Instruction Decode
-     * 3. Operand Fetch
-     * 4. Execute
-     * 5. Result Store
-     **/
-
-    public void singleStep(){
-        switch (this.executionStep){
-            // Instruction Fetch
-            case 1:
-                this.executionInstructionFetch();
-                break;
-            // Instruction Decode
-            case 2:
-                this.executionInstructionDecode();
-                break;
-            // Operand Fetch
-            case 3:
-                this.currentInstruction.fetchOperand();
-                break;
-            // Execute
-            case 4:
-                this.currentInstruction.execute();
-                break;
-            // Result Store
-            case 5:
-                /**
-                 In 1 cycle, move the contents of the IRR to:
-                 a. If target = register, use Register Select 1 to store IRR contents into the specified register
-                 b. If target = memory, such as a STR, move contents of IRR to MBR. On the next cycle, move contents of MBR to memory using address in MAR.
-                 **/
-                this.currentInstruction.storeResult();
-                break;
-        }
-        if (this.executionStep == 5){
-            // Commenting out because this causing the program to hang
-            // this.dumpRegistersToJavaConsole();
-            // this.dumpMemoryToJavaConsole();
-            // this.cache.dump();
-            this.executionStep = 1;
-        } else {
-            this.executionStep++;
-        }
-    }
-
-    // Execution Step 1
-    // Obtain Instruction from Program Storage
-    private void executionInstructionFetch() {
-        engineerConsolePrintLn("PC: " + this.pc);
-        // MAR <- PC
-        if (this.pc < 0 || this.pc >= this.wordCount){
-            // TODO: Refactor as machine fault
-            pauseExecutionLoop();
-        }
-        this.mar = this.pc;
-
-        // PC++
-        this.pc++;
-
-        // MBR <- c[MAR]
-        this.fetchMemoryAddressRegister();
-
-        // IR <- MBR
-        // Transfer Memory Buffer Register to Instruction Register
-        this.ir = this.mbr;
-    }
-
-    // Execution Step 2
-    // Determine Operation Required
-    private void executionInstructionDecode() {
-        // Extract the opcode from the IR and use to set currentInstruction
-        switch(Simulator.extractOpCode(this.ir)) {
-            case 0:
-                this.currentInstruction = new Halt(this.ir, this);
-                break;
-            case 1:
-                this.currentInstruction = new LoadRegisterFromMemory(this.ir, this);
-                break;
-            case 2:
-                this.currentInstruction = new StoreRegisterToMemory(this.ir, this);
-                break;
-            case 3:
-                this.currentInstruction = new LoadRegisterWithAddress(this.ir, this);
-                break;
-            case 4:
-                this.currentInstruction = new AddMemoryToRegister(this.ir, this);
-                break;
-            case 5:
-                this.currentInstruction = new SubtractMemoryFromRegister(this.ir, this);
-                break;
-            case 6:
-                this.currentInstruction = new AddImmediateToRegister(this.ir, this);
-                break;
-            case 7:
-                this.currentInstruction = new SubtractImmediateFromRegister(this.ir, this);
-                break;
-            case 10:
-                this.currentInstruction = new JumpIfZero(this.ir, this);
-                break;
-            case 11:
-                this.currentInstruction = new JumpIfNotEqual(this.ir, this);
-                break;
-            case 12:
-                this.currentInstruction = new JumpIfConditionCode(this.ir, this);
-                break;
-            case 13:
-                this.currentInstruction = new UnconditionalJumpToAddress(this.ir, this);
-                break;
-            case 14:
-                this.currentInstruction = new JumpAndSaveReturnAddress(this.ir, this);
-                break;
-            case 15:
-                this.currentInstruction = new ReturnFromSubroutine(this.ir, this);
-                break;
-            case 16:
-                this.currentInstruction = new SubtractOneAndBranch(this.ir, this);
-                break;
-            case 17:
-                this.currentInstruction = new JumpGreaterThanOrEqualTo(this.ir, this);
-                break;
-            case 20:
-                this.currentInstruction = new MultiplyRegisterByRegister(this.ir, this);
-                break;
-            case 21:
-                this.currentInstruction = new DivideRegisterByRegister(this.ir, this);
-                break;
-            case 22:
-                this.currentInstruction = new TestTheEqualityOfRegisterAndRegister(this.ir, this);
-                break;
-            case 23:
-                this.currentInstruction = new LogicalAndOfRegisterAndRegister(this.ir, this);
-                break;
-            case 24:
-                this.currentInstruction = new LogicalOrOfRegisterAndRegister(this.ir, this);
-                break;
-            case 25:
-                this.currentInstruction = new LogicalNotOfRegisterAndRegister(this.ir, this);
-                break;
-            case 30:
-                this.currentInstruction = new Trap(this.ir, this);
-                break;
-            case 31:
-                this.currentInstruction = new ShiftRegisterByCount(this.ir, this);
-                break;
-            case 32:
-                this.currentInstruction = new RotateRegisterByCount(this.ir, this);
-                break;
-            case 33:
-                this.currentInstruction = new FloatingAddMemoryToRegister(this.ir, this);
-                break;
-            case 34:
-                this.currentInstruction = new FloatingSubtractMemoryFromRegister(this.ir, this);
-                break;
-            case 35:
-                this.currentInstruction = new VectorAdd(this.ir, this);
-                break;
-            case 36:
-                this.currentInstruction = new VectorSubtract(this.ir, this);
-                break;
-            case 37:
-                this.currentInstruction = new ConvertToFixedOrFloatingPoint(this.ir, this);
-                break;
-            case 41:
-                this.currentInstruction = new LoadIndexRegisterFromMemory(this.ir, this);
-                break;
-            case 42:
-                this.currentInstruction = new StoreIndexRegisterToMemory(this.ir, this);
-                break;
-            case 50:
-                this.currentInstruction = new LoadFloatingPointFromMemory(this.ir, this);
-                break;
-            case 51:
-                this.currentInstruction = new StoreFloatingPointToMemory(this.ir, this);
-                break;
-            case 61:
-                this.currentInstruction = new InputCharacterToRegisterFromDevice(this.ir, this);
-                break;
-            case 62:
-                this.currentInstruction = new OutputCharacterToDeviceFromRegister(this.ir, this);
-                break;
-            case 63:
-                this.currentInstruction = new CheckDeviceStatusToRegister(this.ir, this);
-                break;
-        }
+        this.io.engineerConsolePrintLn("===============================");
+        this.io.engineerConsolePrintLn("Registers");
+        this.io.engineerConsolePrintLn("===============================");
+        this.io.engineerConsolePrintLn("Program Counter: " + this.pc.toString());
+        this.io.engineerConsolePrintLn("Condition Code: " + this.cc.toString());
+        this.io.engineerConsolePrintLn("Instruction Register: " + wordToString(this.cu.getInstructionRegister()));
+        this.io.engineerConsolePrintLn("Internal Address Register: " + wordToString(this.iar));
+        this.io.engineerConsolePrintLn("Memory Address Register: " + this.memory.mar.toString());
+        this.io.engineerConsolePrintLn("Memory Buffer Register: " + wordToString(this.memory.getMemoryBufferRegister()));
+        this.io.engineerConsolePrintLn("Memory Fault Register: " + this.mfr.toString());
+        this.io.engineerConsolePrintLn("General Register 0: " + wordToString(this.r0));
+        this.io.engineerConsolePrintLn("General Register 1: " + wordToString(this.r1));
+        this.io.engineerConsolePrintLn("General Register 2: " + wordToString(this.r2));
+        this.io.engineerConsolePrintLn("General Register 3: " + wordToString(this.r3));
+        this.io.engineerConsolePrintLn("Index Register 1: " + wordToString(this.x1));
+        this.io.engineerConsolePrintLn("Index Register 2: " + wordToString(this.x2));
+        this.io.engineerConsolePrintLn("Index Register 3: " + wordToString(this.x3));
+        this.io.engineerConsolePrintLn("===============================");
     }
 
     // Allow setting the program counter when booting from the command line.
     public void powerOn(short programCounter){
         // Check if program counter was set within the allowable range.
-        if(programCounter>5 && programCounter<wordCount){
-            setProgramCounter(programCounter);
+        if(programCounter > 5 && programCounter < this.memory.getWordCount()){
+            this.pc.set(programCounter);
         } else {
-            setProgramCounter((short) 6);
+            this.pc.set((short) 6);
         }
     }
 
     // If program counter was not specified, default to 6.
     public void powerOn(){
         powerOn((short) 6);
-    }
-
-    public void initializeIOBuffers(){
-        // Initialize LinkedBlockingQueues for IO buffers
-        for(int i=0; i<outputBuffer.length; i++){
-            outputBuffer[i] = new LinkedBlockingQueue();
-            inputBuffer[i] = new LinkedBlockingQueue();
-        }
-    }
-
-    public void startExecutionLoop(){
-        this.setIsRunning(true);
-        while(this.isRunning){
-            singleStep();
-        }
-    }
-
-    public void pauseExecutionLoop(){
-        this.setIsRunning(false);
     }
 }

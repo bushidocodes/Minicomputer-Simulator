@@ -120,7 +120,7 @@ class DivideRegisterByRegister extends RegisterRegisterInstruction {
 
         this.context.alu.divide();
 
-        if (this.context.isDivideByZero()) {
+        if (this.context.cc.isDivideByZero()) {
             this.didFault = true;
         }
     }

@@ -6,6 +6,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import static com.simulator.awesome.Simulator.*;
+import static com.simulator.awesome.Utils.stringToWord;
+import static com.simulator.awesome.Utils.wordToString;
+
 public class Interface {
     private JTextField withValueInput;
     public JPanel rootPanel;
@@ -68,30 +72,30 @@ public class Interface {
 
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
-        this.R0TextField.setText(Simulator.wordToString(this.context.getGeneralRegister((short)0)));
-        this.R1TextField.setText(Simulator.wordToString(this.context.getGeneralRegister((short)1)));
-        this.R2TextField.setText(Simulator.wordToString(this.context.getGeneralRegister((short)2)));
-        this.R3TextField.setText(Simulator.wordToString(this.context.getGeneralRegister((short)3)));
+        this.R0TextField.setText(wordToString(this.context.getGeneralRegister((short)0)));
+        this.R1TextField.setText(wordToString(this.context.getGeneralRegister((short)1)));
+        this.R2TextField.setText(wordToString(this.context.getGeneralRegister((short)2)));
+        this.R3TextField.setText(wordToString(this.context.getGeneralRegister((short)3)));
 
         // Refresh Index Registers X1..X3
-        this.X1TextField.setText(Simulator.wordToString(this.context.getIndexRegister((short)1)));
-        this.X2TextField.setText(Simulator.wordToString(this.context.getIndexRegister((short)2)));
-        this.X3TextField.setText(Simulator.wordToString(this.context.getIndexRegister((short)3)));
+        this.X1TextField.setText(wordToString(this.context.getIndexRegister((short)1)));
+        this.X2TextField.setText(wordToString(this.context.getIndexRegister((short)2)));
+        this.X3TextField.setText(wordToString(this.context.getIndexRegister((short)3)));
 
         // Refresh other registers and fields: PC, MAR, MBR, MFR (not implemented), IR, CC (not implemented)
-        this.PCTextField.setText(Simulator.wordToString(this.context.getProgramCounter()).substring(4,16)); //only 12 bits
-        this.MARTextField.setText(Simulator.wordToString(this.context.getMemoryAddressRegister()).substring(4,16)); //only 12 bits
-        this.MBRTextField.setText(Simulator.wordToString(this.context.getMemoryBufferRegister()));
-        this.MFRTextField.setText(Simulator.wordToString(this.context.getMachineFaultRegister()).substring(12,16)); // only 4 bits
-        this.IRTextField.setText(Simulator.wordToString(this.context.getInstructionRegister()));
-        this.CCTextField.setText(Simulator.wordToString(this.context.getConditionCode()).substring(12,16)); // only 4 bits
+        this.PCTextField.setText(this.context.pc.toString());
+        this.MARTextField.setText(this.context.memory.mar.toString());
+        this.MBRTextField.setText(wordToString(this.context.memory.getMemoryBufferRegister()));
+        this.MFRTextField.setText(this.context.mfr.toString());
+        this.IRTextField.setText(wordToString(this.context.cu.getInstructionRegister()));
+        this.CCTextField.setText(this.context.cc.toString());
         pollIOStatus();
     }
 
     public void pollIOStatus(){
         // If there is a value in the output buffer, print it to the console printer and then clear the buffer
-        if (!this.context.isOutputBufferNull((short) 1)) {
-            short charCode = this.context.getFirstWordFromOutputBuffer((short) 1);
+        if (!this.context.io.isOutputBufferNull((short) 1)) {
+            short charCode = this.context.io.getFirstWordFromOutputBuffer((short) 1);
             char poppedChar = (char)charCode;
             this.consolePrinter.append(String.valueOf(poppedChar));
             // Automatically scroll the console to the bottom
@@ -99,24 +103,24 @@ public class Interface {
         }
 
         // If there a value in the engineer's console buffer, print it to the engineer's console and then clear the buffer
-        if (!this.context.isEngineersConsoleBufferNull()) {
-            this.fieldEngineerConsole.append(context.getFirstLineFromEngineersOutputBuffer());
+        if (!this.context.io.isEngineersConsoleBufferNull()) {
+            this.fieldEngineerConsole.append(context.io.getFirstLineFromEngineersOutputBuffer());
             // Automatically scroll the console to the bottom
             this.fieldEngineerConsole.setCaretPosition(fieldEngineerConsole.getDocument().getLength());
         }
 
         // If the computer is ready for input, enable the console keyboard
-        if(this.context.getReadyForInput() && !consoleKeyboard.isEnabled()){
+        if(this.context.msr.isReadyForInput() && !consoleKeyboard.isEnabled()){
             setUIReadyForInput(true);
         }
 
         // If the computer is not running or waiting for input, disable the HALT button
-        if(!this.context.isRunning() && !this.context.getReadyForInput()){
+        if(!this.context.msr.isRunning() && !this.context.msr.isReadyForInput()){
             haltButton.setEnabled(false);
         }
 
         // If the computer is running or is waiting for input, disable the run button
-        if(this.context.isRunning() || this.context.getReadyForInput()){
+        if(this.context.msr.isRunning() || this.context.msr.isReadyForInput()){
             runButton.setEnabled(false);
             runButton.setText("RUNNING");
         } else {
@@ -133,7 +137,7 @@ public class Interface {
             returnButton.setEnabled(true);
             readyForInputLabel.setIcon(greenLight);
             readyForInputLabel.setText("Ready for Input");
-            this.context.engineerConsolePrintLn("Waiting for user input.");
+            this.context.io.engineerConsolePrintLn("Waiting for user input.");
         } else {
             consoleKeyboard.setText("");
             consoleKeyboard.setEnabled(false);
@@ -153,6 +157,7 @@ public class Interface {
         iplButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println("pushed");
                 // Pushing the IPL button loads the based addresses and ascii tables, ready for a user program to be loaded
                 Assembler assembler1 = new Assembler();
                 Assembler assembler2 = new Assembler();
@@ -164,18 +169,18 @@ public class Interface {
 
                 short baseAddressTableLocation = context.loadProgram(assembler1.input_arr, (short) -1, true);
                 // Assign Indirect to this dataset to address 30;
-                context.setWord(30, baseAddressTableLocation);
+                context.memory.store((short)30, baseAddressTableLocation);
 
                 // Load the ASCII table
                 assembler2.loadFile(basePath.concat("/static/ascii.txt"));
                 short asciiTableLocation = context.loadProgram(assembler2.input_arr, (short) -129, true);
-                context.setWord(29, asciiTableLocation);
+                context.memory.store((short)29, asciiTableLocation);
 
                 // Load the print-int subroutine
                 assembler2.loadFile(basePath.concat("/static/print-int.txt"));
                 assembler2.convertToMachineCode();
                 short printIntLocation = context.loadProgram(assembler2.output_arr, (short) -330, false);
-                context.setWord(28, printIntLocation);
+                context.memory.store((short) 28, printIntLocation);
 
                 refresh();
             }
@@ -185,7 +190,7 @@ public class Interface {
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                context.startExecutionLoop();
+                context.cu.startExecutionLoop();
                 // Enable the halt button
                 haltButton.setEnabled(true);
                 refresh();
@@ -196,8 +201,8 @@ public class Interface {
         haltButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (context.isRunning() || context.getReadyForInput()){
-                    context.pauseExecutionLoop();
+                if (context.msr.isRunning() || context.msr.isReadyForInput()){
+                    context.cu.pauseExecutionLoop();
                     refresh();
                 } else {
                     // Error: Halt button pressed but system is not running.
@@ -216,40 +221,40 @@ public class Interface {
                     switch(registerComboBox.getSelectedItem().toString()){
                         //PC, MAR, MBR, MFR (not implemented), IR, CC (not implemented)
                         case "R0":
-                            context.setGeneralRegister((short) 0, context.stringToWord(input));
+                            context.setGeneralRegister((short) 0, stringToWord(input));
                             break;
                         case "R1":
-                            context.setGeneralRegister((short) 1, context.stringToWord(input));
+                            context.setGeneralRegister((short) 1, stringToWord(input));
                             break;
                         case "R2":
-                            context.setGeneralRegister((short) 2, context.stringToWord(input));
+                            context.setGeneralRegister((short) 2, stringToWord(input));
                             break;
                         case "R3":
-                            context.setGeneralRegister((short) 3, context.stringToWord(input));
+                            context.setGeneralRegister((short) 3, stringToWord(input));
                             break;
                         case "X1":
-                            context.setIndexRegister((short) 1, context.stringToWord(input));
+                            context.setIndexRegister((short) 1, stringToWord(input));
                             break;
                         case "X2":
-                            context.setIndexRegister((short) 2, context.stringToWord(input));
+                            context.setIndexRegister((short) 2, stringToWord(input));
                             break;
                         case "X3":
-                            context.setIndexRegister((short) 3, context.stringToWord(input));
+                            context.setIndexRegister((short) 3, stringToWord(input));
                             break;
                         case "PC":
-                            context.setProgramCounter(context.stringToWord(input));
+                            context.pc.set(stringToWord(input));
                             break;
                         case "MAR":
-                            context.setMemoryAddressRegister(context.stringToWord(input));
+                            context.memory.mar.set(stringToWord(input));
                             break;
                         case "MBR":
-                            context.setMemoryBufferRegister(context.stringToWord(input));
+                            context.memory.setMemoryBufferRegister(stringToWord(input));
                             break;
                         case "MFR":
                             // not implemented
                             break;
                         case "IR":
-                            context.setInstructionRegister(context.stringToWord(input));
+                            context.cu.setInstructionRegister(stringToWord(input));
                             break;
                         case "CC":
                             // not implemented
@@ -268,8 +273,8 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Pause execution
-                if (context.isRunning()){
-                    context.pauseExecutionLoop();
+                if (context.msr.isRunning()){
+                    context.cu.pauseExecutionLoop();
                 }
                 // Reset the computer
                 context.reset();
@@ -286,7 +291,7 @@ public class Interface {
         SSButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                context.singleStep();
+                context.cu.singleStep();
                 refresh();
             }
         });
@@ -299,7 +304,7 @@ public class Interface {
                 if(selectedFile != null && selectedFile.isFile()){
                     short memoryLoc = (short) Integer.parseInt(programMemoryLocSpinner.getValue().toString());
                     // Check that the desired memory location is within the valid range.
-                    if (memoryLoc > 31 && memoryLoc < context.getWordCount()-1) {
+                    if (memoryLoc > 31 && memoryLoc < context.memory.getWordCount()-1) {
                         // Check that a file type has been selected.
                         if (fileTypeComboBox.getSelectedItem().toString().length() > 0) {
                             switch (fileTypeComboBox.getSelectedItem().toString()) {
@@ -329,7 +334,7 @@ public class Interface {
                         }
                     } else {
                         // Error: Invalid memory location
-                        String maxLoc = Integer.toString(context.getWordCount()-1);
+                        String maxLoc = Integer.toString(context.memory.getWordCount()-1);
                         JOptionPane.showMessageDialog(rootPanel, "ERROR: Memory location to insert the program must be within the valid range for unprotected memory (Minimum: "+32+") (Maximum: "+maxLoc+").");
                     }
                 } else {
@@ -351,7 +356,7 @@ public class Interface {
                 short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 100, false);
 
                 // Assign Indirect to this dataset to address 16;
-                context.setWord(16, programLocation);
+                context.memory.store((short) 16, programLocation);
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 100);
@@ -384,13 +389,13 @@ public class Interface {
                 // Validate that the text entered contains one or more ASCII value
                 if(consoleKeyboard.getText().matches("[\\x00-\\x7F]+")){
                     // Get the entered text and store it in the input buffer
-                    context.addWordToInputBuffer((short) 0, context.stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
+                    context.io.addWordToInputBuffer((short) 0, stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
                     // Change input waiting state
-                    context.setReadyForInput(false);
+                    context.msr.setReadyForInput(false);
                     // Disable input from the UI
                     setUIReadyForInput(false);
                     // Continue execution
-                    context.startExecutionLoop();
+                    context.cu.startExecutionLoop();
                 } else {
                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
                 }
@@ -412,7 +417,7 @@ public class Interface {
                 short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, false);
 
                 // Assign Indirect to this dataset to address 16;
-                context.setWord(16, programLocation);
+                context.memory.store((short) 16, programLocation);
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 101);

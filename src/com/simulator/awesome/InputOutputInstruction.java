@@ -66,8 +66,8 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
     }
     public void fetchOperand(){
         // Pause the execution loop and wait for user input
-        this.context.setReadyForInput(true);
-        this.context.pauseExecutionLoop();
+        this.context.msr.setReadyForInput(true);
+        this.context.cu.pauseExecutionLoop();
     }
 
     public void execute(){
@@ -75,7 +75,7 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
         if (this.didFault) return;
 
         // c(Register) <- inputBuffer <- Device
-        this.context.setGeneralRegister(this.registerId,this.context.getFirstWordFromInputBuffer(this.deviceId));
+        this.context.setGeneralRegister(this.registerId,this.context.io.getFirstWordFromInputBuffer(this.deviceId));
     }
 
     public void storeResult(){
@@ -100,7 +100,7 @@ class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
         if (this.didFault) return;
 
         // Device <- outputBuffer <- c(Register)
-        this.context.addWordToOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
+        this.context.io.addWordToOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
     }
 
     public void storeResult(){

@@ -38,4 +38,17 @@ public class Utils {
         return isSet ? (bitArray | setterMask) : (bitArray & ~setterMask);
     }
 
+    /**
+     * Given a 16-bit short, generates a binary string
+     * @param word
+     * @return String of 1s and 0s showing binary layout of memory word
+     */
+    public static String wordToString(short word){
+        String binaryString = Integer.toBinaryString(Short.toUnsignedInt(word));
+        return String.format("%1$16s", binaryString).replace(' ', '0');
+    }
+
+    public static short stringToWord(String string){
+        return (short)Integer.parseUnsignedInt(string,2);
+    }
 }
