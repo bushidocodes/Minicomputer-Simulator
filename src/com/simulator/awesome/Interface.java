@@ -157,7 +157,6 @@ public class Interface {
         iplButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("pushed");
                 // Pushing the IPL button loads the based addresses and ascii tables, ready for a user program to be loaded
                 Assembler assembler1 = new Assembler();
                 Assembler assembler2 = new Assembler();
