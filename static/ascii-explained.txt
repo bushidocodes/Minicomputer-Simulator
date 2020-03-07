@@ -1,4 +1,0 @@
-The entire character (non-extended) ASCII character set
-https://www.ascii-code.com/
-To simplify use with strings, we can load at a round number, like 1000
-That way we can just mentally calculate the address based on a table lookup

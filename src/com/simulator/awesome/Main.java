@@ -29,26 +29,7 @@ class Main {
                     myInterface.pollIOStatus();
                 }
             } else {
-                // Not yet implemented, but saving this logic to run the simulator "headless"
-                Assembler assembler1 = new Assembler();
-                Assembler assembler2 = new Assembler();
-
-                // Pre-fill some data into the computer to be used by the demo assembly program
-//                String basePath = new File("").getAbsolutePath(); //get current base directory
-//                assembler1.loadFile(basePath.concat("/static/hello-world.txt"));
-//                myComputer.loadProgram(assembler1.input_arr, (short) 6);
-
-
-//                assembler1.loadFile(basePath.concat("/static/pre-fill-data-for-demo.txt"));
-//                myComputer.loadProgram(assembler1.input_arr, (short) 6);
-
-                // Load in the load/store demonstration program
-//                assembler2.loadFile(basePath.concat("/static/demo-program.txt"));
-//                myComputer.loadProgram(assembler2.convertToMachineCode(), (short) 100);
-
-                // IPL and Start the Execution Loop
-                myComputer.powerOn((short) 100);
-                myComputer.cu.startExecutionLoop();
+                System.out.println("Headless non-interactive operation is not yet implemented.");
             }
 
         } catch (Exception e) {
