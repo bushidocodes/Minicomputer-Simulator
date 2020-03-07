@@ -1,5 +1,9 @@
-LDR 0,0,31;         R0 = 42
-AIR 0,31;
+###################################################
+# A tiny program to test the print-int subroutine #
+# Writes 42\n7\n to console                       #
+# Assumes address 18 is safe to write to          #
+###################################################
+LDA 0,0,31;
 AIR 0,11;
 STR 0,0,18;         c(18) = R0
 LDA 0,0,18;         R0 = 18, the address of my argument

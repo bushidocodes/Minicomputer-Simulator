@@ -36,6 +36,8 @@ public class Simulator {
     // I/O Subsystem
     public InputOutput io;
 
+    public ReadOnlyMemory rom;
+
     Simulator(int wordCount) {
         this.cu = new ControlUnit(this);
         this.memory = new Memory(this, wordCount);
@@ -45,6 +47,7 @@ public class Simulator {
         this.cc = new ConditionCode();
         this.msr = new MachineStatusRegister();
         this.mfr = new MachineFaultRegister();
+        this.rom = new ReadOnlyMemory(this);
         this.iar = 0;
         this.r0 = 0;
         this.r1 = 0;
@@ -71,6 +74,7 @@ public class Simulator {
         this.cc = new ConditionCode();
         this.msr.reset();
         this.mfr = new MachineFaultRegister();
+        // No need to re-instantiate ROM
         this.io.reset();
         this.iar = 0;
         this.r0 = 0;

@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,16 +84,22 @@ public class Assembler {
     }
 
     public String[] convertToMachineCode(){
-        // Allocate space for the output array.
-        output_arr = new String[input_arr.length];
+        // Allocate space for the output array;
+        ArrayList<String> output = new ArrayList<String>();
+//        output_arr = new String[input_arr.length];
         for(int lineCounter = 0; lineCounter < input_arr.length; lineCounter++){
             String currLine = input_arr[lineCounter];
+
+            // If the first character is a #, then this is a single line comment, so just advance
+            if (currLine.startsWith("#")) continue;
+
             // Strip out the comments, if any
             String strippedInstructions = currLine.split(";")[0];
 
-            // If the stripped Instruction is an empty string, pad with a NULL word to allow use for locals
-            if (strippedInstructions.length() == 0){
-                output_arr[lineCounter] = "0000000000000000";
+            // If the stripped Instruction starts with a 1 or 0, assume a binary value we should load directly
+            // For example "0000000000000000; Local 0" pads the address space for working memory
+            if (strippedInstructions.startsWith("1") || strippedInstructions.startsWith("0")){
+                output.add(strippedInstructions);
                 continue;
             }
 
@@ -104,20 +111,24 @@ public class Assembler {
                 String[] instructionParams = instruction[1].split(",");
 
                 // Convert the data to machine code and save in the output array
-                output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+                output.add(processInstruction(instruction[0],instructionParams));
             } catch(ArrayIndexOutOfBoundsException e){
                 if((instruction[0].equals("HLT") || instruction[0].equals("TRAP"))){
                     // There are no parameters, pass any empty array
                     String[] instructionParams = new String[0];
 
                     // Convert the data to machine code and save in the output array
-                    output_arr[lineCounter] = processInstruction(instruction[0],instructionParams);
+                    output.add(processInstruction(instruction[0],instructionParams));
                 } else {
                     // Unless this is HALT or TRAP, at least one parameter is required.
                     System.out.println("Assembler Error: Instruction "+instruction[0]+" does not have any parameters.");
                 }
             }
         }
+
+        // Convert back to static array
+        this.output_arr = new String[output.size()];
+        output_arr = output.toArray(this.output_arr);
         return output_arr;
     }
 

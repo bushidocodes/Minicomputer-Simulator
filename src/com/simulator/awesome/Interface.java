@@ -157,30 +157,7 @@ public class Interface {
         iplButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Pushing the IPL button loads the based addresses and ascii tables, ready for a user program to be loaded
-                Assembler assembler1 = new Assembler();
-                Assembler assembler2 = new Assembler();
-
-                // Load Base Addresses representing every 32nd address from as a DataSet
-                // Place it at the topmost addresses
-                String basePath = new File("").getAbsolutePath(); //get current base directory
-                assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
-
-                short baseAddressTableLocation = context.loadProgram(assembler1.input_arr, (short) -1, true);
-                // Assign Indirect to this dataset to address 30;
-                context.memory.store((short)30, baseAddressTableLocation);
-
-                // Load the ASCII table
-                assembler2.loadFile(basePath.concat("/static/ascii.txt"));
-                short asciiTableLocation = context.loadProgram(assembler2.input_arr, (short) -129, true);
-                context.memory.store((short)29, asciiTableLocation);
-
-                // Load the print-int subroutine
-                assembler2.loadFile(basePath.concat("/static/print-int.txt"));
-                assembler2.convertToMachineCode();
-                short printIntLocation = context.loadProgram(assembler2.output_arr, (short) -330, false);
-                context.memory.store((short) 28, printIntLocation);
-
+                context.rom.load();
                 refresh();
             }
         });

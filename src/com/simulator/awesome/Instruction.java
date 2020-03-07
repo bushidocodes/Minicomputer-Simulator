@@ -55,11 +55,25 @@ public class Instruction {
  * The PC+1 of the TRAP instruction is stored in memory location 2.
  */
 class Trap extends Instruction {
+    short trapCode;
 
     Trap(short word, Simulator context) {
         super(word, context);
+        short trapCodeMask           = (short) 0b0000000000001111;
+        short trapCodeOffset         = 0;
+        this.trapCode = Utils.short_unsigned_right_shift((short)(word & trapCodeMask), trapCodeOffset);
+    }
 
-        // TODO: Parse Trap Code
+    public void fetchOperand(){
+        // Store PC (it is already incremented) to address 2
+        this.context.memory.store((short) 2,this.context.pc.get());
+        // Switch to supervisor mode
+        this.context.msr.setSupervisorMode(true);
+        // Get the address of the trap handler table and offset to get the address of the correct trap
+        short addressOfTrap = this.context.memory.fetch((short)(this.context.memory.fetch((short)0) + this.trapCode));
+        // Jump to the trap
+        this.context.pc.set(addressOfTrap);
+        // How do we know that we've completed the trap? Check if we're in supervisor mode in exit?
     }
 
     public void execute() {
