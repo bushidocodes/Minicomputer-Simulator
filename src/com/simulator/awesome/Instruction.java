@@ -65,19 +65,18 @@ class Trap extends Instruction {
     }
 
     public void fetchOperand(){
-        // Store PC (it is already incremented) to address 2
-        this.context.memory.store((short) 2,this.context.pc.get());
         // Switch to supervisor mode
         this.context.msr.setSupervisorMode(true);
+        // Store PC (it is already incremented) to address 2
+        this.context.memory.store((short) 2,this.context.pc.get());
         // Get the address of the trap handler table and offset to get the address of the correct trap
         short addressOfTrap = this.context.memory.fetch((short)(this.context.memory.fetch((short)0) + this.trapCode));
         // Jump to the trap
         this.context.pc.set(addressOfTrap);
-        // How do we know that we've completed the trap? Check if we're in supervisor mode in exit?
     }
 
     public void execute() {
-        System.out.println("TRAP");
+        // NOOP
     }
 
     public void storeResult(){

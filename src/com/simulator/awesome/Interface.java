@@ -290,7 +290,7 @@ public class Interface {
                                 case "Binary":
                                     // Load binary file into memory at the specified location
                                     Assembler assembler1 = new Assembler();
-                                    context.loadProgram(assembler1.input_arr, memoryLoc, false);
+                                    context.loadProgram(assembler1.input_arr, memoryLoc, true,false);
 
                                     // Set the PC to the first program instruction
                                     context.powerOn(memoryLoc);
@@ -300,7 +300,7 @@ public class Interface {
                                     // Convert assembly file to binary and load it into memory at the specified location
                                     Assembler assembler2 = new Assembler();
                                     assembler2.loadFile(selectedFile.getAbsolutePath());
-                                    context.loadProgram(assembler2.convertToMachineCode(), memoryLoc, false);
+                                    context.loadProgram(assembler2.convertToMachineCode(), memoryLoc, true,false);
 
                                     // Set the PC to the first program instruction
                                     context.powerOn(memoryLoc);
@@ -329,7 +329,7 @@ public class Interface {
 
                 // Load in the instruction demonstration program
                 assembler1.loadFile(basePath.concat("/static/demo-program.txt"));
-                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 100, false);
+                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 100, true,false);
 
                 // Assign Indirect to this dataset to address 16;
                 context.memory.store((short) 16, programLocation);
@@ -390,7 +390,7 @@ public class Interface {
                 // Assemble the program and load it into the computer at memory location 101.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler1.loadFile(basePath.concat("/static/program-one.txt"));
-                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, false);
+                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, true,false);
 
                 // Assign Indirect to this dataset to address 16;
                 context.memory.store((short) 16, programLocation);

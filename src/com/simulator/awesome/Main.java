@@ -8,13 +8,11 @@ class Main {
     public static void main(String[] args) {
         try {
             boolean isInteractive = true;
-            boolean isDebug = false;
+            boolean isDebug = true;
 
             Simulator myComputer = new Simulator(2048);
 
-            if (isDebug) {
-                myComputer.memory.dump();
-            }
+//            myComputer.msr.setIsDebugging(true);
 
             if (isInteractive) {
                 myComputer.attachConsole();

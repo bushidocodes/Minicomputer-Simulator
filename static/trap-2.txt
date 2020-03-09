@@ -1,0 +1,14 @@
+##########################################################
+# Prints the String 'T2\n' to the console                #
+# Assumes c(29) = 32, c(30) = 64, c(31)=96               #
+##########################################################
+LDX 1,0,29;
+LDX 2,0,30;
+LDX 3,0,31;
+LDA 0,2,20;     ASCII 84 - T
+OUT 0,1;
+LDA 1,1,18;     ASCII 50 - 2
+OUT 1,1;
+LDA 0,0,10;     ASCII 10 - LF
+OUT 0,1;
+RFS 0;          Using RFS as a trap return

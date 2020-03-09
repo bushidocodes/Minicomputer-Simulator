@@ -79,8 +79,11 @@ public class ControlUnit {
         }
         if (this.executionStep == 5){
             // Commenting out because this causing the program to hang
-            // this.dumpRegistersToJavaConsole();
-            // this.memory.dump();
+            if (this.context.msr.isDebugging()){
+                 this.context.dumpRegistersToJavaConsole();
+                 this.context.memory.dump();
+            }
+
             this.executionStep = 1;
         } else {
             this.executionStep++;

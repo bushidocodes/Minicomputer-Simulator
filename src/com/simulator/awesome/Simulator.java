@@ -154,7 +154,7 @@ public class Simulator {
     }
 
     // If memory location is a negative, aligns end address of program from address offset from number of words
-    public short loadProgram(String[] assembledMachineCode, int memoryOffset, boolean wrapInDataSet){
+    public short loadProgram(String[] assembledMachineCode, int memoryPosition, boolean alignLeft, boolean wrapInDataSet){
         // Convert machine code from strings to shorts
         short[] words = new short[assembledMachineCode.length];
         for (int i = 0; i < assembledMachineCode.length; i++){
@@ -163,7 +163,7 @@ public class Simulator {
 
         if (wrapInDataSet) {
             DataSet ds = new DataSet(words);
-            short baseAddress = (memoryOffset >= 0) ? (short) memoryOffset : (short)((Config.WORD_COUNT - 1) + memoryOffset - ds.export().length);
+            short baseAddress = alignLeft ? (short) memoryPosition : (short)(memoryPosition - ds.export().length);
             ds.setBaseAddress(baseAddress);
             words = ds.export();
             for (int i = 0; i < words.length; i++) {
@@ -171,7 +171,7 @@ public class Simulator {
             }
             return baseAddress;
         } else {
-            short baseAddress = (memoryOffset >= 0) ? (short) memoryOffset : (short)((Config.WORD_COUNT - 1) + memoryOffset - words.length);
+            short baseAddress = (alignLeft) ? (short) memoryPosition : (short)(memoryPosition - words.length);
             for (int i = 0; i < words.length; i++) {
                 this.memory.store((short)(baseAddress + i), words[i]);
             }

@@ -3,17 +3,25 @@
 # Writes 42\n7\n to console                       #
 # Assumes address 18 is safe to write to          #
 ###################################################
+# Write 42 to address 18
 LDA 0,0,31;
 AIR 0,11;
-STR 0,0,18;         c(18) = R0
-LDA 0,0,18;         R0 = 18, the address of my argument
-JSR 0,28,1;         PRINTINT(c(18))
-LDA 0,0,10;         PRINT \n
+STR 0,0,18;
+# Set R0 to 18 (the address of our arguments) as defined by the caller's subroutine convention
+LDA 0,0,18;
+# Call the print-int subroutine
+JSR 0,28,1;
+# Print \n
+LDA 0,0,10;
 OUT 0,1;
-LDA 1,0,7;          R1 = 7
-STR 1,0,18;         c(18) = R1
-LDA 0,0,18;         R0 = 18, the address of my argument
-JSR 0,28,1          PRINTINT(c(18))
-LDA 0,0,10;         PRINT \n
+# Write 7 to address 18
+LDA 1,0,7;
+STR 1,0,18;
+# Set R0 to 18 (the address of our arguments) as defined by the caller's subroutine convention
+LDA 0,0,18;
+# Call the print-int subroutine
+JSR 0,28,1;
+# Print \n
+LDA 0,0,10;
 OUT 0,1;
 HLT;

@@ -23,6 +23,9 @@ public class Memory {
 
     private Simulator context;
 
+    short boundsLowerProtectedMemory = 5;
+    short baseUpperProtectedMemory;
+
     Memory(Simulator context, int wordCount){
         this.context = context;
 
@@ -75,7 +78,7 @@ public class Memory {
     }
 
     private short getWord(int address) {
-        if (address < 6) {
+        if (!this.context.msr.isSupervisorMode() && (address <= this.boundsLowerProtectedMemory || address >= this.baseUpperProtectedMemory)) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
             this.context.io.engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
@@ -88,7 +91,7 @@ public class Memory {
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
             // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            this.context.io.engineerConsolePrintLn("Illegally accessing address above highest memory address. Halting!");
+            this.context.io.engineerConsolePrintLn("Illegally accessing address " + address + "above highest memory address " + this.wordCount + ". Halting!");
             this.context.msr.setIsRunning(false);
             if (!this.context.msr.isInteractive()) {
                 System.exit(1);
@@ -108,10 +111,10 @@ public class Memory {
     }
 
     private void setWord(int address, short value){
-        if (address < 6) {
+        if (!this.context.msr.isSupervisorMode() && (address <= this.boundsLowerProtectedMemory || address >= this.baseUpperProtectedMemory)) {
             // Illegally accessing protected memory
             // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            this.context.io.engineerConsolePrintLn("setWord - Illegally accessing protecting address! Halting");
+            this.context.io.engineerConsolePrintLn("setWord - Illegally accessing protected address " + address + "! Halting");
             this.context.msr.setIsRunning(false);
             if (!this.context.msr.isInteractive()) {
                 System.exit(1);
@@ -119,7 +122,7 @@ public class Memory {
         } else if (address > this.wordCount) {
             // Illegally accessing protecting memory above limit
             // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            this.context.io.engineerConsolePrintLn("Illegally accessing address above highest memory address. Halting!");
+            this.context.io.engineerConsolePrintLn("Illegally accessing address " + address + " above highest memory address " + this.wordCount + ". Halting!");
             this.context.msr.setIsRunning(false);
             if (!this.context.msr.isInteractive()) {
                 System.exit(1);
