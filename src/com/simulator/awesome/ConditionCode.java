@@ -23,7 +23,7 @@ public class ConditionCode {
 
     // Condition Code (CC) getters and setters
 
-    public byte get() { return this.cc; };
+    public byte get() { return this.cc; }
 
     public boolean isOverflow() {
         return getNthLeastSignificantBit(this.cc, 0);

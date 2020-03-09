@@ -1,0 +1,19 @@
+# (In Assembly)
+# Print Fault at xxxxxx (c(4) - 1). The indicator light shows what the fault is already, so no need to do anything
+# Print MFX, where X is the ID in R0
+##########################################################
+# Assumes c(29) = 32, c(30) = 64, c(31)=96               #
+##########################################################
+LDX 1,0,29;
+LDX 2,0,30;
+LDX 3,0,31;
+LDA 1,2,6;     ASCII 70 - F
+OUT 1,1;
+# Print out the number
+AIR 0,31;
+AIR 0,17;
+OUT 0,1;
+LDA 0,0,10;     ASCII 10 - LF
+OUT 0,1;
+HLT;
+RFS 0;

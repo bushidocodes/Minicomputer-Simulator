@@ -10,7 +10,7 @@ public class ArithmeticLogicUnit {
     private int y;
     private int y2;
 
-    private Simulator context;
+    private final Simulator context;
 
     ArithmeticLogicUnit(Simulator context) {
         this.a = 0;

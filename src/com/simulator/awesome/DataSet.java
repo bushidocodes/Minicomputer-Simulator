@@ -12,9 +12,7 @@ public class DataSet {
         if (data.length <= 31){
             this.dataSet = new short[32];
             this.dataSet[0] = (short)(data.length);
-            for (int i = 0; i < data.length; i++){
-                dataSet[i+1] = data[i];
-            }
+            System.arraycopy(data, 0, dataSet, 1, data.length);
         } else {
             this.numberOfBodySections = (short)(Math.ceil(data.length / 32f));
             if (numberOfBodySections > 31) throw new Error("A Deep Table Dataset only supports 31 body sections");
@@ -25,11 +23,9 @@ public class DataSet {
             // Add indirect for each section to subsequent words of header
             for (int bodySection=1, address=this.baseAddress + 32; bodySection <= this.numberOfBodySections; bodySection++, address+=32){
                 this.dataSet[bodySection] = (short)address;
-            };
-            // Copy the words
-            for (int i = 0; i < data.length; i++){
-                this.dataSet[i+32] = data[i];
             }
+            // Copy the words
+            System.arraycopy(data, 0, this.dataSet, 32, data.length);
         }
     }
 
@@ -38,7 +34,7 @@ public class DataSet {
         this.baseAddress = baseAddress;
         for (int bodySection=1, address=this.baseAddress + 32; bodySection <= this.numberOfBodySections; bodySection++, address+=32){
             this.dataSet[bodySection] += displacement;
-        };
+        }
     }
 
     public short[] export(){

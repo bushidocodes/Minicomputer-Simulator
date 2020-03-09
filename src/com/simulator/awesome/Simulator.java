@@ -8,7 +8,7 @@ public class Simulator {
     public ControlUnit cu;
 
     // Memory Subsystem, including the MAR, MBR, Cache, and Linear Memory
-    public Memory memory;
+    public final Memory memory;
 
     // Program Counter: Address of the next instruction to be executed
     public ProgramCounter pc;
@@ -22,7 +22,7 @@ public class Simulator {
     // Machine Fault Register: Illegal Access to Privileged memory, Illegal Trap, Illegal OpCode, Access beyond bounds
     public MachineFaultRegister mfr;
 
-    public MachineStatusRegister msr;
+    public final MachineStatusRegister msr;
 
     // The four general purpose registers
     private short r0, r1, r2, r3;
@@ -34,9 +34,9 @@ public class Simulator {
     public ArithmeticLogicUnit alu;
 
     // I/O Subsystem
-    public InputOutput io;
+    public final InputOutput io;
 
-    public ReadOnlyMemory rom;
+    public final ReadOnlyMemory rom;
 
     Simulator(int wordCount) {
         this.cu = new ControlUnit(this);
@@ -167,13 +167,25 @@ public class Simulator {
             ds.setBaseAddress(baseAddress);
             words = ds.export();
             for (int i = 0; i < words.length; i++) {
-                this.memory.store((short)(baseAddress + i), words[i]);
+                try {
+                    this.memory.store((short)(baseAddress + i), words[i]);
+                } catch (IllegalMemoryAccessToReservedLocationsException e) {
+                    e.printStackTrace();
+                } catch (IllegalMemoryAddressBeyondLimitException e) {
+                    e.printStackTrace();
+                }
             }
             return baseAddress;
         } else {
             short baseAddress = (alignLeft) ? (short) memoryPosition : (short)(memoryPosition - words.length);
             for (int i = 0; i < words.length; i++) {
-                this.memory.store((short)(baseAddress + i), words[i]);
+                try {
+                    this.memory.store((short)(baseAddress + i), words[i]);
+                } catch (IllegalMemoryAccessToReservedLocationsException e) {
+                    e.printStackTrace();
+                } catch (IllegalMemoryAddressBeyondLimitException e) {
+                    e.printStackTrace();
+                }
             }
             return baseAddress;
         }

@@ -17,7 +17,7 @@ public class MachineFaultRegister {
         this.mfr = 0;
     }
 
-    public byte get() { return this.mfr; };
+    public byte get() { return this.mfr; }
 
     public boolean isIllegalMemoryAccessToReservedLocations() {
         return getNthLeastSignificantBit(this.mfr, 0);

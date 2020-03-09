@@ -12,10 +12,10 @@ enum ShiftRotateDirection {
 }
 
 public class ShiftRotateInstruction extends Instruction{
-    public short registerId;
-    public ShiftRotateType type; // If not logical, is arithmetic
-    public ShiftRotateDirection direction;
-    public short count;
+    public final short registerId;
+    public final ShiftRotateType type; // If not logical, is arithmetic
+    public final ShiftRotateDirection direction;
+    public final short count;
     protected short buffer;
 
     ShiftRotateInstruction(short word, Simulator context) {
@@ -41,10 +41,6 @@ public class ShiftRotateInstruction extends Instruction{
 
         this.context.alu.setA(this.context.getGeneralRegister(this.registerId));
         this.context.alu.setB(this.count);
-    }
-
-    public void execute(){
-        // NOOP
     }
 
     public void storeResult(){
@@ -81,25 +77,6 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
     // Default fetchOperand
     // A <- RX, B <- count
 
-    public void execute(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        if (this.type == ShiftRotateType.ARITHMETIC) {
-            if (this.direction == ShiftRotateDirection.LEFT) {
-                this.context.alu.arithmeticShiftLeft();
-            } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.alu.arithmeticShiftRight();
-            }
-        } else if (this.type == ShiftRotateType.LOGICAL) {
-            if (this.direction == ShiftRotateDirection.LEFT) {
-                this.context.alu.logicalShiftLeft();
-            } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.alu.logicalShiftRight();
-            }
-        }
-    }
-
     // Default storeResults
     // RX <- Y
 }
@@ -122,22 +99,6 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
 
     // Default fetchOperand
     // A <- RX, B <- count
-
-    public void execute(){
-        if (this.type == ShiftRotateType.ARITHMETIC) {
-            if (this.direction == ShiftRotateDirection.LEFT) {
-                this.context.alu.arithmeticRotateLeft();
-            } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.alu.arithmeticRotateRight();
-            }
-        } else if (this.type == ShiftRotateType.LOGICAL) {
-            if (this.direction == ShiftRotateDirection.LEFT) {
-                this.context.alu.logicalRotateLeft();
-            } else if (this.direction == ShiftRotateDirection.RIGHT) {
-                this.context.alu.logicalRotateRight();
-            }
-        }
-    }
 
     // Default storeResults
     // RX <- Y

@@ -5,12 +5,12 @@ import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class InputOutput {
-    Simulator context;
+    final Simulator context;
 
     // IO buffers handle the connections between IO devices and the computer
-    private LinkedBlockingQueue[] outputBuffer;
-    private LinkedBlockingQueue[] inputBuffer;
-    private LinkedBlockingQueue engineerConsoleOutputBuffer;
+    private final LinkedBlockingQueue[] outputBuffer;
+    private final LinkedBlockingQueue[] inputBuffer;
+    private final LinkedBlockingQueue engineerConsoleOutputBuffer;
 
     public InputOutput(Simulator context){
         this.context = context;
@@ -37,7 +37,7 @@ public class InputOutput {
     }
 
     public boolean isOutputBufferNull(short deviceId){
-        return outputBuffer[deviceId].peek() == null ? true : false;
+        return outputBuffer[deviceId].peek() == null;
     }
 
     public void emptyOutputBuffer(){
@@ -55,7 +55,7 @@ public class InputOutput {
     }
 
     public boolean isInputBufferNull(short deviceId){
-        return inputBuffer[deviceId].peek() == null ? true : false;
+        return inputBuffer[deviceId].peek() == null;
     }
 
     public void emptyInputBuffer(){
@@ -65,7 +65,7 @@ public class InputOutput {
     }
 
     public boolean isEngineersConsoleBufferNull(){
-        return engineerConsoleOutputBuffer.peek() == null ? true : false;
+        return engineerConsoleOutputBuffer.peek() == null;
     }
 
     public void emptyEngineersConsoleBuffer(){

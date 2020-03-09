@@ -1,9 +1,9 @@
 package com.simulator.awesome;
 
 public class Instruction {
-    public short opCode;
-    public short word;
-    protected Simulator context;
+    public final short opCode;
+    public final short word;
+    protected final Simulator context;
     protected boolean didFault = false;
 
     public Instruction(short word, Simulator context) {
@@ -14,7 +14,7 @@ public class Instruction {
         this.opCode = Utils.short_unsigned_right_shift((short)(word & opCodeMask), opCodeOffset);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // NOOP
     }
 
@@ -22,20 +22,20 @@ public class Instruction {
         // NOOP
     }
 
-    public void storeResult(){
+    public void storeResult() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // NOOP
     }
 
     public void validateGeneralRegisterIndex(short index){
         if (index < 0 || index > 3) {
             this.didFault = true;
-        };
+        }
     }
 
     public void validateIndexRegisterIndex(short index){
         if (index < 0 || index > 3) {
             this.didFault = true;
-        };
+        }
     }
 
     public void print(){
@@ -55,7 +55,7 @@ public class Instruction {
  * The PC+1 of the TRAP instruction is stored in memory location 2.
  */
 class Trap extends Instruction {
-    short trapCode;
+    final short trapCode;
 
     Trap(short word, Simulator context) {
         super(word, context);
@@ -64,7 +64,7 @@ class Trap extends Instruction {
         this.trapCode = Utils.short_unsigned_right_shift((short)(word & trapCodeMask), trapCodeOffset);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Switch to supervisor mode
         this.context.msr.setSupervisorMode(true);
         // Store PC (it is already incremented) to address 2
@@ -75,13 +75,6 @@ class Trap extends Instruction {
         this.context.pc.set(addressOfTrap);
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -103,7 +96,4 @@ class Halt extends Instruction {
         }
     }
 
-    public void storeResult(){
-        // NOOP
-    }
 }

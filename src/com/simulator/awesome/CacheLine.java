@@ -4,10 +4,10 @@ package com.simulator.awesome;
 // Tag (10 bit) | Valid Bit | 5 reserved Bits | word | word | word | word
 public class CacheLine {
     short header;
-    short words[];
-    static short validBit = (short) 0b100000;
+    short[] words;
+    static final short validBit = (short) 0b100000;
 
-    CacheLine(short tag, short words[]){
+    CacheLine(short tag, short[] words){
         if (words.length != 4) throw new Error("A cache line must be four words!");
 
         this.header = (short)((tag << 6 ) | CacheLine.validBit);

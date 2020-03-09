@@ -18,18 +18,6 @@ public class InputOutputInstruction extends Instruction {
         this.registerId = Utils.short_unsigned_right_shift((short)(word & registerMask), registerOffset);
     }
 
-    public void fetchOperand(){
-        // NOOP
-    }
-
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
-
     public void validateInputDevice(short devid){
         // Input from console printer triggers a fault
         if (devid == 1) {
@@ -68,18 +56,8 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
         // Pause the execution loop and wait for user input
         this.context.msr.setReadyForInput(true);
         this.context.cu.pauseExecutionLoop();
-    }
-
-    public void execute(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
         // c(Register) <- inputBuffer <- Device
         this.context.setGeneralRegister(this.registerId,this.context.io.getFirstWordFromInputBuffer(this.deviceId));
-    }
-
-    public void storeResult(){
-        // NOOP
     }
 }
 
@@ -94,17 +72,7 @@ class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
         super(word, context);
         validateGeneralRegisterIndex(this.registerId);
         validateOutputDevice(this.deviceId);
-    }
-    public void execute(){
-        // Fault Handling and Validation
-        if (this.didFault) return;
-
-        // Device <- outputBuffer <- c(Register)
         this.context.io.addWordToOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
-    }
-
-    public void storeResult(){
-        // NOOP
     }
 }
 

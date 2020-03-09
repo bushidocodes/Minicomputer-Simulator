@@ -61,14 +61,14 @@ public class Interface {
     private JButton loadProgram1Button;
     private JTabbedPane tabbedPane1;
     private JLabel readyForInputLabel;
-    private Simulator context;
+    private final Simulator context;
     private File selectedFile;
     private Integer consolePrinterLineNumber = 0;
 
     // Initialize image icons for indicator light
-    String basePath = new File("").getAbsolutePath(); //get current base directory
-    ImageIcon redLight = new ImageIcon(basePath.concat("/static/lamp-red.png"));
-    ImageIcon greenLight = new ImageIcon(basePath.concat("/static/lamp-green.png"));
+    final String basePath = new File("").getAbsolutePath(); //get current base directory
+    final ImageIcon redLight = new ImageIcon(basePath.concat("/static/lamp-red.png"));
+    final ImageIcon greenLight = new ImageIcon(basePath.concat("/static/lamp-green.png"));
 
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
@@ -130,7 +130,7 @@ public class Interface {
     }
 
     public void setUIReadyForInput(boolean state){
-        if (state==true){
+        if (state){
             consoleKeyboard.setEnabled(true);
             consoleKeyboard.setEditable(true);
             consoleKeyboard.requestFocus();
@@ -227,13 +227,11 @@ public class Interface {
                             context.memory.setMemoryBufferRegister(stringToWord(input));
                             break;
                         case "MFR":
+                        case "CC":
                             // not implemented
                             break;
                         case "IR":
                             context.cu.setInstructionRegister(stringToWord(input));
-                            break;
-                        case "CC":
-                            // not implemented
                             break;
                     }
                 } else {
@@ -332,7 +330,13 @@ public class Interface {
                 short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 100, true,false);
 
                 // Assign Indirect to this dataset to address 16;
-                context.memory.store((short) 16, programLocation);
+                try {
+                    context.memory.store((short) 16, programLocation);
+                } catch (IllegalMemoryAccessToReservedLocationsException ex) {
+                    ex.printStackTrace();
+                } catch (IllegalMemoryAddressBeyondLimitException ex) {
+                    ex.printStackTrace();
+                }
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 100);
@@ -393,7 +397,13 @@ public class Interface {
                 short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, true,false);
 
                 // Assign Indirect to this dataset to address 16;
-                context.memory.store((short) 16, programLocation);
+                try {
+                    context.memory.store((short) 16, programLocation);
+                } catch (IllegalMemoryAccessToReservedLocationsException ex) {
+                    ex.printStackTrace();
+                } catch (IllegalMemoryAddressBeyondLimitException ex) {
+                    ex.printStackTrace();
+                }
 
                 // IPL and Start the Execution Loop
                 context.powerOn((short) 101);
