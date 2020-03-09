@@ -467,7 +467,17 @@ class ReturnFromSubroutine extends RegisterMemoryInstruction {
         if (this.didFault) return;
 
         this.context.setGeneralRegister((short) 0, this.immediateValue);
-        this.context.pc.set(this.context.getGeneralRegister((short) 3));
+
+        // We are using RFS as a "trap return" to avoid having to create a new function
+        // If we wanted to be able to call subroutines in traps, we would have to implemented a RFT (return from trap) OPCODE
+        if (this.context.msr.isSupervisorMode()){
+            // Restore PC to value stored in Address 2
+            this.context.pc.set(this.context.memory.fetch((short)2));
+            // The spec mentions saving and restoring the MSR, but there is no clear need for this currently based on
+            // the sorts of state we store in the MSR
+        } else {
+            this.context.pc.set(this.context.getGeneralRegister((short) 3));
+        }
     }
 
     public void execute() {
