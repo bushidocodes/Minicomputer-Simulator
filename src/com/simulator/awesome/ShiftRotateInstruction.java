@@ -77,6 +77,25 @@ class ShiftRegisterByCount extends ShiftRotateInstruction {
     // Default fetchOperand
     // A <- RX, B <- count
 
+    public void execute(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        if (this.type == ShiftRotateType.ARITHMETIC) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.alu.arithmeticShiftLeft();
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.alu.arithmeticShiftRight();
+            }
+        } else if (this.type == ShiftRotateType.LOGICAL) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.alu.logicalShiftLeft();
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.alu.logicalShiftRight();
+            }
+        }
+    }
+
     // Default storeResults
     // RX <- Y
 }
@@ -99,6 +118,22 @@ class RotateRegisterByCount extends ShiftRotateInstruction {
 
     // Default fetchOperand
     // A <- RX, B <- count
+
+    public void execute(){
+        if (this.type == ShiftRotateType.ARITHMETIC) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.alu.arithmeticRotateLeft();
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.alu.arithmeticRotateRight();
+            }
+        } else if (this.type == ShiftRotateType.LOGICAL) {
+            if (this.direction == ShiftRotateDirection.LEFT) {
+                this.context.alu.logicalRotateLeft();
+            } else if (this.direction == ShiftRotateDirection.RIGHT) {
+                this.context.alu.logicalRotateRight();
+            }
+        }
+    }
 
     // Default storeResults
     // RX <- Y
