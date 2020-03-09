@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import static com.simulator.awesome.Utils.wordToString;
 
 public class Cache {
-    private ArrayList<CacheLine> contents;
+    private final ArrayList<CacheLine> contents;
     static final short capacity = 16;
-    private Simulator context;
+    private final Simulator context;
 
     Cache(Simulator context){
         this.context = context;
         this.contents = new ArrayList<>();
     }
 
-    public void store(short tag, short words[]) {
+    public void store(short tag, short[] words) {
         if (words.length != 4) throw new Error("A cache line must be four words!");
 
         if (this.contents.size() == Cache.capacity) this.contents.remove(0);

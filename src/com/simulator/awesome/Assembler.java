@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Assembler {
     // Define the opcodes for each instruction
-    Map<String, String> opcodeMap = new HashMap<String, String>() {{
+    final Map<String, String> opcodeMap = new HashMap<String, String>() {{
         put("HLT","000000");
         put("LDR","000001");
         put("STR","000010");
@@ -104,7 +104,7 @@ public class Assembler {
             }
 
             // Get the instruction
-            String instruction[] = strippedInstructions.split(" ");
+            String[] instruction = strippedInstructions.split(" ");
 
             try{
                 // Get the parameters

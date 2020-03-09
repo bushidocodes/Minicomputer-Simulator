@@ -1,0 +1,13 @@
+# Trigger Permission Fault by loading a protected address
+# LDR 0,0,0; Try to load address of trap table
+# Trigger Memory out of bounds fault by accessing over 2048
+# X1 = 127*127 = 16129
+LDX 3,0,31;
+LDA 0,3,31; Loading 127
+LDA 2,3,31; Loading 127
+MLT 0,2;
+STR 1,0,17;
+LDX 1,0,17;
+# Now try to load this into R1
+# LDR 1,1,0;
+HLT;

@@ -31,7 +31,7 @@ public class RegisterMemoryInstruction extends Instruction {
         this.context.setInternalAddressRegister((short) (this.context.getIndexRegister(this.indexRegisterId) + this.address));
     }
 
-    public void evaluatePointerToAddress() {
+    public void evaluatePointerToAddress() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // MAR <- IAR (storing address of pointer)
         // MBR <- c(MAR)
         // IAR <- MBR
@@ -39,7 +39,7 @@ public class RegisterMemoryInstruction extends Instruction {
     }
 
     // MAR <- EA
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -74,7 +74,7 @@ class LoadRegisterFromMemory extends RegisterMemoryInstruction {
         this.validateIndexRegisterIndex(this.indexRegisterId);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -87,13 +87,6 @@ class LoadRegisterFromMemory extends RegisterMemoryInstruction {
         this.context.setGeneralRegister(this.registerId, this.context.memory.fetch(this.context.getInternalAddressRegister()));
     }
 
-    public void execute(){
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -108,7 +101,7 @@ class StoreRegisterToMemory extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand() {
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -122,13 +115,6 @@ class StoreRegisterToMemory extends RegisterMemoryInstruction {
         this.context.memory.store(this.context.getInternalAddressRegister(), this.context.getGeneralRegister(this.registerId));
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -143,7 +129,7 @@ class LoadRegisterWithAddress extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand() {
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -156,13 +142,6 @@ class LoadRegisterWithAddress extends RegisterMemoryInstruction {
         this.context.setGeneralRegister(this.registerId, this.context.getInternalAddressRegister());
     }
 
-    public void execute(){
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -180,7 +159,7 @@ class LoadIndexRegisterFromMemory extends RegisterMemoryInstruction {
         this.destinationIndexRegisterId = this.registerId;
     }
 
-    public void fetchOperand() {
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -193,13 +172,6 @@ class LoadIndexRegisterFromMemory extends RegisterMemoryInstruction {
         this.context.setIndexRegister(this.destinationIndexRegisterId, this.context.memory.fetch(this.context.getInternalAddressRegister()));
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -218,7 +190,7 @@ class StoreIndexRegisterToMemory extends RegisterMemoryInstruction {
         this.sourceIndexRegisterId = this.registerId;
     }
 
-    public void fetchOperand() {
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -232,13 +204,6 @@ class StoreIndexRegisterToMemory extends RegisterMemoryInstruction {
         this.context.memory.store(this.context.getInternalAddressRegister(), this.context.getIndexRegister(this.sourceIndexRegisterId));
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 
@@ -272,7 +237,7 @@ class JumpIfZero extends RegisterMemoryInstruction {
         this.context.alu.compare();
     }
 
-    public void storeResult(){
+    public void storeResult() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -299,7 +264,7 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
     }
 
     // Sets the IAR with the address we conditionally might want to set the PC to
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -320,11 +285,11 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
         this.context.alu.compare();
     }
 
-    public void storeResult(){
+    public void storeResult() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
-        if (this.context.cc.isEqual() == false) {
+        if (!this.context.cc.isEqual()) {
             // IAR <- EA
             computeEffectiveAddress();
             if (this.isIndirect) this.evaluatePointerToAddress();
@@ -345,14 +310,14 @@ class JumpIfNotEqual extends RegisterMemoryInstruction {
  * Else PC <- PC + 1
  **/
 class JumpIfConditionCode extends RegisterMemoryInstruction {
-    private int conditionCode;
+    private final int conditionCode;
 
     public JumpIfConditionCode(short word, Simulator context) {
         super(word, context);
         this.conditionCode = this.registerId;
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -364,13 +329,6 @@ class JumpIfConditionCode extends RegisterMemoryInstruction {
         }
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -385,7 +343,7 @@ class UnconditionalJumpToAddress extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -396,13 +354,6 @@ class UnconditionalJumpToAddress extends RegisterMemoryInstruction {
         this.context.pc.set(this.context.getInternalAddressRegister());
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 
@@ -422,7 +373,7 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -437,13 +388,6 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
         this.context.pc.set(this.context.getInternalAddressRegister());
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult(){
-        // NOOP
-    }
 }
 
 /**
@@ -462,31 +406,41 @@ class ReturnFromSubroutine extends RegisterMemoryInstruction {
         this.immediateValue = this.address;
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
         this.context.setGeneralRegister((short) 0, this.immediateValue);
 
-        // We are using RFS as a "trap return" to avoid having to create a new function
+        // We are using RFS as a "trap return" and "fault return" to avoid having to create a new function
         // If we wanted to be able to call subroutines in traps, we would have to implemented a RFT (return from trap) OPCODE
-        if (this.context.msr.isSupervisorMode()){
+        if (this.context.msr.isExecutingFaultHandler()) {
+            // "Fault Handler" Exit
+            this.context.pc.set(this.context.memory.fetch((short)4));
+            if (this.context.msr.isSupervisorFault()){
+                this.context.msr.setIsSupervisorFault(false);
+            } else {
+                this.context.msr.setSupervisorMode(false);
+            }
+            this.context.msr.setIsExecutingFaultHandler(false);
+
+            // Clear all MFR registers
+            this.context.mfr.setIsIllegalMemoryAddressBeyondLimit(false);
+            this.context.mfr.setIllegalMemoryAccessToReservedLocations(false);
+            this.context.mfr.setIllegalTrapCode(false);
+            this.context.mfr.setIsIllegalOpcode(false);
+        } else if (this.context.msr.isSupervisorMode()){
+            // "Trap Handler" Exit
             // Restore PC to value stored in Address 2
             this.context.pc.set(this.context.memory.fetch((short)2));
             // The spec mentions saving and restoring the MSR, but there is no clear need for this currently based on
             // the sorts of state we store in the MSR
         } else {
+            // Normal Subroutine Call Exit
             this.context.pc.set(this.context.getGeneralRegister((short) 3));
         }
     }
 
-    public void execute() {
-        // NOOP
-    }
-
-    public void storeResult() {
-        // NOOP
-    }
 }
 
 /**
@@ -503,7 +457,7 @@ class SubtractOneAndBranch extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -547,7 +501,7 @@ class JumpGreaterThanOrEqualTo extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -589,7 +543,7 @@ class AddMemoryToRegister extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -636,7 +590,7 @@ class SubtractMemoryFromRegister extends RegisterMemoryInstruction {
         super(word, context);
     }
 
-    public void fetchOperand(){
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
 
@@ -682,7 +636,7 @@ class SubtractMemoryFromRegister extends RegisterMemoryInstruction {
  *  IX and I are ignored in this instruction
  */
 class AddImmediateToRegister extends RegisterMemoryInstruction {
-    private short immediate;
+    private final short immediate;
 
     public AddImmediateToRegister(short word, Simulator context) {
         super(word, context);
@@ -733,7 +687,7 @@ class AddImmediateToRegister extends RegisterMemoryInstruction {
  IX and I are ignored in this instruction
  */
 class SubtractImmediateFromRegister extends RegisterMemoryInstruction {
-    private short immediate;
+    private final short immediate;
 
     public SubtractImmediateFromRegister(short word, Simulator context) {
         super(word, context);

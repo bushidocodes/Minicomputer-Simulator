@@ -1,7 +1,7 @@
 package com.simulator.awesome;
 
 public class ControlUnit {
-    Simulator context;
+    final Simulator context;
 
     // Instruction register. Holds the instruction to be executed
     // In certain architectures, also known as the current instruction register (CIR)
@@ -37,6 +37,61 @@ public class ControlUnit {
         return this.ir;
     }
 
+    public void handleFault(){
+        // Set inFault flag on MSR
+        this.context.msr.setIsExecutingFaultHandler(true);
+        // If in supervisor mode, set faultInSupervisor flag. Else, Supervisor Mode
+        if (this.context.msr.isSupervisorMode()){
+            this.context.msr.setIsSupervisorFault(true);
+        } else {
+            this.context.msr.setSupervisorMode(true);
+        }
+        try {
+            // Save PC to address 4
+            this.context.memory.store((short)4, this.context.pc.get());
+            // Save R0 to address 5
+            this.context.memory.store((short)5, this.context.getGeneralRegister((short)0));
+        } catch (IllegalMemoryAccessToReservedLocationsException e) {
+            e.printStackTrace();
+        } catch (IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
+        }
+
+        // Copy The Fault ID to R0
+        if (this.context.mfr.isIllegalMemoryAccessToReservedLocations()){
+            this.context.setGeneralRegister((short)0, (short) 0);
+        } else if (this.context.mfr.isIllegalTrapCode()) {
+            this.context.setGeneralRegister((short)0, (short) 1);
+        } else if (this.context.mfr.isIllegalOpcode()){
+            this.context.setGeneralRegister((short)0, (short) 2);
+        } else if (this.context.mfr.isIllegalMemoryAddressBeyondLimit()){
+            this.context.setGeneralRegister((short)0, (short) 3);
+        } else {
+            System.out.println("Unknown Error: " + this.context.mfr.get());
+        }
+
+        // Set Program Counter to 1
+        try {
+            this.context.pc.set(this.context.memory.fetch((short)1));
+        } catch (IllegalMemoryAccessToReservedLocationsException e) {
+            e.printStackTrace();
+        } catch (IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
+        }
+
+        // Set Execution Step to 1
+        this.executionStep = 1;
+        // Set Indicator Lights?
+        // (In Assembly)
+        // Print Fault at xxxxxx (c(4) - 1). The indicator light shows what the fault is already, so no need to do anything
+        // parse R0 to display custom error code
+        // HALT
+        // RFS 0
+        // RFS (reacting to inFault flag, restores PC from address 4, Load R0 from address 5, clear indicator lights
+        // (In RFS) If faultInSupervisor flag is not set, exit supervisor mode
+        // (In RFS) If faultInSupervisor flag is set, unset it, but DOT NOT exit supervisor mode.
+    }
+
     public void setInstructionRegister(short instructionRegister) {
         this.ir = instructionRegister;
     }
@@ -50,49 +105,57 @@ public class ControlUnit {
      **/
 
     public void singleStep(){
-        switch (this.executionStep){
-            // Instruction Fetch
-            case 1:
-                this.executionInstructionFetch();
-                break;
-            // Instruction Decode
-            case 2:
-                this.executionInstructionDecode();
-                break;
-            // Operand Fetch
-            case 3:
-                this.currentInstruction.fetchOperand();
-                break;
-            // Execute
-            case 4:
-                this.currentInstruction.execute();
-                break;
-            // Result Store
-            case 5:
-                /**
-                 In 1 cycle, move the contents of the IRR to:
-                 a. If target = register, use Register Select 1 to store IRR contents into the specified register
-                 b. If target = memory, such as a STR, move contents of IRR to MBR. On the next cycle, move contents of MBR to memory using address in MAR.
-                 **/
-                this.currentInstruction.storeResult();
-                break;
-        }
-        if (this.executionStep == 5){
-            // Commenting out because this causing the program to hang
-            if (this.context.msr.isDebugging()){
-                 this.context.dumpRegistersToJavaConsole();
-                 this.context.memory.dump();
+        try {
+            switch (this.executionStep) {
+                // Instruction Fetch
+                case 1:
+                    this.executionInstructionFetch();
+                    break;
+                // Instruction Decode
+                case 2:
+                    this.executionInstructionDecode();
+                    break;
+                // Operand Fetch
+                case 3:
+                    this.currentInstruction.fetchOperand();
+                    break;
+                // Execute
+                case 4:
+                    this.currentInstruction.execute();
+                    break;
+                // Result Store
+                case 5:
+                    /*
+                     In 1 cycle, move the contents of the IRR to:
+                     a. If target = register, use Register Select 1 to store IRR contents into the specified register
+                     b. If target = memory, such as a STR, move contents of IRR to MBR. On the next cycle, move contents of MBR to memory using address in MAR.
+                     */
+                    this.currentInstruction.storeResult();
+                    break;
             }
+            if (this.executionStep == 5) {
+                // Commenting out because this causing the program to hang
+                if (this.context.msr.isDebugging()) {
+                    this.context.dumpRegistersToJavaConsole();
+                    this.context.memory.dump();
+                }
 
-            this.executionStep = 1;
-        } else {
-            this.executionStep++;
+                this.executionStep = 1;
+            } else {
+                this.executionStep++;
+            }
+        } catch (IllegalMemoryAccessToReservedLocationsException e) {
+            this.context.mfr.setIllegalMemoryAccessToReservedLocations(true);
+            this.handleFault();
+        } catch (IllegalMemoryAddressBeyondLimitException e) {
+            this.context.mfr.setIsIllegalMemoryAddressBeyondLimit(true);
+            this.handleFault();
         }
     }
 
     // Execution Step 1
     // Obtain Instruction from Program Storage
-    private void executionInstructionFetch() {
+    private void executionInstructionFetch() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         this.context.io.engineerConsolePrintLn("PC: " + this.context.pc);
         if (this.context.pc.get() < 0 || this.context.pc.get() >= this.context.memory.getWordCount()){
             // TODO: Refactor as machine fault

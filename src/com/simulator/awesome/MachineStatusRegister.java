@@ -14,6 +14,8 @@ import static com.simulator.awesome.Utils.setNthLeastSignificantBit;
 // 0000000000000100 | System Running Flag
 // 0000000000001000 | Interactive Flag
 // 0000000000010000 | Debug Flag
+// 0000000000100000 | Fault Handler Flag
+// 0000000001000000 | Supervisor Fault Flag
 // All others reserved
 public class MachineStatusRegister {
     private short msr;
@@ -60,6 +62,22 @@ public class MachineStatusRegister {
 
     public void setIsDebugging(boolean isDebugging){
         this.msr = (byte)setNthLeastSignificantBit(this.msr, 4, isDebugging);
+    }
+
+    public boolean isExecutingFaultHandler(){
+        return getNthLeastSignificantBit(this.msr, 5);
+    }
+
+    public void setIsExecutingFaultHandler(boolean isExecutingFaultHandler){
+        this.msr = (byte)setNthLeastSignificantBit(this.msr, 5, isExecutingFaultHandler);
+    }
+
+    public boolean isSupervisorFault(){
+        return getNthLeastSignificantBit(this.msr, 6);
+    }
+
+    public void setIsSupervisorFault(boolean isSupervisorFault){
+        this.msr = (byte)setNthLeastSignificantBit(this.msr, 5, isSupervisorFault);
     }
 
     public void reset() {
