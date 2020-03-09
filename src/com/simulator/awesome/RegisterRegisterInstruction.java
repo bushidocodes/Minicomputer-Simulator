@@ -46,6 +46,37 @@ class MultiplyRegisterByRegister extends RegisterRegisterInstruction {
         super(word, context);
     }
 
+    public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.firstRegisterId != 0 && this.firstRegisterId != 2)  this.didFault = true;
+        if (this.didFault) return;
+
+        // A <- RX
+        this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
+        // B <- RY
+        this.context.alu.setB(this.context.getGeneralRegister(this.secondRegisterId));
+    }
+
+    public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.multiply();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // Returns a 2-tuple of shorts containing the high and low bits
+        short[] results = this.context.alu.getYAsShorts();
+
+        // rx <- top bits of z
+        this.context.setGeneralRegister(this.firstRegisterId, results[0]);
+        // rx + 1 <- bottom bits of z
+        this.context.setGeneralRegister((short)(this.firstRegisterId + 1), results[1]);
+    }
+
 }
 
 /**
@@ -63,6 +94,36 @@ class DivideRegisterByRegister extends RegisterRegisterInstruction {
         super(word, context);
     }
 
+    public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.firstRegisterId != 0 && this.firstRegisterId != 2) this.didFault = true;
+        if (this.didFault) return;
+
+        this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
+        this.context.alu.setB(this.context.getGeneralRegister(this.secondRegisterId));
+    }
+
+    public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.divide();
+
+        if (this.context.cc.isDivideByZero()) {
+            this.didFault = true;
+        }
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // RX <- Y
+        this.context.setGeneralRegister(this.firstRegisterId, (short)(this.context.alu.getYAsShort()));
+        // RX+1 <- Y2
+        this.context.setGeneralRegister((short)(this.firstRegisterId + 1), (short)(this.context.alu.getY2AsShort()));
+    }
+
 }
 
 /**
@@ -76,6 +137,25 @@ class TestTheEqualityOfRegisterAndRegister extends RegisterRegisterInstruction {
         super(word, context);
     }
 
+    public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
+        this.context.alu.setB(this.context.getGeneralRegister(this.secondRegisterId));
+    }
+
+    public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.compare();
+    }
+
+    public void storeResult(){
+        // NOOP
+    }
+
 }
 
 /**
@@ -87,6 +167,29 @@ class TestTheEqualityOfRegisterAndRegister extends RegisterRegisterInstruction {
 class LogicalAndOfRegisterAndRegister extends RegisterRegisterInstruction {
     public LogicalAndOfRegisterAndRegister(short word, Simulator context) {
         super(word, context);
+    }
+
+    public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
+        this.context.alu.setB(this.context.getGeneralRegister(this.secondRegisterId));
+    }
+
+
+    public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.and();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.setGeneralRegister(this.firstRegisterId, this.context.alu.getYAsShort());
     }
 
 
@@ -103,6 +206,27 @@ class LogicalOrOfRegisterAndRegister extends RegisterRegisterInstruction {
         super(word, context);
     }
 
+    public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
+        this.context.alu.setB(this.context.getGeneralRegister(this.secondRegisterId));
+    }
+
+    public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.or();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.setGeneralRegister(this.firstRegisterId, this.context.alu.getYAsShort());
+    }
 
 }
 
@@ -117,5 +241,25 @@ class LogicalNotOfRegisterAndRegister extends RegisterRegisterInstruction {
         super(word, context);
     }
 
+    public void fetchOperand(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
+    }
+    
+    public void execute() {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.alu.not();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        this.context.setGeneralRegister(this.firstRegisterId, this.context.alu.getYAsShort());
+    }
 
 }
