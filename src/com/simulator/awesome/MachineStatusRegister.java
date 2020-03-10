@@ -77,7 +77,7 @@ public class MachineStatusRegister {
     }
 
     public void setIsSupervisorFault(boolean isSupervisorFault){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 5, isSupervisorFault);
+        this.msr = (byte)setNthLeastSignificantBit(this.msr, 6, isSupervisorFault);
     }
 
     public void reset() {
