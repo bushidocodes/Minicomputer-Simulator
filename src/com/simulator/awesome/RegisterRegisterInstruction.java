@@ -76,7 +76,6 @@ class MultiplyRegisterByRegister extends RegisterRegisterInstruction {
         // rx + 1 <- bottom bits of z
         this.context.setGeneralRegister((short)(this.firstRegisterId + 1), results[1]);
     }
-
 }
 
 /**
@@ -123,7 +122,6 @@ class DivideRegisterByRegister extends RegisterRegisterInstruction {
         // RX+1 <- Y2
         this.context.setGeneralRegister((short)(this.firstRegisterId + 1), (short)(this.context.alu.getY2AsShort()));
     }
-
 }
 
 /**
@@ -155,7 +153,6 @@ class TestTheEqualityOfRegisterAndRegister extends RegisterRegisterInstruction {
     public void storeResult(){
         // NOOP
     }
-
 }
 
 /**
@@ -191,8 +188,6 @@ class LogicalAndOfRegisterAndRegister extends RegisterRegisterInstruction {
 
         this.context.setGeneralRegister(this.firstRegisterId, this.context.alu.getYAsShort());
     }
-
-
 }
 
 /**
@@ -227,7 +222,6 @@ class LogicalOrOfRegisterAndRegister extends RegisterRegisterInstruction {
 
         this.context.setGeneralRegister(this.firstRegisterId, this.context.alu.getYAsShort());
     }
-
 }
 
 /**
@@ -247,7 +241,7 @@ class LogicalNotOfRegisterAndRegister extends RegisterRegisterInstruction {
 
         this.context.alu.setA(this.context.getGeneralRegister(this.firstRegisterId));
     }
-    
+
     public void execute() {
         // Fault Handling and Validation
         if (this.didFault) return;
@@ -261,5 +255,4 @@ class LogicalNotOfRegisterAndRegister extends RegisterRegisterInstruction {
 
         this.context.setGeneralRegister(this.firstRegisterId, this.context.alu.getYAsShort());
     }
-
 }
