@@ -81,15 +81,6 @@ public class ControlUnit {
 
         // Set Execution Step to 1
         this.executionStep = 1;
-        // Set Indicator Lights?
-        // (In Assembly)
-        // Print Fault at xxxxxx (c(4) - 1). The indicator light shows what the fault is already, so no need to do anything
-        // parse R0 to display custom error code
-        // HALT
-        // RFS 0
-        // RFS (reacting to inFault flag, restores PC from address 4, Load R0 from address 5, clear indicator lights
-        // (In RFS) If faultInSupervisor flag is not set, exit supervisor mode
-        // (In RFS) If faultInSupervisor flag is set, unset it, but DOT NOT exit supervisor mode.
     }
 
     public void setInstructionRegister(short instructionRegister) {
@@ -145,11 +136,22 @@ public class ControlUnit {
                 this.executionStep++;
             }
         } catch (IllegalMemoryAccessToReservedLocationsException e) {
+            this.context.io.engineerConsolePrintLn(e.getMessage());
             this.context.mfr.setIllegalMemoryAccessToReservedLocations(true);
             this.handleFault();
         } catch (IllegalMemoryAddressBeyondLimitException e) {
+            this.context.io.engineerConsolePrintLn(e.getMessage());
             this.context.mfr.setIsIllegalMemoryAddressBeyondLimit(true);
             this.handleFault();
+        } catch (IllegalOperationCodeException e) {
+            this.context.io.engineerConsolePrintLn(e.getMessage());
+            this.context.mfr.setIsIllegalOpcode(true);
+            this.handleFault();
+        } catch (IllegalTrapCodeException e) {
+            this.context.io.engineerConsolePrintLn(e.getMessage());
+            this.context.mfr.setIllegalTrapCode(true);
+            this.handleFault();
+
         }
     }
 
@@ -173,7 +175,7 @@ public class ControlUnit {
 
     // Execution Step 2
     // Determine Operation Required
-    private void executionInstructionDecode() {
+    private void executionInstructionDecode() throws IllegalOperationCodeException {
         // Extract the opcode from the IR and use to set currentInstruction
         switch(extractOpCode(this.ir)) {
             case 0:
@@ -287,6 +289,8 @@ public class ControlUnit {
             case 63:
                 this.currentInstruction = new CheckDeviceStatusToRegister(this.ir, this.context);
                 break;
+            default:
+                throw new IllegalOperationCodeException(extractOpCode(this.ir) + "is an invalid OPCODE");
         }
     }
 

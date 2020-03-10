@@ -77,27 +77,7 @@ public class Memory {
     }
 
     private short getWord(int address) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
-        if (!this.context.msr.isSupervisorMode() && (address <= this.boundsLowerProtectedMemory || address >= this.baseUpperProtectedMemory)) {
-            // Illegally accessing protected memory
-            // In the future, we'll set MFR to xxx1, but for now, we can just halt
-            this.context.io.engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
-            throw new IllegalMemoryAccessToReservedLocationsException();
-//
-//            this.context.msr.setIsRunning(false);
-//            if (!this.context.msr.isInteractive()) {
-//                this.context.io.engineerConsolePrintLn("Not Interactive");
-//                System.exit(1);
-//            }
-        } else if (address > this.wordCount) {
-            // Illegally accessing protecting memory above limit
-            // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-            throw new IllegalMemoryAddressBeyondLimitException("Illegally accessing address " + address + "above highest memory address " + this.wordCount + ". Halting!");
-//            this.context.io.engineerConsolePrintLn("Illegally accessing address " + address + "above highest memory address " + this.wordCount + ". Halting!");
-//            this.context.msr.setIsRunning(false);
-//            if (!this.context.msr.isInteractive()) {
-//                System.exit(1);
-//            }
-        }
+        validateAddress(address);
 
         Short cacheResult = this.cache.fetch((short)address);
         if (cacheResult != null) {
@@ -112,31 +92,22 @@ public class Memory {
     }
 
     private void setWord(int address, short value) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
-        if (!this.context.msr.isSupervisorMode() && (address <= this.boundsLowerProtectedMemory || address >= this.baseUpperProtectedMemory)) {
-            // Illegally accessing protected memory
-            // In the future, we'll set MFR to xxx1, but for now, we can just halt
-//            this.context.io.engineerConsolePrintLn("setWord - Illegally accessing protected address " + address + "! Halting");
+        validateAddress(address);
+
+        try {
+            this.cache.updateIfPresent((short)address, value);
+            this.memory[address] = value;
+        } catch (Exception err) {
+            System.err.println("Accessing " + address + " causes " + err);
+        }
+    }
+
+    private void validateAddress(int address) throws IllegalMemoryAddressBeyondLimitException, IllegalMemoryAccessToReservedLocationsException {
+        if (address > this.wordCount) {
+            throw new IllegalMemoryAddressBeyondLimitException("Illegally accessing address " + address + "above highest memory address " + this.wordCount + ". Halting!");
+        } else if (!this.context.msr.isSupervisorMode() && (address <= this.boundsLowerProtectedMemory || address >= this.baseUpperProtectedMemory)) {
+            this.context.io.engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
             throw new IllegalMemoryAccessToReservedLocationsException();
-//            this.context.msr.setIsRunning(false);
-//            if (!this.context.msr.isInteractive()) {
-//                System.exit(1);
-//            }
-        } else if (address > this.wordCount) {
-            // Illegally accessing protecting memory above limit
-            // In the future, we'll set MFT to 1xxx, but for now, we can just halt
-//            this.context.io.engineerConsolePrintLn("Illegally accessing address " + address + " above highest memory address " + this.wordCount + ". Halting!");
-            throw new IllegalMemoryAddressBeyondLimitException("Illegally accessing address " + address + " above highest memory address " + this.wordCount + ". Halting!");
-//            this.context.msr.setIsRunning(false);
-//            if (!this.context.msr.isInteractive()) {
-//                System.exit(1);
-//            }
-        } else {
-            try {
-                this.cache.updateIfPresent((short)address, value);
-                this.memory[address] = value;
-            } catch (Exception err) {
-                System.err.println("Accessing " + address + " causes " + err);
-            }
         }
     }
 
