@@ -14,7 +14,7 @@ public class Instruction {
         this.opCode = Utils.short_unsigned_right_shift((short)(word & opCodeMask), opCodeOffset);
     }
 
-    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException, IllegalTrapCodeException {
         // NOOP
     }
 
@@ -64,13 +64,17 @@ class Trap extends Instruction {
         this.trapCode = Utils.short_unsigned_right_shift((short)(word & trapCodeMask), trapCodeOffset);
     }
 
-    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException, IllegalTrapCodeException {
         // Switch to supervisor mode
         this.context.msr.setSupervisorMode(true);
         // Store PC (it is already incremented) to address 2
         this.context.memory.store((short) 2,this.context.pc.get());
         // Get the address of the trap handler table and offset to get the address of the correct trap
-        short addressOfTrap = this.context.memory.fetch((short)(this.context.memory.fetch((short)0) + this.trapCode));
+        short trapTableBase = this.context.memory.fetch((short)0);
+        short trapTableEntry = (short)(trapTableBase + this.trapCode);
+        short addressOfTrap = this.context.memory.fetch(trapTableEntry);
+        // Check to see if address is NULL, meaning an invalid trap code
+        if (addressOfTrap == 0) throw new IllegalTrapCodeException(this.trapCode + " is not a valid trap code!");
         // Jump to the trap
         this.context.pc.set(addressOfTrap);
     }

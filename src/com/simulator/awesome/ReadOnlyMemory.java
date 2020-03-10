@@ -30,7 +30,8 @@ public class ReadOnlyMemory {
             earliestTopAddressUsed = trapTableLocation;
 
             // Load the traps
-            for (int i = 15; i >= 0; i--){
+            // We skip 15 to have an "Invalid Trap" to test the error handling in the fault-demo program!
+            for (int i = 14; i >= 0; i--){
                 assembler.loadFile(basePath.concat("/static/trap-" + i + ".txt"));
                 assembler.convertToMachineCode();
                 short trapLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
