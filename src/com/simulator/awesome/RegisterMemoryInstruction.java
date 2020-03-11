@@ -435,6 +435,7 @@ class ReturnFromSubroutine extends RegisterMemoryInstruction {
             this.context.pc.set(this.context.memory.fetch((short)2));
             // The spec mentions saving and restoring the MSR, but there is no clear need for this currently based on
             // the sorts of state we store in the MSR
+            this.context.msr.setSupervisorMode(false);
         } else {
             // Normal Subroutine Call Exit
             this.context.pc.set(this.context.getGeneralRegister((short) 3));

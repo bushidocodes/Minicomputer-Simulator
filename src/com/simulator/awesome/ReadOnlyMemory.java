@@ -45,6 +45,12 @@ public class ReadOnlyMemory {
             short faultHandlerLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
             earliestTopAddressUsed = faultHandlerLocation;
 
+            // Bootloader
+            assembler.loadFile(basePath.concat("/static/bootloader.txt"));
+            assembler.convertToMachineCode();
+            short bootloaderLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+            earliestTopAddressUsed = bootloaderLocation;
+
             // Set the base address of the Supervisor Functions for Memory Protection
             this.context.memory.baseUpperProtectedMemory = earliestTopAddressUsed;
 
@@ -64,7 +70,8 @@ public class ReadOnlyMemory {
             // Address  3: Reserved for Supervisor
             // Address  4: Store PC for Machine Fault
             // Address  5: Reserved for Supervisor
-            // Address  6: Reserved for Supervisor
+            // Address  6: Indirect to Bootloader
+            this.context.memory.store((short) 6, bootloaderLocation);
             // Address  7: Reserved for Supervisor
             // Address  8: Reserved for Supervisor
             // Address  9: Reserved for Supervisor
@@ -99,18 +106,10 @@ public class ReadOnlyMemory {
             this.context.memory.store((short)30, (short)0b0000000001000000);
             this.context.memory.store((short)31, (short)0b0000000001100000);
 
-            // ZOMBIE CONTENT JUST PROVIDED TO SHOW
-            // Load Base Addresses representing every 32nd address from as a DataSet
-            // Place it at the topmost addresses
-    //                String basePath = new File("").getAbsolutePath(); //get current base directory
-    //                assembler1.loadFile(basePath.concat("/static/base-addresses.txt"));
+            // Start Bootloader
+            this.context.pc.set(bootloaderLocation);
+            this.context.cu.startExecutionLoop();
 
-    //                short baseAddressTableLocation = context.loadProgram(assembler1.input_arr, (short) -1, true);
-            // Assign Indirect to this dataset to address 30;
-    //                context.memory.store((short)30, baseAddressTableLocation);
-
-            // Restore unprivileged mode
-            this.context.msr.setSupervisorMode(false);
         } catch (IllegalMemoryAccessToReservedLocationsException e) {
             e.printStackTrace();
         } catch (IllegalMemoryAddressBeyondLimitException e) {

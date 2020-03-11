@@ -23,7 +23,7 @@ public class Memory {
 
     private final Simulator context;
 
-    final short boundsLowerProtectedMemory = 5;
+    final short boundsLowerProtectedMemory = 15;
     short baseUpperProtectedMemory;
 
     Memory(Simulator context, int wordCount){

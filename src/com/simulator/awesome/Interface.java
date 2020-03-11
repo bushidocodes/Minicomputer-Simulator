@@ -70,6 +70,8 @@ public class Interface {
     final ImageIcon redLight = new ImageIcon(basePath.concat("/static/lamp-red.png"));
     final ImageIcon greenLight = new ImageIcon(basePath.concat("/static/lamp-green.png"));
 
+    private Assembler assembler = new Assembler();
+
     public void refresh(){
         // Refresh General Purpose Registers R0..R3
         this.R0TextField.setText(wordToString(this.context.getGeneralRegister((short)0)));
@@ -278,30 +280,22 @@ public class Interface {
                 if(selectedFile != null && selectedFile.isFile()){
                     short memoryLoc = (short) Integer.parseInt(programMemoryLocSpinner.getValue().toString());
                     // Check that the desired memory location is within the valid range.
-                    if (memoryLoc > 31 && memoryLoc < context.memory.getWordCount()-1) {
+                    if (memoryLoc > context.memory.boundsLowerProtectedMemory && memoryLoc < context.memory.baseUpperProtectedMemory) {
                         // Check that a file type has been selected.
                         if (fileTypeComboBox.getSelectedItem().toString().length() > 0) {
+                            assembler.loadFile(selectedFile.getAbsolutePath());
                             switch (fileTypeComboBox.getSelectedItem().toString()) {
                                 case "Select File Type":
                                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Please select the file type from the dropdown menu.");
                                     break;
                                 case "Binary":
                                     // Load binary file into memory at the specified location
-                                    Assembler assembler1 = new Assembler();
-                                    context.loadProgram(assembler1.input_arr, memoryLoc, true,false);
-
-                                    // Set the PC to the first program instruction
-                                    context.powerOn(memoryLoc);
+                                    context.setAsUserProgram(context.loadProgram(assembler.input_arr, memoryLoc, true,false));
                                     refresh();
                                     break;
                                 case "Assembly":
                                     // Convert assembly file to binary and load it into memory at the specified location
-                                    Assembler assembler2 = new Assembler();
-                                    assembler2.loadFile(selectedFile.getAbsolutePath());
-                                    context.loadProgram(assembler2.convertToMachineCode(), memoryLoc, true,false);
-
-                                    // Set the PC to the first program instruction
-                                    context.powerOn(memoryLoc);
+                                    context.setAsUserProgram(context.loadProgram(assembler.convertToMachineCode(), memoryLoc, true,false));
                                     refresh();
                                     break;
                             }
@@ -322,24 +316,10 @@ public class Interface {
         loadInstructionDemoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Not yet implemented, but saving this logic to run the simulator "headless"
-                Assembler assembler1 = new Assembler();
-
                 // Load in the instruction demonstration program
-                assembler1.loadFile(basePath.concat("/static/demo-program.txt"));
-                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 100, true,false);
-
-                // Assign Indirect to this dataset to address 16;
-                try {
-                    context.memory.store((short) 16, programLocation);
-                } catch (IllegalMemoryAccessToReservedLocationsException ex) {
-                    ex.printStackTrace();
-                } catch (IllegalMemoryAddressBeyondLimitException ex) {
-                    ex.printStackTrace();
-                }
-
-                // IPL and Start the Execution Loop
-                context.powerOn((short) 100);
+                assembler.loadFile(basePath.concat("/static/demo-program.txt"));
+                short programLocation = context.loadProgram(assembler.convertToMachineCode(), (short) 100, true,false);
+                context.setAsUserProgram(programLocation);
                 refresh();
             }
         });
@@ -388,25 +368,11 @@ public class Interface {
                 resetButton.doClick();
                 iplButton.doClick();
 
-                // Not yet implemented, but saving this logic to run the simulator "headless"
-                Assembler assembler1 = new Assembler();
-
                 // Assemble the program and load it into the computer at memory location 101.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
-                assembler1.loadFile(basePath.concat("/static/program-one.txt"));
-                short programLocation = context.loadProgram(assembler1.convertToMachineCode(), (short) 101, true,false);
-
-                // Assign Indirect to this dataset to address 16;
-                try {
-                    context.memory.store((short) 16, programLocation);
-                } catch (IllegalMemoryAccessToReservedLocationsException ex) {
-                    ex.printStackTrace();
-                } catch (IllegalMemoryAddressBeyondLimitException ex) {
-                    ex.printStackTrace();
-                }
-
-                // IPL and Start the Execution Loop
-                context.powerOn((short) 101);
+                assembler.loadFile(basePath.concat("/static/program-one.txt"));
+                short programLocation = context.loadProgram(assembler.convertToMachineCode(), (short) 101, true,false);
+                context.setAsUserProgram(programLocation);
                 refresh();
             }
         });

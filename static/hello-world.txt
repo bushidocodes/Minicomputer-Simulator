@@ -51,3 +51,4 @@ LDA 0,3,4;      ASCII 100 - d
 OUT 0,1;
 LDA 0,0,10;     ASCII 10 - LF
 OUT 0,1;
+TRAP 0;
