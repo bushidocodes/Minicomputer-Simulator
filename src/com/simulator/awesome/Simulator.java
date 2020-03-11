@@ -213,17 +213,19 @@ public class Simulator {
     }
 
     // Allow setting the program counter when booting from the command line.
-    public void powerOn(short programCounter){
-        // Check if program counter was set within the allowable range.
-        if(programCounter > 5 && programCounter < this.memory.getWordCount()){
-            this.pc.set(programCounter);
-        } else {
-            this.pc.set((short) 6);
+    public void setAsUserProgram(short programCounter){
+        try {
+            // Set Address 16 for potential reload later
+            this.memory.store((short)7, programCounter);
+        } catch (IllegalMemoryAccessToReservedLocationsException e) {
+            e.printStackTrace();
+        } catch (IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
         }
     }
-
-    // If program counter was not specified, default to 6.
-    public void powerOn(){
-        powerOn((short) 6);
-    }
+//
+//    // If program counter was not specified, default to 6.
+//    public void powerOn(){
+//        powerOn((short) 6);
+//    }
 }

@@ -1,14 +1,9 @@
 ##########################################################
-# Prints the String 'T1\n' to the console                #
-# Assumes c(29) = 32, c(30) = 64, c(31)=96               #
+# Trap 1 - Rerun Current Program without prompting       #
+# Halts, but doesn't prompt user. Hit Run to Rerun       #
+# Loads the Program Indirect in 7 into address 2         #
 ##########################################################
-LDX 1,0,29;
-LDX 2,0,30;
-LDX 3,0,31;
-LDA 0,2,20;     ASCII 84 - T
-OUT 0,1;
-LDA 1,1,17;     ASCII 49 - 1
-OUT 1,1;
-LDA 0,0,10;     ASCII 10 - LF
-OUT 0,1;
-RFS 0;          Using RFS as a trap return
+LDR 0,0,7;
+STR 0,0,2;
+HLT;
+RFS 1;

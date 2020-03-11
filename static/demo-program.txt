@@ -56,6 +56,6 @@ JCC 3,2,25;   if cc(4)==1, jump to the 57th instruction. cc(4) was set in instru
 HLT;          program execution would stop if the previous jump failed.
 JSR 2,28;     jump to subroutine at instruction 60 and save return address. this increments R2 by 1 so c(R2=33).
 AIR 0,1;      add immediate 1 to R0 to show that the previous jump and return worked.
-HLT;          END OF PROGRAM
+TRAP 0;       END OF PROGRAM
 AIR 2,1;      subroutine -- unreachable via normal execution due to preceding halt. adds 1 to R2.
 RFS 0;        return from subroutine with code 0.

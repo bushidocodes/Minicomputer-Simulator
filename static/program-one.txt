@@ -88,4 +88,4 @@ AIR 0,21;
 OUT 0,1;
 LDA 0,0,22;    R0 = pointer to closest number (mem loc 22). Used as arg to PRINTINT
 JSR 0,28,1;    PRINTINT
-HLT;
+TRAP 0;

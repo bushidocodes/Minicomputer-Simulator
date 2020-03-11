@@ -24,4 +24,4 @@ JSR 0,28,1;
 # Print \n
 LDA 0,0,10;
 OUT 0,1;
-HLT;
+TRAP 0;
