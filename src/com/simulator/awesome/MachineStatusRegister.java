@@ -1,7 +1,6 @@
 package com.simulator.awesome;
 
-import static com.simulator.awesome.Utils.getNthLeastSignificantBit;
-import static com.simulator.awesome.Utils.setNthLeastSignificantBit;
+import static com.simulator.awesome.Utils.*;
 
 // Machine Status Register
 // 16 bits used as flags for system conditions
@@ -16,6 +15,7 @@ import static com.simulator.awesome.Utils.setNthLeastSignificantBit;
 // 0000000000010000 | Debug Flag
 // 0000000000100000 | Fault Handler Flag
 // 0000000001000000 | Supervisor Fault Flag
+// 0000000110000000 | Call Stack Depth Bits
 // All others reserved
 public class MachineStatusRegister {
     private short msr;
@@ -29,7 +29,7 @@ public class MachineStatusRegister {
     }
 
     public void setSupervisorMode(boolean isSupervisorMode) {
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 0, isSupervisorMode);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 0, isSupervisorMode);
     }
 
     public boolean isReadyForInput(){
@@ -37,7 +37,7 @@ public class MachineStatusRegister {
     }
 
     public void setReadyForInput(boolean isReadyForInput){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 1, isReadyForInput);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 1, isReadyForInput);
     }
 
     public boolean isRunning(){
@@ -45,7 +45,7 @@ public class MachineStatusRegister {
     }
 
     public void setIsRunning(boolean isRunning){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 2, isRunning);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 2, isRunning);
     }
 
     public boolean isInteractive(){
@@ -53,7 +53,7 @@ public class MachineStatusRegister {
     }
 
     public void setIsInteractive(boolean isInteractive){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 3, isInteractive);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 3, isInteractive);
     }
 
     public boolean isDebugging(){
@@ -61,7 +61,7 @@ public class MachineStatusRegister {
     }
 
     public void setIsDebugging(boolean isDebugging){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 4, isDebugging);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 4, isDebugging);
     }
 
     public boolean isExecutingFaultHandler(){
@@ -69,7 +69,7 @@ public class MachineStatusRegister {
     }
 
     public void setIsExecutingFaultHandler(boolean isExecutingFaultHandler){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 5, isExecutingFaultHandler);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 5, isExecutingFaultHandler);
     }
 
     public boolean isSupervisorFault(){
@@ -77,14 +77,23 @@ public class MachineStatusRegister {
     }
 
     public void setIsSupervisorFault(boolean isSupervisorFault){
-        this.msr = (byte)setNthLeastSignificantBit(this.msr, 6, isSupervisorFault);
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 6, isSupervisorFault);
+    }
+
+    public short getCallStackDepth() {
+        return getNthLeastSignificantBits(this.msr,7,2);
+    }
+
+    public void setCallStackDepth(short value) {
+        this.msr = setNthLeastSignificantBits(this.msr,7,2, value);
     }
 
     public void reset() {
-        this.setSupervisorMode(false);
-        this.setReadyForInput(false);
-        this.setIsRunning(false);
-        // Do not reset isInteractive. This breaks the UI
-        // Do not reset isDebugging
+        boolean isInteractive = this.isInteractive();
+        boolean isDebugging = this.isDebugging();
+        this.msr = 0;
+        this.setIsInteractive(isInteractive);
+        this.setIsDebugging(isDebugging);
+
     }
 }

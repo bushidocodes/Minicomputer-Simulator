@@ -382,7 +382,10 @@ class JumpAndSaveReturnAddress extends RegisterMemoryInstruction {
         if (this.isIndirect) this.evaluatePointerToAddress();
         // R3 <- PC (we've already incremented PC at this point)
         this.context.setGeneralRegister((short) 3, this.context.pc.get());
-        // IX3 <- IAR. This is
+
+        // Increment the call stack. Setting Base address to first address of stack frame to base address of function
+        this.context.incrementCallStack(this.context.getInternalAddressRegister());
+        // IX3 <- IAR. TODO: Refactor all functions to not use this
         this.context.setIndexRegister((short) 3, this.context.getInternalAddressRegister());
         // PC <- IAR
         this.context.pc.set(this.context.getInternalAddressRegister());
@@ -431,6 +434,8 @@ class ReturnFromSubroutine extends RegisterMemoryInstruction {
             this.context.mfr.setIsIllegalOpcode(false);
         } else if (this.context.msr.isSupervisorMode()){
             // "Trap Handler" Exit
+            // Decrement Call Stack
+            this.context.decrementCallStack();
             // Restore PC to value stored in Address 2
             this.context.pc.set(this.context.memory.fetch((short)2));
             // The spec mentions saving and restoring the MSR, but there is no clear need for this currently based on
@@ -438,6 +443,7 @@ class ReturnFromSubroutine extends RegisterMemoryInstruction {
             this.context.msr.setSupervisorMode(false);
         } else {
             // Normal Subroutine Call Exit
+            this.context.decrementCallStack();
             this.context.pc.set(this.context.getGeneralRegister((short) 3));
         }
     }

@@ -159,6 +159,8 @@ public class Interface {
         iplButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // We have to reset every IPL
+                context.reset();
                 context.rom.load();
                 refresh();
             }

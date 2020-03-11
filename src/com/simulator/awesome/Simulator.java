@@ -169,9 +169,7 @@ public class Simulator {
             for (int i = 0; i < words.length; i++) {
                 try {
                     this.memory.store((short)(baseAddress + i), words[i]);
-                } catch (IllegalMemoryAccessToReservedLocationsException e) {
-                    e.printStackTrace();
-                } catch (IllegalMemoryAddressBeyondLimitException e) {
+                } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
                     e.printStackTrace();
                 }
             }
@@ -181,9 +179,7 @@ public class Simulator {
             for (int i = 0; i < words.length; i++) {
                 try {
                     this.memory.store((short)(baseAddress + i), words[i]);
-                } catch (IllegalMemoryAccessToReservedLocationsException e) {
-                    e.printStackTrace();
-                } catch (IllegalMemoryAddressBeyondLimitException e) {
+                } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
                     e.printStackTrace();
                 }
             }
@@ -215,13 +211,82 @@ public class Simulator {
     // Writes the program address as an indirect at address 7
     // Saving this location in program memory allows traps to reload the program later
     public void setAsUserProgram(short programAddress){
+        boolean isSupervisor = this.msr.isSupervisorMode();
+        this.msr.setSupervisorMode(true);
         try {
             this.memory.store((short)7, programAddress);
-        } catch (IllegalMemoryAccessToReservedLocationsException e) {
-            e.printStackTrace();
-        } catch (IllegalMemoryAddressBeyondLimitException e) {
+        } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
             e.printStackTrace();
         }
+        this.msr.setSupervisorMode(isSupervisor);
+    }
+
+    public short getCallStackFrameBase(short callStackDepth) {
+        short baseAddress = 32;
+        switch (callStackDepth){
+            case 0:
+                baseAddress = 32;
+                break;
+            case 1:
+                baseAddress = 64;
+                break;
+            case 2:
+                baseAddress = 96;
+                break;
+            case 3:
+                baseAddress = 128;
+                break;
+        }
+        return baseAddress;
+    }
+
+    public void incrementCallStack(short baseAddressOfCallee){
+        short currentCallStackDepth = this.msr.getCallStackDepth();
+        if ((currentCallStackDepth + 1) > 3) throw new Error("Stack Overflow!");
+        if ((currentCallStackDepth + 1) < 0) throw new Error("Stack Underflow!");
+        currentCallStackDepth++;
+        this.msr.setCallStackDepth(currentCallStackDepth);
+
+        // Update Address 16 to base address
+        short baseAddress = getCallStackFrameBase(currentCallStackDepth);
+        try {
+            this.memory.store((short)16, baseAddress);
+        } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
+        }
+
+        // Write information to stack frame
+        try {
+            this.memory.store(baseAddress, baseAddressOfCallee);
+        } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void decrementCallStack(){
+        short currentCallStackDepth = this.msr.getCallStackDepth();
+        if ((currentCallStackDepth - 1) > 3) throw new Error("Stack Overflow!");
+        if ((currentCallStackDepth - 1) < 0) throw new Error("Stack Underflow!");
+
+        // Zero out old frame
+        short currentCallStackBase = getCallStackFrameBase(currentCallStackDepth);
+        short sizeOfCallStackFrame = 32;
+        try {
+            for (short i = 0; i < sizeOfCallStackFrame; i++) {
+                this.memory.store((short)(currentCallStackBase + i),(short)0);
+            }
+        } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
+        }
+
+        short newCallStackDepth = (short)(currentCallStackDepth - 1);
+        short newCallStackBase = getCallStackFrameBase(newCallStackDepth);
+        try {
+            this.memory.store((short)16,newCallStackBase);
+        } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
+            e.printStackTrace();
+        }
+        this.msr.setCallStackDepth(newCallStackDepth);
     }
 
 }
