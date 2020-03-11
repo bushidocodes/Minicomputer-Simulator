@@ -90,4 +90,11 @@ public class InputOutput {
             inputBuffer[i] = new LinkedBlockingQueue();
         }
     }
+
+    public int getSizeOfInputBuffer(short deviceId){
+        return inputBuffer[deviceId].size();
+    }
+    public int getSizeOfOutputBuffer(short deviceId){
+        return outputBuffer[deviceId].size();
+    }
 }
