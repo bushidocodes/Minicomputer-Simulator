@@ -76,9 +76,7 @@ public class Memory {
         };
     }
 
-    private short getWord(int address) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
-        validateAddress(address);
-
+    private short getWord(int address) {
         Short cacheResult = this.cache.fetch((short)address);
         if (cacheResult != null) {
             this.context.io.engineerConsolePrintLn("Cache Hit! " + address + " was in cache!");
@@ -91,9 +89,7 @@ public class Memory {
         }
     }
 
-    private void setWord(int address, short value) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
-        validateAddress(address);
-
+    private void setWord(int address, short value) {
         try {
             this.cache.updateIfPresent((short)address, value);
             this.memory[address] = value;
@@ -112,12 +108,14 @@ public class Memory {
     }
 
     public short fetch(short address) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
+        validateAddress(address);
         this.mar.set(address);
         this.mbr = this.getWord(this.mar.get());
         return this.mbr;
     }
 
     public void store (short address, short value) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
+        validateAddress(address);
         // MAR <- address
         this.mar.set(address);
         // MBR <- value

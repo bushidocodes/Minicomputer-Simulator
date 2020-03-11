@@ -75,6 +75,9 @@ class Trap extends Instruction {
         short addressOfTrap = this.context.memory.fetch(trapTableEntry);
         // Check to see if address is NULL, meaning an invalid trap code
         if (addressOfTrap == 0) throw new IllegalTrapCodeException(this.trapCode + " is not a valid trap code!");
+
+        // Increment the call stack
+        this.context.incrementCallStack(addressOfTrap);
         // Jump to the trap
         this.context.pc.set(addressOfTrap);
     }
