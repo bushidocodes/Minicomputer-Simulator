@@ -23,8 +23,8 @@ STR 2,0,20;    LOOP_1: store counter in mem loc 20
 IN 1,0;           store the input from console keyboard in R1
 STR 1,0,19,1;     store the input value from register 1 into mem(DATALOC) indirect
 LDA 0,0,19,1;     Load this address into R0 to use as an arg to PRINTINT
-JSR 0,28,1;
-LDX 1,0,29;       line break character -- load the pointer to the start of the ASCII Table into IX1
+JSR 0,27,1;
+LDX 1,0,28;       line break character -- load the pointer to the start of the ASCII Table into IX1
 LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
 LDR 0,3,10;       load and print \n
 OUT 0,1;
@@ -77,8 +77,8 @@ AIR 3,1;              increment DATALOC variable by 1
 STR 3,0,19;           store DATALOC variable from R3 back into memory loc 19
 SOB 2,2,14;     END LOOP_2: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 48 (beginning of loop_2)
 LDA 0,0,20;    R0 = pointer to user number (mem loc 20). Used as arg to PRINTINT
-JSR 0,28,1;    PRINTINT
-LDX 1,0,29;    load ASCII table
+JSR 0,27,1;    PRINTINT
+LDX 1,0,28;    load ASCII table
 LDX 3,1,1;
 LDR 0,3,10;    load and print \n
 OUT 0,1;
@@ -87,5 +87,5 @@ AIR 0,31;
 AIR 0,21;
 OUT 0,1;
 LDA 0,0,22;    R0 = pointer to closest number (mem loc 22). Used as arg to PRINTINT
-JSR 0,28,1;    PRINTINT
+JSR 0,27,1;    PRINTINT
 TRAP 0;

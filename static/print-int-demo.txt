@@ -10,7 +10,7 @@ STR 0,0,18;
 # Set R0 to 18 (the address of our arguments) as defined by the caller's subroutine convention
 LDA 0,0,18;
 # Call the print-int subroutine
-JSR 0,28,1;
+JSR 0,27,1;
 # Print \n
 LDA 0,0,10;
 OUT 0,1;
@@ -20,7 +20,7 @@ STR 1,0,18;
 # Set R0 to 18 (the address of our arguments) as defined by the caller's subroutine convention
 LDA 0,0,18;
 # Call the print-int subroutine
-JSR 0,28,1;
+JSR 0,27,1;
 # Print \n
 LDA 0,0,10;
 OUT 0,1;
