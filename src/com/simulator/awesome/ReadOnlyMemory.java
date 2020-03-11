@@ -72,7 +72,7 @@ public class ReadOnlyMemory {
             // Address  5: Reserved for Supervisor
             // Address  6: Indirect to Bootloader
             this.context.memory.store((short) 6, bootloaderLocation);
-            // Address  7: Reserved for Supervisor
+            // Address  7: Indirect to User Program
             // Address  8: Reserved for Supervisor
             // Address  9: Reserved for Supervisor
             // Address 10: Reserved for Supervisor
@@ -81,7 +81,7 @@ public class ReadOnlyMemory {
             // Address 13: Reserved for Supervisor
             // Address 14: Reserved for Supervisor
             // Address 15: Reserved for Supervisor
-            // Address 16: Indirect to User Program
+            // Address 16: Reserved for User
             // Address 17: Register-to-Register Buffer (for copying index registers to general registers and visa-versa)
             // Address 18: Reserved for User
             // Address 19: Reserved for User

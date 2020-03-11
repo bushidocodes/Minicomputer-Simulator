@@ -212,20 +212,16 @@ public class Simulator {
         this.io.engineerConsolePrintLn("===============================");
     }
 
-    // Allow setting the program counter when booting from the command line.
-    public void setAsUserProgram(short programCounter){
+    // Writes the program address as an indirect at address 7
+    // Saving this location in program memory allows traps to reload the program later
+    public void setAsUserProgram(short programAddress){
         try {
-            // Set Address 16 for potential reload later
-            this.memory.store((short)7, programCounter);
+            this.memory.store((short)7, programAddress);
         } catch (IllegalMemoryAccessToReservedLocationsException e) {
             e.printStackTrace();
         } catch (IllegalMemoryAddressBeyondLimitException e) {
             e.printStackTrace();
         }
     }
-//
-//    // If program counter was not specified, default to 6.
-//    public void powerOn(){
-//        powerOn((short) 6);
-//    }
+
 }
