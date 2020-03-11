@@ -21,9 +21,9 @@ LDX 1,0,17;
 # Now try to load this into R1
 LDR 1,1,0;
 # Now just run normal stuff like nothing happened. (⌐■_■)
-LDX 1,0,29;
-LDX 2,0,30;
-LDX 3,0,31;
+LDX 1,0,28;
+LDX 2,0,39;
+LDX 3,0,30;
 LDA 0,2,8;     ASCII 72 - H
 OUT 0,1;
 LDA 1,3,5;     ASCII 101 - e

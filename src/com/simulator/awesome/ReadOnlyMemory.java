@@ -92,19 +92,23 @@ public class ReadOnlyMemory {
             // Address 24: Reserved for User
             // Address 25: Reserved for User
             // Address 26: Reserved for User
-            // Address 27: Reserved for User
-            // Address 28: Indirect to the print-int subroutine
-            this.context.memory.store((short) 28, printIntLocation);
+            // Address 27: Indirect to the print-int subroutine
+            this.context.memory.store((short) 27, printIntLocation);
+            // Address 28: 32 (Pointer to stack frame 0)
+            this.context.memory.store((short)28, (short)0b0000000000100000);
+            // Address 29: 64 (Pointer to stack frame 1)
+            this.context.memory.store((short)29, (short)0b0000000001000000);
+            // Address 30: 96 (Pointer to stack frame 2)
+            this.context.memory.store((short)30, (short)0b0000000001100000);
+            // Address 31: 128 (Pointer to stack frame 3)
+            this.context.memory.store((short)31, (short)0b0000000010000000);
 
-            // Addresses 29-31: ASCII Base Addresses to directly address character codes 0-127
+            // Note: the stack frame pointers can also be used to directly address ASCII character codes 0-127
             // https://www.ascii-code.com/
             // To load 0-31 into a register, use LDA r,0,[0-31]
-            // To load 32-63 into a register, use LDA r,29,[0-31]
-            // To load 64-95 into a register, use LDA r,30,[0-31]
-            // To load 96-127 into a register, use LDA r,31,[0-31]
-            this.context.memory.store((short)29, (short)0b0000000000100000);
-            this.context.memory.store((short)30, (short)0b0000000001000000);
-            this.context.memory.store((short)31, (short)0b0000000001100000);
+            // To load 32-63 into a register, use LDA r,28,[0-31]
+            // To load 64-95 into a register, use LDA r,29,[0-31]
+            // To load 96-127 into a register, use LDA r,30,[0-31]
 
             // Start Bootloader
             this.context.pc.set(bootloaderLocation);
