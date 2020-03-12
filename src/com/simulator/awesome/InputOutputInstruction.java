@@ -52,10 +52,14 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
         validateGeneralRegisterIndex(this.registerId);
         validateInputDevice(this.deviceId);
     }
+
     public void fetchOperand(){
         // Pause the execution loop and wait for user input
         this.context.msr.setReadyForInput(true);
         this.context.cu.pauseExecutionLoop();
+    }
+
+    public void execute(){
         // c(Register) <- inputBuffer <- Device
         this.context.setGeneralRegister(this.registerId,this.context.io.getFirstWordFromInputBuffer(this.deviceId));
     }
