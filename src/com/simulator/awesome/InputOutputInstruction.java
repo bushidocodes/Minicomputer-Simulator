@@ -95,11 +95,14 @@ class CheckDeviceStatusToRegister extends InputOutputInstruction {
             case 0: // Console Keyboard
             case 2: // Card Reader
                 validateInputDevice(this.deviceId);
+                break;
             case 1: // Console Printer
                 validateOutputDevice(this.deviceId);
+                break;
             default: // Other devices are not specified and therefore could be input or output
                 validateInputDevice(this.deviceId);
                 validateOutputDevice(this.deviceId);
+                break;
         }
     }
     public void execute(){
@@ -110,10 +113,12 @@ class CheckDeviceStatusToRegister extends InputOutputInstruction {
                 // c(Register) <- size of inputBuffer
                 // this will break if the inputBuffer has more than 32,767 items in it due to casting an int to short.
                 this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfInputBuffer(this.deviceId));
+                break;
             case 1: // Console Printer
                 // c(Register) <- size of outputBuffer
                 // this will break if the outputBuffer has more than 32,767 items in it due to casting an int to short.
                 this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfOutputBuffer(this.deviceId));
+                break;
             default: // Other devices are not specified and therefore could be input or output
                 if (context.io.isInputBufferNull(this.deviceId)){
                     if (context.io.isOutputBufferNull(this.deviceId)){ // if both are empty, just return 0
@@ -125,6 +130,7 @@ class CheckDeviceStatusToRegister extends InputOutputInstruction {
                 } else { // inputBuffer is non-zero, c(Register) <- size of inputBuffer
                     this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfInputBuffer(this.deviceId));
                 }
+                break;
         }
     }
 
