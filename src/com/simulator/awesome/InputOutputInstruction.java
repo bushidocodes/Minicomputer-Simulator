@@ -20,14 +20,14 @@ public class InputOutputInstruction extends Instruction {
 
     public void validateInputDevice(short devid){
         // Input from console printer triggers a fault
-        if (devid == 1) {
+        if (devid == 1 || devid < 0 || devid > 31) {
             this.didFault = true;
         }
     }
 
     public void validateOutputDevice(short devid){
         // Output to console keyboard or card reader triggers a fault
-        if (devid == 0 || devid == 2) {
+        if (devid == 0 || devid == 2 || devid < 0 || devid > 31) {
             this.didFault = true;
         }
     }
@@ -52,10 +52,14 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
         validateGeneralRegisterIndex(this.registerId);
         validateInputDevice(this.deviceId);
     }
+
     public void fetchOperand(){
         // Pause the execution loop and wait for user input
         this.context.msr.setReadyForInput(true);
         this.context.cu.pauseExecutionLoop();
+    }
+
+    public void execute(){
         // c(Register) <- inputBuffer <- Device
         this.context.setGeneralRegister(this.registerId,this.context.io.getFirstWordFromInputBuffer(this.deviceId));
     }
@@ -81,14 +85,53 @@ class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
  Octal: 077
  CHK r, devid
  r = 0..3
- c(r) <- device status
+ c(r) <- device status (size of the device's buffer)
  */
 class CheckDeviceStatusToRegister extends InputOutputInstruction {
     public CheckDeviceStatusToRegister(short word, Simulator context) {
         super(word, context);
+        validateGeneralRegisterIndex(this.registerId);
+        switch(this.deviceId){
+            case 0: // Console Keyboard
+            case 2: // Card Reader
+                validateInputDevice(this.deviceId);
+                break;
+            case 1: // Console Printer
+                validateOutputDevice(this.deviceId);
+                break;
+            default: // Other devices are not specified and therefore could be input or output
+                validateInputDevice(this.deviceId);
+                validateOutputDevice(this.deviceId);
+                break;
+        }
     }
     public void execute(){
-        System.out.println("CHK");
+        // If we know the type of device, check the corresponding buffer. If we don't know, take whichever buffer is non-zero.
+        switch(this.deviceId){
+            case 0: // Console Keyboard
+            case 2: // Card Reader
+                // c(Register) <- size of inputBuffer
+                // this will break if the inputBuffer has more than 32,767 items in it due to casting an int to short.
+                this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfInputBuffer(this.deviceId));
+                break;
+            case 1: // Console Printer
+                // c(Register) <- size of outputBuffer
+                // this will break if the outputBuffer has more than 32,767 items in it due to casting an int to short.
+                this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfOutputBuffer(this.deviceId));
+                break;
+            default: // Other devices are not specified and therefore could be input or output
+                if (context.io.isInputBufferNull(this.deviceId)){
+                    if (context.io.isOutputBufferNull(this.deviceId)){ // if both are empty, just return 0
+                        this.context.setGeneralRegister(this.registerId, (short) 0);
+                    } else {
+                        // outputBuffer is non-zero, c(Register) <- size of outputBuffer
+                        this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfOutputBuffer(this.deviceId));
+                    }
+                } else { // inputBuffer is non-zero, c(Register) <- size of inputBuffer
+                    this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfInputBuffer(this.deviceId));
+                }
+                break;
+        }
     }
 
     public void storeResult(){

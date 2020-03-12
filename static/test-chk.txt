@@ -1,0 +1,9 @@
+########################################################
+# Test CHK                                             #
+# c(R2) <- length of inputBuffer                       #
+# c(R2) will be the length of the input string minus 1 #
+########################################################
+IN 1,0;      store the input from console keyboard in R1
+OUT 1,1;     print the value entered by the user back to the printer
+CHK 2,0;     check the status of console keyboard to R2
+TRAP 0;      end of program
