@@ -345,13 +345,20 @@ public class Interface {
                 // Validate that the text entered contains one or more ASCII value
                 if(consoleKeyboard.getText().matches("[\\x00-\\x7F]+")){
                     // Get the entered text and store it in the input buffer
-                    context.io.addWordToInputBuffer((short) 0, stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
+                    //context.io.addWordToInputBuffer((short) 0, stringToWord(Integer.toBinaryString(Integer.parseInt(consoleKeyboard.getText()))));
+
+                    // Read the input from console keyboard as an array of ASCII characters. Place each character in the inputBuffer.
+                    for (char ch: consoleKeyboard.getText().toCharArray()){
+                        context.io.addWordToInputBuffer((short) 0, (short) ch);
+                    }
+
                     // Change input waiting state
                     context.msr.setReadyForInput(false);
                     // Disable input from the UI
                     setUIReadyForInput(false);
                     // Continue execution
                     context.cu.startExecutionLoop();
+                    refresh();
                 } else {
                     JOptionPane.showMessageDialog(rootPanel, "ERROR: Input must only contain ASCII characters.");
                 }
