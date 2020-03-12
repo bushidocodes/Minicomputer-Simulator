@@ -3,7 +3,9 @@
 # Halts, but doesn't prompt user. Hit Run to Rerun       #
 # Loads the Program Indirect in 7 into address 2         #
 ##########################################################
+# Load 7 into 2 (return PC) and 32 (first word of base stack frame)
 LDR 0,0,7;
 STR 0,0,2;
+STR 0,1,0;
 HLT;
 RFS 1;

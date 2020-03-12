@@ -1,88 +1,81 @@
 ######################################################################################################################
 # A subroutine to take an unsigned short, covert it to an ASCII string, and output to the operator's console         #
-# It assumes that IX3 contains the base address of this function                                                     #
 # It assumes that R0 contains a pointer to the arguments                                                             #
 # It assumes that R3 contains the return address of the caller                                                       #
 # Because we do not have a call stack, we reserve addresses for working memory and make our first instruction a jump #
 ######################################################################################################################
-JMA 3,18;           0 - Jump past locals
-0000000000000000;   1 - Return Address
-0000000000000000;   2 - Digit 0
-0000000000000000;   3 - Digit 1
-0000000000000000;   4 - Digit 2
-0000000000000000;   5 - Digit 3
-0000000000000000;   6 - Digit 4
-0000000000000000;   7 - Digit 5
-0000000000000000;   8 - Digit 6
-0000000000000000;   9 - Digit 7
-0000000000000000;   10 - Digit 8
-0000000000000000;   11 - Digit 9
-0000000000000000;   12 - Digit 10
-0000000000000000;   13 - Digit 11
-0000000000000000;   14 - Digit 12
-0000000000000000;   15 - Digit 13
-0000000000000000;   16 - Digit 14
-0000000000000000;   17 - Digit 15
-# Save the base address to IX2
-STX 3,0,17;         18 - IX2 = IX3 (Base Address)
-LDX 2,0,17;         19
-# Save base address + 32 to IX3
-LDR 2,0,17;         20 - IX3 += 32 (Base Address + 32)
-AIR 2,31;           21
-AIR 2,1;            22
-STR 2,0,17;         23
-LDX 3,0,17;         24
+# Usage of Stack
+#  0 - Base Address of Program
+#  1 - Return Address
+#  2 - Digit 0
+#  3 - Digit 1
+#  4 - Digit 2
+#  5 - Digit 3
+#  6 - Digit 4
+#  7 - Digit 5
+#  8 - Digit 6
+#  9 - Digit 7
+# 10 - Digit 8
+# 11 - Digit 9
+# 12 - Digit 10
+# 13 - Digit 11
+# 14 - Digit 12
+# 15 - Digit 13
+# 16 - Digit 14
+# 17 - Digit 15
+# Load IX1 with the base address of the stack frame
+LDX 1,0,16;          0
+# Load IX2 with the base address of the program
+LDX 2,1,0;           1
 # Load the argument into R0
-STR 0,0,17;         25 - R0 = *R0, the number we want to ASCIIfy
-LDX 1,0,17;         26
-LDR 0,1,0;          27
+STR 0,0,17;          2 - R0 = *R0, the number we want to ASCIIfy
+LDX 3,0,17;          3
+LDR 0,3,0;           4
 # Save the return address to local[1]
-STR 3,2,1;          28 - local[1] = R3 (Return address)
+STR 3,1,1;           5 - local[1] = R3 (Return address)
 # Initialize the pointer we write to at the least-significant position
-LDA 3,2,17;         29 - R3 = local[17], aka *char[CHAR_LEN-1]
+LDA 3,1,17;          6 - R3 = local[17], aka *char[CHAR_LEN-1]
 # Initialize our divisor as 10 since converting from binary to base 0
-LDA 2,0,0;          30
-AIR 2,10;           31
+LDA 2,0,10;           7
 ###############################################################
 # Start of Loop - Convert to ASCII digits and store in locals #
 ###############################################################
 # START LOOP
 # Divide the Argument by 10
-DVD 0,2;            32 - R0 / R2. => R0 is quotient. R1 is Remainder
+DVD 0,2;             8 - R0 / R2. => R0 is quotient. R1 is Remainder
 # Add 48 to get ASCII digit
-AIR 1,31;           33
-AIR 1,17;           34
+AIR 1,31;            9
+AIR 1,17;           10
 # Copy R3 (the address we want to write to) to IX1 and then write R1 (the ASCII character) there
-STR 3,0,17;         35 - IDX1 = R3
-LDX 1,0,17;         36
-STR 1,1,0;          37 - local[i] = ASCII char
+STR 3,0,17;         11 - IDX3 = R3
+LDX 3,0,17;         12
+STR 1,3,0;          13 - local[i] = ASCII char
 # Advance to the next character in locals
-SIR 3,1;            38 - R3--
-JNE 0,3,0;          39 - if R0 (quotient) > 0 THEN Jump to base address + 32 (DVD).
+SIR 3,1;            14 - R3--
+JNE 0,2,8;          15 - if R0 (quotient) > 0 THEN Jump to base address + 8 (DVD).
 ###############################################################
 # End of Loop - Convert to ASCII digits and store in locals   #
 ###############################################################
-LDA 3,0,0;          40 - R3 = 16
-AIR 3,16;           41
-LDA 0,2,2;          42 - R0 = @local[2], @char[0]
-LDA 2,0,0;          43 - R2 = NULL
+LDA 3,0,16;         16 - R3 = 16
+LDA 0,1,2;          17 - R0 = @local[2], @char[0]
+LDA 2,0,0;          18 - R2 = NULL
 ###############################################################
 # Start of Loop - Write locals to console                     #
 ###############################################################
-# Copy R0, the address of the ASCII character we want to read to IX1, and then load that value into R1
-STR 0,0,17;         44 -
-LDX 1,0,17;         45 - IDX1 = R0, address of char[i]
-LDR 1,1,0;          46 - R1 = c(IDX1), value of char[i]
+# Copy R0, the address of the ASCII character we want to read to IX3, and then load that value into R1
+STR 0,0,17;         19 -
+LDX 3,0,17;         20 - IDX3 = R0, address of char[i]
+LDR 1,3,0;          21 - R1 = c(IDX1), value of char[i]
 # Write to console
-OUT 1,1;            47
+OUT 1,1;            22
 # And zero out character to make sure locals is clean for subsequent invocations of print-int
 # We have to do this because we're not using a call stack
-STR 2,1,0;          48 -    char[i] = NULL
+STR 2,3,0;          23 -    char[i] = NULL
 # Advance the character pointer
-AIR 0,1;            49 -    R0++
-SOB 3,3,12;         50 - while (--R3 > 0), jump to IDX3 (32) + 12 = 44
+AIR 0,1;            24 -    R0++
+SOB 3,2,19;         25 - while (--R3 > 0), jump to the 21st address of this program
 ###############################################################
 # End of Loop - Write locals to console                       #
 ###############################################################
-LDR 3,2,1;          51 - R3 = local[1] (return address)
-RFS 0;              52 - Return from Subroutine with 0 error code
+LDR 3,1,1;          26 - R3 = local[1] (return address)
+RFS 0;              27 - Return from Subroutine with 0 error code
