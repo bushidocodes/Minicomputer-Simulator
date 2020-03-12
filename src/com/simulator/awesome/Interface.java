@@ -228,10 +228,6 @@ public class Interface {
                         case "MBR":
                             context.memory.setMemoryBufferRegister(stringToWord(input));
                             break;
-                        case "MFR":
-                        case "CC":
-                            // not implemented
-                            break;
                         case "IR":
                             context.cu.setInstructionRegister(stringToWord(input));
                             break;
