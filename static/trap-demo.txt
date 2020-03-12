@@ -1,11 +1,10 @@
 ###################################################
 # A tiny program to test the Traps                #
 # Calls Traps 0-11 one after the other            #
-# Assumes address 18 is safe to write to          #
 ###################################################
-TRAP 0;
-TRAP 1;
-TRAP 2;
+# TRAP 0; - Disables because this causes program reload
+# TRAP 1; - Disables because this causes program reload
+TRAP 2; - Disables because this causes program reload
 TRAP 3;
 TRAP 4;
 TRAP 5;
@@ -18,5 +17,4 @@ TRAP 11;
 TRAP 12;
 TRAP 13;
 TRAP 14;
-TRAP 15;
-HLT;
+TRAP 0; // Now actually prompt for new program!

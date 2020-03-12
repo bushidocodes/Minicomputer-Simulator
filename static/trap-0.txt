@@ -3,6 +3,7 @@
 # Prints System Ready\n                                  #
 # This indicates that the user should load a program     #
 # Halts and then Jumps to user program upon RUN          #
+# This should ONLY be used in the base user program!     #
 # Hold onto your butts!                                  #
 # https://www.youtube.com/watch?v=T4kBRC2co7Y            #
 # Assumes c(28) = 32, c(29) = 64, c(30)=96               #
