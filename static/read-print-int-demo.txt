@@ -1,6 +1,8 @@
 ###################################################
-# A tiny program to test the print-int subroutine #
-# Writes 42\n7\n to console                       #
+# A tiny program to test the read-int subroutine  #
+# Take an integer from the console and then       #
+# echos it back to the printer                    #
+# Test that print-int is working first!           #
 ###################################################
 # Initialization
 # Load IX1 with the base address of the stack frame
