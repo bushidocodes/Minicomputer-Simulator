@@ -9,16 +9,18 @@ LDX 1,0,16;          0
 LDX 2,1,0;           1
 # Read a number from the User. RC goes to R0. Resulting Number goes to R1.
 JSR 0,26,1;          2
+LDX 1,0,16;          3 - Reload the base address of the stack frame
+LDX 2,1,0;           4 - Reload the base address of the program
 # Check R0 for RC. If not 0, jump to error
-JNE 0,2,10;          3
+JNE 0,2,12;          5
 # Otherwise success, so write R1 to local[1]
-STR 1,1,1;           4
-# Set R0 to 18 (the address of our arguments) as defined by the caller's subroutine convention
-LDA 0,1,1;           5
+STR 1,1,1;           6
+# Set R0 to local[1] as defined by the caller's subroutine convention
+LDA 0,1,1;           7
 # Call the print-int subroutine
-JSR 0,27,1;          6
+JSR 0,27,1;          8
 # Print \n
-LDA 0,0,10;          7
-OUT 0,1;             8
-TRAP 0;              9
-TRAP 1;             10
+LDA 0,0,10;          9
+OUT 0,1;            10
+TRAP 0;             11
+TRAP 1;             12
