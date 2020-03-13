@@ -301,7 +301,7 @@ public class Interface {
                     } else {
                         // Error: Invalid memory location
                         String maxLoc = Integer.toString(context.memory.getWordCount()-1);
-                        JOptionPane.showMessageDialog(rootPanel, "ERROR: Memory location to insert the program must be within the valid range for unprotected memory (Minimum: "+32+") (Maximum: "+maxLoc+").");
+                        JOptionPane.showMessageDialog(rootPanel, "ERROR: Memory location to insert the program must be within the valid range for unprotected memory (Minimum: " + context.memory.boundsLowerProtectedMemory + ") (Maximum: "+ context.memory.baseUpperProtectedMemory + ").");
                     }
                 } else {
                     // Error: No file selected.

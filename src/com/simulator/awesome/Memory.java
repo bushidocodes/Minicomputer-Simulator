@@ -23,7 +23,9 @@ public class Memory {
 
     private final Simulator context;
 
-    final short boundsLowerProtectedMemory = 15;
+    short boundsLowerProtectedMemory = 15;
+    short boundsLowerReadOnlyMemory = 16;
+    short baseUpperReadOnlyMemory;
     short baseUpperProtectedMemory;
 
     Memory(Simulator context, int wordCount){
@@ -98,24 +100,26 @@ public class Memory {
         }
     }
 
-    private void validateAddress(int address) throws IllegalMemoryAddressBeyondLimitException, IllegalMemoryAccessToReservedLocationsException {
+    private void validateAddress(int address, boolean isWrite) throws IllegalMemoryAddressBeyondLimitException, IllegalMemoryAccessToReservedLocationsException {
+        int lowerProtectedBounds = isWrite ? this.boundsLowerReadOnlyMemory : this.boundsLowerProtectedMemory;
+        int upperProtectedBase = isWrite ? this.baseUpperReadOnlyMemory : this.baseUpperProtectedMemory;
         if (address > this.wordCount) {
             throw new IllegalMemoryAddressBeyondLimitException("Illegally accessing address " + address + "above highest memory address " + this.wordCount + ". Halting!");
-        } else if (!this.context.msr.isSupervisorMode() && (address <= this.boundsLowerProtectedMemory || address >= this.baseUpperProtectedMemory)) {
+        } else if (!this.context.msr.isSupervisorMode() && (address <= lowerProtectedBounds || address >= upperProtectedBase)) {
             this.context.io.engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
             throw new IllegalMemoryAccessToReservedLocationsException();
         }
     }
 
     public short fetch(short address) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
-        validateAddress(address);
+        validateAddress(address, false);
         this.mar.set(address);
         this.mbr = this.getWord(this.mar.get());
         return this.mbr;
     }
 
     public void store (short address, short value) throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
-        validateAddress(address);
+        validateAddress(address, true);
         // MAR <- address
         this.mar.set(address);
         // MBR <- value

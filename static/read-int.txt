@@ -1,0 +1,60 @@
+######################################################################################################################
+# A subroutine to take an ASCII string from the operator's keyboard, covert it into a Base-10 digit, and accumulate  #
+# it into an unsigned integer                                                                                        #
+# It takes no arguments                                                                                              #
+# It assumes that R3 contains the return address of the caller at invocation                                         #
+# This currently does not handle checks for ASCII codes > "9"                                                        #
+# It writes the Return Code to R0 and the resulting unsigned integer to R1 on success                                #
+######################################################################################################################
+# Usage of Stack
+#  0 - Base Address of Program
+#  1 - Return Address
+###############################################################
+# Initialization                                              #
+###############################################################
+# Load IX1 with the base address of the stack frame
+LDX 1,0,16;          0
+# Load IX2 with the base address of the program
+LDX 2,1,0;           1
+# We don't use any arguments for read-int
+# Save the return address to local[1]
+STR 3,1,1;           2 - local[1] = R3 (Return address)
+# Set R0 to 0, the current total
+LDA 0,0,0;           3
+# Set R2 to 10, the current total
+LDA 2,0,10;          4
+# Set R3 to the number of characters stored by the keyboard buffer
+###############################################################
+# Start of Loop - Convert ASCII string to number              #
+###############################################################
+# Get a character
+IN 3,1;              5
+# Subtract 48 to convert ASCII to a base-10 digit
+SIR 3,31;            6
+SIR 3,17;            7
+# Jump if underflow
+JCC 3,2,20;          8 - Jump to 20, the error condition
+# Check if over 9? Disregarding this for now
+# Multiply the running total (R0) by 10(R2), putting the result in R0
+MLT 0,2;             9
+STR 1,0,17;         10
+LDR 0,0,17;         11
+# And add the new digit to the total
+STR 3,0,17;         12
+AMR 0,0,17;         13
+# Check the number of remaining characters and jump to start of loop if not equal to 0
+CHK 3,0;            14
+JNE 3,2,5;          15
+###############################################################
+# End of Loop - Write locals to console                       #
+###############################################################
+# Success Condition
+LDR 3,1,1;          16 - R3 = local[1] (return address)
+# Copy Results to R1 because R0 is written with status code
+STR 0,0,17;         17
+LDR 1,0,17;         18
+RFS 0;              19 - Return from Subroutine successfully
+# Error Condition
+LDR 3,1,1;          20 - R3 = local[1] (return address)
+LDA 1,0,0;          21 - Set R1 to 0
+RFS 1;              22 - Return from Subroutine in error condition

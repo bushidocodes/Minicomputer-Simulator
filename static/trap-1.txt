@@ -1,11 +1,52 @@
 ##########################################################
-# Trap 1 - Rerun Current Program without prompting       #
-# Halts, but doesn't prompt user. Hit Run to Rerun       #
-# Loads the Program Indirect in 7 into address 2         #
+# Trap 1 - Program Error. Stop System for Program Load   #
+# Prints ERR\nSystem Ready\n                                  #
+# This indicates that the user should load a program     #
+# Halts and then Jumps to user program upon RUN          #
+# This should ONLY be used in the base user program!     #
+# Hold onto your butts!                                  #
+# https://www.youtube.com/watch?v=T4kBRC2co7Y            #
+# Assumes c(28) = 32, c(29) = 64, c(30)=96               #
 ##########################################################
+LDX 1,0,28;
+LDX 2,0,29;
+LDX 3,0,30;
+LDA 0,2,5; E
+OUT 0,1;
+LDA 0,2,18; R
+OUT 0,1;
+OUT 0,1;
+LDA 0,0,10; \n
+OUT 0,1;
+LDA 0,2,19; S
+OUT 0,1;
+LDA 0,3,25; y 121
+OUT 0,1;
+LDA 0,3,19; s 115
+OUT 0,1;
+LDA 0,3,20; t 116
+OUT 0,1;
+LDA 0,3,5; e 101
+OUT 0,1;
+LDA 0,3,13; m 109
+OUT 0,1;
+LDA 0,1,0; " " 32
+OUT 0,1;
+LDA 0,2,18; R 82
+OUT 0,1;
+LDA 0,3,5; e 101
+OUT 0,1;
+LDA 0,3,1; a 97
+OUT 0,1;
+LDA 0,3,4; d 100
+OUT 0,1;
+LDA 0,3,25; y 121
+OUT 0,1;
+LDA 0,0,10; \n
+OUT 0,1;
+HLT;
 # Load 7 into 2 (return PC) and 32 (first word of base stack frame)
 LDR 0,0,7;
 STR 0,0,2;
 STR 0,1,0;
-HLT;
-RFS 1;
+RFS 0;

@@ -1,6 +1,6 @@
 ##########################################################
-# Trap 0 - Stop System for Program Load                  #
-# Prints System Ready\n                                  #
+# Trap 0 - Program Success. Stop System for Program Load #
+# Prints OK\nSystem Ready\n                                  #
 # This indicates that the user should load a program     #
 # Halts and then Jumps to user program upon RUN          #
 # This should ONLY be used in the base user program!     #
@@ -11,6 +11,12 @@
 LDX 1,0,28;
 LDX 2,0,29;
 LDX 3,0,30;
+LDA 0,2,15; O
+OUT 0,1;
+LDA 0,2,11; K
+OUT 0,1;
+LDA 0,0,10; \n
+OUT 0,1;
 LDA 0,2,19; S
 OUT 0,1;
 LDA 0,3,25; y 121
