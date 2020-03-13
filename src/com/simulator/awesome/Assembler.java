@@ -54,6 +54,7 @@ public class Assembler {
     // Reads a text file line-by-line and converts assembly code into machine code.
     String[] input_arr;
     String[] output_arr;
+    String currentFile;
 
     public void loadFile(String filepath) {
         // Count the number of lines in the file, and then allocate the same amount of space in an array in order to store it.
@@ -77,7 +78,8 @@ public class Assembler {
                 lineCounter++;
             }
             reader.close();
-            System.out.println("Loaded an assembly file containing "+input_arr.length+" lines.");
+            this.currentFile = filepath;
+            System.out.println("Loaded " + filepath + " containing "+input_arr.length+" lines.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,7 +88,6 @@ public class Assembler {
     public String[] convertToMachineCode(){
         // Allocate space for the output array;
         ArrayList<String> output = new ArrayList<String>();
-//        output_arr = new String[input_arr.length];
         for(int lineCounter = 0; lineCounter < input_arr.length; lineCounter++){
             String currLine = input_arr[lineCounter];
 
@@ -129,6 +130,7 @@ public class Assembler {
         // Convert back to static array
         this.output_arr = new String[output.size()];
         output_arr = output.toArray(this.output_arr);
+        System.out.println("Converted " + this.currentFile + " to "+output_arr.length+" lines of machine code.");
         return output_arr;
     }
 

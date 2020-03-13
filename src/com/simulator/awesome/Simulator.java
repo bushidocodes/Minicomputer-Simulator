@@ -241,19 +241,23 @@ public class Simulator {
     }
 
     public void incrementCallStack(short baseAddressOfCallee){
+        boolean callerIsInSupervisor = this.msr.isSupervisorMode();
+
         short currentCallStackDepth = this.msr.getCallStackDepth();
         if ((currentCallStackDepth + 1) > 3) throw new Error("Stack Overflow!");
         if ((currentCallStackDepth + 1) < 0) throw new Error("Stack Underflow!");
         currentCallStackDepth++;
         this.msr.setCallStackDepth(currentCallStackDepth);
 
-        // Update Address 16 to base address
+        // Update Address 16 to base address. If this is from userspace, we need to temporarily escalate to write
+        if (!callerIsInSupervisor) this.msr.setSupervisorMode(true);
         short baseAddress = getCallStackFrameBase(currentCallStackDepth);
         try {
             this.memory.store((short)16, baseAddress);
         } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
             e.printStackTrace();
         }
+        if (!callerIsInSupervisor) this.msr.setSupervisorMode(false);
 
         // Write information to stack frame
         try {
@@ -264,6 +268,8 @@ public class Simulator {
     }
 
     public void decrementCallStack(){
+        boolean callerIsInSupervisor = this.msr.isSupervisorMode();
+
         short currentCallStackDepth = this.msr.getCallStackDepth();
         if ((currentCallStackDepth - 1) > 3) throw new Error("Stack Overflow!");
         if ((currentCallStackDepth - 1) < 0) throw new Error("Stack Underflow!");
@@ -281,11 +287,16 @@ public class Simulator {
 
         short newCallStackDepth = (short)(currentCallStackDepth - 1);
         short newCallStackBase = getCallStackFrameBase(newCallStackDepth);
+
+        // Update Address 16 to base address. If this is from userspace, we need to temporarily escalate to write
+        if (!callerIsInSupervisor) this.msr.setSupervisorMode(true);
         try {
             this.memory.store((short)16,newCallStackBase);
         } catch (IllegalMemoryAccessToReservedLocationsException | IllegalMemoryAddressBeyondLimitException e) {
             e.printStackTrace();
         }
+        if (!callerIsInSupervisor) this.msr.setSupervisorMode(false);
+
         this.msr.setCallStackDepth(newCallStackDepth);
     }
 

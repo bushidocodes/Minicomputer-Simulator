@@ -25,30 +25,30 @@ public class ReadOnlyMemory {
 
             // Trap Table
             assembler.loadFile(basePath.concat("/static/trap-table.txt"));
-            assembler.convertToMachineCode();
-            short trapTableLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+            String[] trapTable = assembler.convertToMachineCode();
+            short trapTableLocation = context.loadProgram(trapTable, earliestTopAddressUsed, false, false);
             earliestTopAddressUsed = trapTableLocation;
 
             // Load the traps
             // We skip 15 to have an "Invalid Trap" to test the error handling in the fault-demo program!
             for (int i = 14; i >= 0; i--){
                 assembler.loadFile(basePath.concat("/static/trap-" + i + ".txt"));
-                assembler.convertToMachineCode();
-                short trapLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+                String[] trap = assembler.convertToMachineCode();
+                short trapLocation = context.loadProgram(trap, earliestTopAddressUsed, false, false);
                 this.context.memory.store((short)(trapTableLocation + i), trapLocation);
                 earliestTopAddressUsed = trapLocation;
             }
 
             // Fault Handler
             assembler.loadFile(basePath.concat("/static/fault-handler.txt"));
-            assembler.convertToMachineCode();
-            short faultHandlerLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+            String[] faultHandler = assembler.convertToMachineCode();
+            short faultHandlerLocation = context.loadProgram(faultHandler, earliestTopAddressUsed, false, false);
             earliestTopAddressUsed = faultHandlerLocation;
 
             // Bootloader
             assembler.loadFile(basePath.concat("/static/bootloader.txt"));
-            assembler.convertToMachineCode();
-            short bootloaderLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+            String[] bootloader = assembler.convertToMachineCode();
+            short bootloaderLocation = context.loadProgram(bootloader, earliestTopAddressUsed, false, false);
             earliestTopAddressUsed = bootloaderLocation;
 
             // Set the base address of the Supervisor Functions for Memory Protection
@@ -58,13 +58,15 @@ public class ReadOnlyMemory {
 
             // print-int
             assembler.loadFile(basePath.concat("/static/print-int.txt"));
-            assembler.convertToMachineCode();
-            short printIntLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+            String[] printInt = assembler.convertToMachineCode();
+            short printIntLocation = context.loadProgram(printInt, earliestTopAddressUsed, false, false);
+            earliestTopAddressUsed = printIntLocation;
 
             // read-int
             assembler.loadFile(basePath.concat("/static/read-int.txt"));
-            assembler.convertToMachineCode();
-            short readIntLocation = context.loadProgram(assembler.output_arr, earliestTopAddressUsed, false, false);
+            String[] readInt = assembler.convertToMachineCode();
+            short readIntLocation = context.loadProgram(readInt, earliestTopAddressUsed, false, false);
+            earliestTopAddressUsed = readIntLocation;
 
             this.context.memory.baseUpperReadOnlyMemory = earliestTopAddressUsed;
 

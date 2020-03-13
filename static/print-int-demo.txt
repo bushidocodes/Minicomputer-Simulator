@@ -3,7 +3,7 @@
 # Writes 42\n7\n to console                       #
 ###################################################
 # Load the stack frame to IX1
-STX 1,0,16;
+LDX 1,0,16;
 # Write 42 to local[1]
 LDA 0,0,31;
 AIR 0,11;

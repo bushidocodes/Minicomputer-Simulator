@@ -153,6 +153,7 @@ public class Interface {
     public Interface(Simulator context) {
         this.context = context;
         setUIReadyForInput(false);
+        programMemoryLocSpinner.setValue(160);
         this.refresh();
 
         // START - IPLs the Simulator
@@ -255,6 +256,8 @@ public class Interface {
                 // Clear the console printers
                 consolePrinter.setText("");
                 fieldEngineerConsole.setText("");
+                // Disable the Ready for Input Light
+                context.msr.setReadyForInput(false);
                 // Reset the console printer line number counter
                 consolePrinterLineNumber = 0;
                 refresh();
@@ -276,6 +279,7 @@ public class Interface {
             public void actionPerformed(ActionEvent e) {
                 // Check that a file is selected
                 if(selectedFile != null && selectedFile.isFile()){
+
                     short memoryLoc = (short) Integer.parseInt(programMemoryLocSpinner.getValue().toString());
                     // Check that the desired memory location is within the valid range.
                     if (memoryLoc > context.memory.boundsLowerProtectedMemory && memoryLoc < context.memory.baseUpperProtectedMemory) {

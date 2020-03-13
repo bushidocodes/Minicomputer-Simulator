@@ -54,14 +54,17 @@ class InputCharacterToRegisterFromDevice extends InputOutputInstruction {
     }
 
     public void fetchOperand(){
-        // Pause the execution loop and wait for user input
-        this.context.msr.setReadyForInput(true);
-        this.context.cu.pauseExecutionLoop();
+        // If the buffer is empty, pause the execution loop and wait for user input
+        if (this.context.io.isInputBufferNull(this.deviceId)) {
+            this.context.msr.setReadyForInput(true);
+            this.context.cu.pauseExecutionLoop();
+        }
     }
 
     public void execute(){
         // c(Register) <- inputBuffer <- Device
-        this.context.setGeneralRegister(this.registerId,this.context.io.getFirstWordFromInputBuffer(this.deviceId));
+        short word = this.context.io.getFirstWordFromInputBuffer(this.deviceId);
+        this.context.setGeneralRegister(this.registerId, word);
     }
 }
 
@@ -109,6 +112,8 @@ class CheckDeviceStatusToRegister extends InputOutputInstruction {
         // If we know the type of device, check the corresponding buffer. If we don't know, take whichever buffer is non-zero.
         switch(this.deviceId){
             case 0: // Console Keyboard
+                this.context.setGeneralRegister(this.registerId, (short) this.context.io.getSizeOfInputBuffer(this.deviceId));
+                break;
             case 2: // Card Reader
                 // c(Register) <- size of inputBuffer
                 // this will break if the inputBuffer has more than 32,767 items in it due to casting an int to short.
