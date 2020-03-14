@@ -32,8 +32,8 @@ IN 3,0;              5
 # Subtract 48 to convert ASCII to a base-10 digit
 SIR 3,31;            6
 SIR 3,17;            7
-# Jump if underflow
-JCC 3,2,20;          8 - Jump to 20, the error condition
+# Jump if underflow (CC 1?)
+JCC 1,2,20;          8 - Jump to 20, the error condition
 # Check if over 9? Disregarding this for now
 # Multiply the running total (R0) by 10(R2), putting the result in R0
 MLT 0,2;             9

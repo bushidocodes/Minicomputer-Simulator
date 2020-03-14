@@ -32,9 +32,8 @@ public class ArithmeticLogicUnit {
         int result = this.a + this.b;
 
         // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setOverflow(Integer.compareUnsigned(result, Config.MAX_VALUE) > 0);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
@@ -47,11 +46,11 @@ public class ArithmeticLogicUnit {
         int result = this.a - this.b;
 
         // Set Condition Variables
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(Integer.compareUnsigned(this.a, this.b) < 0);
-        this.context.cc.setDivideByZero(false);
-        this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
-        this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
+        this.context.cc.reset();
+        int compareValue = Integer.compareUnsigned(this.a, this.b);
+        this.context.cc.setUnderflow(compareValue < 0);
+        this.context.cc.setEqual(compareValue == 0);
+        this.context.cc.setGreaterThan(compareValue > 0);
 
         // Write result to proper output register
         this.y = result;
@@ -59,9 +58,7 @@ public class ArithmeticLogicUnit {
 
     public void compare(){
         // Set Condition Variables
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
@@ -74,9 +71,8 @@ public class ArithmeticLogicUnit {
         int result = this.a - 1;
 
         // Set Condition Variables
-        this.context.cc.setOverflow(false);
+        this.context.cc.reset();
         this.context.cc.setUnderflow(Integer.compareUnsigned(this.a, 1) < 0);
-        this.context.cc.setDivideByZero(false);
         this.context.cc.setEqual(Integer.compareUnsigned(result, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(result, this.b) > 0);
 
@@ -86,9 +82,9 @@ public class ArithmeticLogicUnit {
     public void multiply() {
         int result = this.a * this.b;
 
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setOverflow(Integer.compareUnsigned(result, Config.MAX_VALUE) > 0);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
 
@@ -99,8 +95,8 @@ public class ArithmeticLogicUnit {
         this.y = Integer.divideUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
         this.y2 = Integer.remainderUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
 
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setDivideByZero(Integer.compareUnsigned(this.b, 0) == 0);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
@@ -108,38 +104,35 @@ public class ArithmeticLogicUnit {
 
     public void and(){
         this.y = this.a & this.b;
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void or(){
         this.y = this.a | this.b;
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
 
     public void not(){
         this.y = ~this.a;
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
-        this.context.cc.setEqual(false);
-        this.context.cc.setGreaterThan(false);
+
+        // Set Condition Variables
+        this.context.cc.reset();
     }
 
-    // TODO: This overflow / underflow logic might need to check if we shift meaningful bits off?
     public void arithmeticShiftLeft(){
         this.y = this.a << this.b;
 
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setOverflow(Integer.compareUnsigned(this.y, Config.MAX_VALUE) > 0);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
@@ -147,9 +140,9 @@ public class ArithmeticLogicUnit {
     public void arithmeticShiftRight(){
         this.y = this.a >> this.b;
 
-        this.context.cc.setOverflow(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setUnderflow(this.b != 0 && this.a % 10 != 0);
-        this.context.cc.setDivideByZero(false);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
@@ -162,9 +155,9 @@ public class ArithmeticLogicUnit {
     public void logicalShiftRight(){
         this.y = Utils.short_unsigned_right_shift(this.a, this.b );
 
-        this.context.cc.setOverflow(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setUnderflow(this.b != 0 && this.a % 10 != 0);
-        this.context.cc.setDivideByZero(false);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
@@ -184,9 +177,8 @@ public class ArithmeticLogicUnit {
 
 //        this.context.setZ(signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.count) | (leastSignificantBits << (Short.SIZE - this.count - 1)))));
 
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
@@ -204,27 +196,24 @@ public class ArithmeticLogicUnit {
 
         this.y = (signBit | (LEAST_SIGNIFICANT_BITS_MASK & (Utils.short_unsigned_right_shift(leastSignificantBits, this.b) | (leastSignificantBits << (Short.SIZE - this.b - 1)))));
 
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void logicalRotateLeft(){
         this.y = ((this.a << this.b) | Utils.short_unsigned_right_shift(this.a, (Short.SIZE - this.b)));
 
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
     public void logicalRotateRight(){
         this.y = Utils.short_unsigned_right_shift(this.a, this.b) | (this.a << (Short.SIZE - this.b));
 
-        this.context.cc.setOverflow(false);
-        this.context.cc.setUnderflow(false);
-        this.context.cc.setDivideByZero(false);
+        // Set Condition Variables
+        this.context.cc.reset();
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }

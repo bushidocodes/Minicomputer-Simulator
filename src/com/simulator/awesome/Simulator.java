@@ -71,7 +71,7 @@ public class Simulator {
         this.memory.reset();
         this.alu = new ArithmeticLogicUnit(this);
         this.pc = new ProgramCounter();
-        this.cc = new ConditionCode();
+        this.cc.reset();
         this.msr.reset();
         this.mfr = new MachineFaultRegister();
         // No need to re-instantiate ROM

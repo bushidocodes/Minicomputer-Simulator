@@ -33,9 +33,9 @@ public class Utils {
      * @param offset - The offset from the least significant bit. 0 is b0001
      * @param isSet - The resulting bit array after manipulating the bit
      */
-    public static int setNthLeastSignificantBit(int bitArray, int offset, boolean isSet) {
-        int setterMask = (0b0000000000000001<<offset);
-        return isSet ? (bitArray | setterMask) : (bitArray & ~setterMask);
+    public static short setNthLeastSignificantBit(short bitArray, int offset, boolean isSet) {
+        short setterMask = (short)(0b0000000000000001<<offset);
+        return isSet ? (short)(bitArray | setterMask) : (short)(bitArray & ~setterMask);
     }
 
     /**
@@ -53,7 +53,7 @@ public class Utils {
             getterMask |= (singleBit<<(i-1));
         }
         getterMask = (getterMask<<offsetFromRightmostBit);
-        return (short) short_unsigned_right_shift((short)(bitArray & getterMask), offsetFromRightmostBit);
+        return short_unsigned_right_shift((short)(bitArray & getterMask), offsetFromRightmostBit);
     }
 
     /**
@@ -64,7 +64,7 @@ public class Utils {
      * @param value - the value that we want to set the bits to
      * @return - the updated bit array
      */
-    public static short setNthLeastSignificantBits(int bitArray, int offsetFromRightmostBit, int numberBits, short value) {
+    public static short setNthLeastSignificantBits(short bitArray, int offsetFromRightmostBit, int numberBits, short value) {
         int singleBit = 0b0000000000000001;
         int setterMask = 0b0000000000000000;
         for (int i = numberBits; i > 0; i--){
@@ -78,7 +78,7 @@ public class Utils {
 
         // Then OR with the value
         bitArray |= ((value<<offsetFromRightmostBit) & setterMask);
-        return (short)(bitArray) ;
+        return bitArray;
     }
 
     /**
