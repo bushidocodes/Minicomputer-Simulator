@@ -15,7 +15,7 @@ import static com.simulator.awesome.Utils.*;
 // Note: Adding Upper bits that cannot be addressed by OPCODE 12 - Jump If Condition Code
 // 10000 |   Greater Than
 public class ConditionCode {
-    private byte cc;
+    private short cc;
 
     ConditionCode(){
         this.cc = 0;
@@ -23,14 +23,18 @@ public class ConditionCode {
 
     // Condition Code (CC) getters and setters
 
-    public byte get() { return this.cc; }
+    public short get() { return this.cc; }
+
+    public void reset() {
+        this.cc = 0;
+    }
 
     public boolean isOverflow() {
         return getNthLeastSignificantBit(this.cc, 0);
     }
 
     public void setOverflow(boolean isOverflow) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 0, isOverflow);
+        this.cc = setNthLeastSignificantBit(this.cc, 0, isOverflow);
     }
 
     public boolean isUnderflow() {
@@ -38,7 +42,7 @@ public class ConditionCode {
     }
 
     public void setUnderflow(boolean isUnderflow) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 1, isUnderflow);
+        this.cc = setNthLeastSignificantBit(this.cc, 1, isUnderflow);
     }
 
     public boolean isDivideByZero() {
@@ -46,7 +50,7 @@ public class ConditionCode {
     }
 
     public void setDivideByZero(boolean isDivideByZero) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 2, isDivideByZero);
+        this.cc = setNthLeastSignificantBit(this.cc, 2, isDivideByZero);
     }
 
     public boolean isEqual() {
@@ -54,7 +58,7 @@ public class ConditionCode {
     }
 
     public void setEqual(boolean isEqualOrNot) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
+        this.cc = setNthLeastSignificantBit(this.cc, 3, isEqualOrNot);
     }
 
     public boolean isGreaterThan() {
@@ -62,12 +66,7 @@ public class ConditionCode {
     }
 
     public void setGreaterThan(boolean isGreaterThan) {
-        this.cc = (byte)setNthLeastSignificantBit(this.cc, 4, isGreaterThan);
-    }
-
-    // There isn't a bit for this directly, but we can determine this if not greater than or equal
-    public boolean isLessThan() {
-        return !this.isEqual() && !this.isGreaterThan();
+        this.cc = setNthLeastSignificantBit(this.cc, 4, isGreaterThan);
     }
 
     public boolean isCondition(int conditionCode){
