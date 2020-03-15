@@ -3,37 +3,55 @@
 # Prints characters from the card reader buffer.       #
 # CHK causes the UI to hang if no card is loaded.      #
 ########################################################
-CHK 2,2;     CHK card reader -- if empty, it should pause the program execution to load a card (currently hangs GUI)
-IN 1,2;      R1 <- character from card     "H"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "e"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "l"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "l"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "o"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     " "
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "W"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "o"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "r"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "l"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "d"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "!"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     RS
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "4"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     "2"
-OUT 1,1;     print to the console printer
-IN 1,2;      R1 <- character from card     FS
-OUT 1,1;     print to the console printer
-TRAP 0;      end of program
+# Stack data
+#  Note: Base User Program, so Address of Program is in address 16
+#  0 - Address of First character in Heap Dataset
+# Initialization
+LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
+LDX 2,0,18;          1 - Load IX2 with the base address of the heap
+LDR 0,2,1,1;         2 - Load R0 with the first usable word of the dataset (cursor)
+STR 0,1,0;           3 - Store the first usable word of the dataset to local[0]
+LDX 2,1,0;           4 - Load IX2 with the base address of the program
+CHK 1,2;             5 - Check the Card reader and store the total number of chars in R1
+JNE 1,2,8;           6 - if R1 != 0, jump to start of loop  (8)
+TRAP 1;              7
+##################
+# Start of Loop - Read Entire Buffer into Memory
+# Note: We have no memory protection in case over overruns
+##################
+# Load R0 into IX3
+STR 0,0,17;          8
+LDX 0,0,17;          9
+# Load character into R1
+IN 1,2;             10
+# Write character from R1 to the first usable word of the heap (in IX3)
+STR 1,3,0;          11
+# Increment cursor by 1
+AIR 0,1;            12
+# Check Card Reader
+CHK 1,2;            13
+JNE 1,2,8;          14 - If R1 != 0, jump to start of loop (8)
+#################
+# End of Loop
+#################
+STR 0,1,0;          15 - Load R0 with initial cursor position
+LDA 2,0,28;         16 - Load R2 with the character code of FS (our terminator)
+#################
+# Start of Loop
+#################
+# Load cursor position from R0 into IX3
+STR 0,0,17;         17
+LDX 0,0,17;         18
+# Load R1 with value at IX3
+LDR 1,3,0;          19
+TRR 1,2,25;         20 - If the contents of the print loop is a File Separator (FS), jump to 25
+JCC 3,2,22;         21
+OUT 1,1;            22 - Print Value
+# Increment cursor by 1
+AIR 0,1;            23
+JMA 2,17;           24 - Unconditional Jump to start of loop (17)
+#################
+# Start of Loop
+#################
+TRAP 0;             25
+TRAP 1;             26
