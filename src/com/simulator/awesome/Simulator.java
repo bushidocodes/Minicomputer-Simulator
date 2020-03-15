@@ -221,6 +221,15 @@ public class Simulator {
         this.msr.setSupervisorMode(isSupervisor);
     }
 
+    public void loadUserProgram(String[] assembledMachineCode, short programAddress){
+        this.loadProgram(assembledMachineCode, programAddress, true, false);
+        // The Heap Space starts one word after the user program. However, if the user loads multiple programs,
+        // we want to place the heap space after the furthest in memory
+        short baseHeapSpace = (short) (programAddress + assembledMachineCode.length + 1);
+        if (this.memory.baseHeapSpace <  baseHeapSpace) this.memory.baseHeapSpace = baseHeapSpace;
+        this.setAsUserProgram(programAddress);
+    }
+
     public short getCallStackFrameBase(short callStackDepth) {
         short baseAddress = 32;
         switch (callStackDepth){
