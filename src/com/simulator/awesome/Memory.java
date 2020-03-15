@@ -27,6 +27,7 @@ public class Memory {
     short boundsLowerReadOnlyMemory = 16;
     short baseUpperReadOnlyMemory;
     short baseUpperProtectedMemory;
+    short baseHeapSpace = 160; // This is updated to one address after the end of the user program
 
     Memory(Simulator context, int wordCount){
         this.context = context;

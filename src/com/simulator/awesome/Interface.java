@@ -321,12 +321,12 @@ public class Interface {
                                     break;
                                 case "Binary":
                                     // Load binary file into memory at the specified location
-                                    context.setAsUserProgram(context.loadProgram(assembler.input_arr, memoryLoc, true,false));
+                                    context.loadUserProgram(assembler.input_arr, memoryLoc);
                                     refresh();
                                     break;
                                 case "Assembly":
                                     // Convert assembly file to binary and load it into memory at the specified location
-                                    context.setAsUserProgram(context.loadProgram(assembler.convertToMachineCode(), memoryLoc, true,false));
+                                    context.loadUserProgram(assembler.convertToMachineCode(), memoryLoc);
                                     refresh();
                                     break;
                             }
@@ -349,8 +349,7 @@ public class Interface {
             public void actionPerformed(ActionEvent e) {
                 // Load in the instruction demonstration program
                 assembler.loadFile(basePath.concat("/static/demo-program.txt"));
-                short programLocation = context.loadProgram(assembler.convertToMachineCode(), (short) 100, true,false);
-                context.setAsUserProgram(programLocation);
+                context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
                 refresh();
             }
         });
@@ -409,8 +408,7 @@ public class Interface {
                 // Assemble the program and load it into the computer at memory location 101.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler.loadFile(basePath.concat("/static/program-one.txt"));
-                short programLocation = context.loadProgram(assembler.convertToMachineCode(), (short) 101, true,false);
-                context.setAsUserProgram(programLocation);
+                context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
                 refresh();
             }
         });
