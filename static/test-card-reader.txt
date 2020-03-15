@@ -27,4 +27,13 @@ OUT 1,1;     print to the console printer
 IN 1,2;      R1 <- character from card     "d"
 OUT 1,1;     print to the console printer
 IN 1,2;      R1 <- character from card     "!"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     RS
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "4"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "2"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     FS
+OUT 1,1;     print to the console printer
 TRAP 0;      end of program
