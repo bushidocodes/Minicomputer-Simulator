@@ -16,6 +16,7 @@ import static com.simulator.awesome.Utils.*;
 // 0000000000100000 | Fault Handler Flag
 // 0000000001000000 | Supervisor Fault Flag
 // 0000000110000000 | Call Stack Depth Bits
+// 0000001000000000 | Waiting for card from virtual card reader
 // All others reserved
 public class MachineStatusRegister {
     private short msr;
@@ -95,5 +96,11 @@ public class MachineStatusRegister {
         this.setIsInteractive(isInteractive);
         this.setIsDebugging(isDebugging);
 
+    }
+    public boolean isWaitingForCard(){
+        return getNthLeastSignificantBit(this.msr, 9);
+    }
+    public void setWaitingForCard(boolean isWaitingForCard){
+        this.msr = (short)setNthLeastSignificantBit(this.msr, 9, isWaitingForCard);
     }
 }

@@ -5,8 +5,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 
-import static com.simulator.awesome.Simulator.*;
 import static com.simulator.awesome.Utils.stringToWord;
 import static com.simulator.awesome.Utils.wordToString;
 
@@ -61,9 +62,18 @@ public class Interface {
     private JButton loadProgram1Button;
     private JTabbedPane tabbedPane1;
     private JLabel readyForInputLabel;
+    private JButton loadCardButton;
+    private JButton ejectCardButton;
+    private JLabel selectedCardLabel;
+    private JPanel cardReaderPanel;
+    private JPanel waitingForCardAlertPanel;
+    private JPanel cardSlotPanel;
+    private JLabel waitingForCardLabel;
     private final Simulator context;
     private File selectedFile;
+    private File selectedCard;
     private Integer consolePrinterLineNumber = 0;
+    private boolean cardReady = false;
 
     // Initialize image icons for indicator light
     final String basePath = new File("").getAbsolutePath(); //get current base directory
@@ -113,16 +123,21 @@ public class Interface {
 
         // If the computer is ready for input, enable the console keyboard
         if(this.context.msr.isReadyForInput() && !consoleKeyboard.isEnabled()){
-            setUIReadyForInput(true);
+            setUIReadyForKeyboardInput(true);
         }
 
-        // If the computer is not running or waiting for input, disable the HALT button
-        if(!this.context.msr.isRunning() && !this.context.msr.isReadyForInput()){
+        // If the computer is waiting for a card, activate the indicator light
+        if(this.context.msr.isWaitingForCard()){
+            setUIWaitingForCardInput(true);
+        }
+
+        // If the computer is not running or waiting for input/card, disable the HALT button
+        if(!this.context.msr.isRunning() && !this.context.msr.isReadyForInput() && !this.context.msr.isWaitingForCard()){
             haltButton.setEnabled(false);
         }
 
-        // If the computer is running or is waiting for input, disable the run button
-        if(this.context.msr.isRunning() || this.context.msr.isReadyForInput()){
+        // If the computer is running or is waiting for input/card, disable the run button
+        if(this.context.msr.isRunning() || this.context.msr.isReadyForInput() || this.context.msr.isWaitingForCard()){
             runButton.setEnabled(false);
             runButton.setText("RUNNING");
         } else {
@@ -131,7 +146,7 @@ public class Interface {
         }
     }
 
-    public void setUIReadyForInput(boolean state){
+    public void setUIReadyForKeyboardInput(boolean state){
         if (state){
             consoleKeyboard.setEnabled(true);
             consoleKeyboard.setEditable(true);
@@ -150,9 +165,20 @@ public class Interface {
         }
     }
 
+    public void setUIWaitingForCardInput(boolean state){
+        if (state){
+            waitingForCardAlertPanel.setVisible(true);
+            waitingForCardLabel.setIcon(greenLight);
+            this.context.io.engineerConsolePrintLn("Waiting for card.");
+        } else {
+            waitingForCardAlertPanel.setVisible(false);
+        }
+    }
+
     public Interface(Simulator context) {
         this.context = context;
-        setUIReadyForInput(false);
+        setUIReadyForKeyboardInput(false);
+        setUIWaitingForCardInput(false);
         programMemoryLocSpinner.setValue(160);
         this.refresh();
 
@@ -164,6 +190,9 @@ public class Interface {
                 context.reset();
                 context.rom.load();
                 refresh();
+
+                // Activate the card reader
+                loadCardButton.setEnabled(true);
             }
         });
 
@@ -182,7 +211,7 @@ public class Interface {
         haltButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (context.msr.isRunning() || context.msr.isReadyForInput()){
+                if (context.msr.isRunning() || context.msr.isReadyForInput() || context.msr.isWaitingForCard()){
                     context.cu.pauseExecutionLoop();
                     refresh();
                 } else {
@@ -361,7 +390,7 @@ public class Interface {
                     // Change input waiting state
                     context.msr.setReadyForInput(false);
                     // Disable input from the UI
-                    setUIReadyForInput(false);
+                    setUIReadyForKeyboardInput(false);
                     // Continue execution
                     context.cu.startExecutionLoop();
                     refresh();
@@ -390,6 +419,67 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 returnButton.doClick();
+            }
+        });
+        loadCardButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Launch a file chooser
+                JFileChooser chooser = new JFileChooser();
+
+                // Only allow selection of text files
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                        ".txt", "txt");
+                chooser.setFileFilter(filter);
+
+                // Store the selected file location and update the interface.
+                int returnVal = chooser.showOpenDialog(rootPanel);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    selectedCardLabel.setText(chooser.getSelectedFile().getName());
+                    selectedCard = chooser.getSelectedFile();
+
+                    // Read the input as an array of ASCII characters.
+                    // Separate lines with ASCII 30 (record separator - RS)
+                    // Mark end of file with ASCII 28 (file separator - FS)
+                    try {
+                        Scanner scanner = new Scanner(selectedCard);
+                        String thisLine;
+                        // Read each character into the inputBuffer
+                        while (scanner.hasNextLine()){
+                            thisLine = scanner.nextLine();
+                            for (char ch: thisLine.toCharArray()){
+                                context.io.addWordToInputBuffer((short) 2, (short) ch);
+                            }
+                        }
+                        // turn off the indicator light
+                        setUIWaitingForCardInput(false);
+                        // If the computer was waiting, resume execution
+                        if(context.msr.isWaitingForCard()){
+                            // Change input waiting state
+                            context.msr.setWaitingForCard(false);
+                            context.cu.startExecutionLoop();
+                        }
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    // Enable the eject button
+                    ejectCardButton.setEnabled(true);
+                }
+                refresh();
+            }
+        });
+        ejectCardButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Empty the card reader buffer
+                context.io.emptyDeviceInputBuffer((short) 2);
+
+                // Reset card reader UI
+                selectedCardLabel.setText("Select a file");
+                selectedCard = null;
+                ejectCardButton.setEnabled(false);
+                refresh();
             }
         });
     }
