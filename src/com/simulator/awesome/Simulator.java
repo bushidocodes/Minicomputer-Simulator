@@ -228,6 +228,33 @@ public class Simulator {
         short baseHeapSpace = (short) (programAddress + assembledMachineCode.length + 1);
         if (this.memory.baseHeapSpace <  baseHeapSpace) this.memory.baseHeapSpace = baseHeapSpace;
         this.setAsUserProgram(programAddress);
+
+        // How many 32-word chunks are available from baseHeapSpace to baseUpperReadOnlyMemory (exclusive)
+        short heapSpaceSize = (short) (this.memory.baseUpperReadOnlyMemory - this.memory.baseHeapSpace);
+        short datasetBodyChunks = (short) (heapSpaceSize / 32);
+
+        System.out.println("Heap sees " + (this.memory.baseUpperReadOnlyMemory - this.memory.baseHeapSpace) + " words free.");
+        // A dataset header can only hold 31 indirects.
+        if (datasetBodyChunks > 31) datasetBodyChunks = 31;
+
+        if (datasetBodyChunks > 0) {
+            String zeroedOutData[] = new String[datasetBodyChunks*32];
+            for (int i = 0; i < zeroedOutData.length; i++) zeroedOutData[i] = "0000000000000000";
+            this.loadProgram(zeroedOutData, baseHeapSpace, true, true);
+
+            try {
+                this.memory.store((short) 18, baseHeapSpace);
+                short addressOfDS = this.memory.fetch((short) 18);
+                short sizeOfDS = this.memory.fetch((short) addressOfDS);
+                System.out.println("Allocated a Heap Dataset with " + datasetBodyChunks + " sections, able to store " + sizeOfDS + " words");
+            } catch (IllegalMemoryAccessToReservedLocationsException e) {
+                e.printStackTrace();
+            } catch (IllegalMemoryAddressBeyondLimitException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Insufficient space to allocate heap!");
+        }
     }
 
     public short getCallStackFrameBase(short callStackDepth) {

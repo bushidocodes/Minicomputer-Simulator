@@ -89,9 +89,9 @@ public class ReadOnlyMemory {
             // Address 13: Reserved for Supervisor
             // Address 14: Reserved for Supervisor
             // Address 15: Reserved for Supervisor
-            // Address 16: Reserved for User
+            // Address 16: Current Stack Frame Indirect
             // Address 17: Register-to-Register Buffer (for copying index registers to general registers and visa-versa)
-            // Address 18: Reserved for User
+            // Address 18: Heap Dataset Indirect
             // Address 19: Reserved for User
             // Address 20: Reserved for User
             // Address 21: Reserved for User
