@@ -1,0 +1,30 @@
+########################################################
+# Test Card Reader                                     #
+# Prints characters from the card reader buffer.       #
+# CHK causes the UI to hang if no card is loaded.      #
+########################################################
+CHK 2,2;     CHK card reader -- if empty, it should pause the program execution to load a card (currently hangs GUI)
+IN 1,2;      R1 <- character from card     "H"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "e"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "l"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "l"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "o"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     " "
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "W"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "o"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "r"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "l"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "d"
+OUT 1,1;     print to the console printer
+IN 1,2;      R1 <- character from card     "!"
+TRAP 0;      end of program

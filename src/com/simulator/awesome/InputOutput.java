@@ -22,8 +22,8 @@ public class InputOutput {
     public void reset(){
         // Clear IO buffers and states
         this.context.msr.setReadyForInput(false);
-        emptyInputBuffer();
-        emptyOutputBuffer();
+        emptyAllInputBuffers();
+        emptyAllOutputBuffers();
         emptyEngineersConsoleBuffer();
     }
 
@@ -40,10 +40,14 @@ public class InputOutput {
         return outputBuffer[deviceId].peek() == null;
     }
 
-    public void emptyOutputBuffer(){
+    public void emptyAllOutputBuffers(){
         for (int i=0; i<outputBuffer.length; i++) {
             outputBuffer[i].clear();
         }
+    }
+
+    public void emptyDeviceOutputBuffer(short deviceId){
+        outputBuffer[deviceId].clear();
     }
 
     public void addWordToInputBuffer(short deviceId, short inputBuffer) {
@@ -58,10 +62,14 @@ public class InputOutput {
         return inputBuffer[deviceId].peek() == null;
     }
 
-    public void emptyInputBuffer(){
+    public void emptyAllInputBuffers(){
         for (int i=0; i<inputBuffer.length; i++) {
             inputBuffer[i].clear();
         }
+    }
+
+    public void emptyDeviceInputBuffer(short deviceId){
+        inputBuffer[deviceId].clear();
     }
 
     public boolean isEngineersConsoleBufferNull(){
