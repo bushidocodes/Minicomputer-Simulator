@@ -68,6 +68,18 @@ public class ReadOnlyMemory {
             short readIntLocation = context.loadProgram(readInt, earliestTopAddressUsed, false, false);
             earliestTopAddressUsed = readIntLocation;
 
+            // print-string
+            assembler.loadFile(basePath.concat("/static/print-string.txt"));
+            String[] printString = assembler.convertToMachineCode();
+            short printStringLocation = context.loadProgram(printString, earliestTopAddressUsed, false, false);
+            earliestTopAddressUsed = printStringLocation;
+
+            // read-string
+            assembler.loadFile(basePath.concat("/static/read-string.txt"));
+            String[] readString = assembler.convertToMachineCode();
+            short readStringLocation = context.loadProgram(readString, earliestTopAddressUsed, false, false);
+            earliestTopAddressUsed = readStringLocation;
+
             this.context.memory.baseUpperReadOnlyMemory = earliestTopAddressUsed;
 
             // Address 0: Trap Table. Place at end of memory and put indirect at 0
@@ -97,8 +109,10 @@ public class ReadOnlyMemory {
             // Address 21: Reserved for User
             // Address 22: Reserved for User
             // Address 23: Reserved for User
-            // Address 24: Reserved for User
-            // Address 25: Reserved for User
+            // Address 24: Indirect to the read-string subroutine
+            this.context.memory.store((short) 24, readStringLocation);
+            // Address 25: Indirect to the print-string subroutine
+            this.context.memory.store((short) 25, printStringLocation);
             // Address 26: Indirect to the read-int subroutine
             this.context.memory.store((short) 26, readIntLocation);
             // Address 27: Indirect to the print-int subroutine

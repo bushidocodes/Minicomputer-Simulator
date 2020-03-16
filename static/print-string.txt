@@ -1,0 +1,36 @@
+######################################################################################################################
+# print-string: A subroutine to print a stream of characters terminated by ASCII 28 (File Separator) located in      #
+# memory to the console printer                                                                                      #
+# This does NOT check for a string terminator and WILL run indefinitely if it is missing!                            #
+# Takes a memory indirect to the base of the string at R0                                                            #
+# It writes the Return Code to R0                                                                                    #
+######################################################################################################################
+# Usage of Stack
+#  0 - Base Address of Program
+###############################################################
+# Initialization                                              #
+###############################################################
+# Load IX1 with the base address of the stack frame
+LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
+LDX 2,1,0;           1 - Load IX2 with the base address of the program
+# R0 is already ready for use, containing the base address of our buffer
+# R3 contains our return address, and we don't change it, so no need to save it
+LDA 2,0,28;          2 - Load R2 with the character code of FS (our terminator)
+###############################################################
+# Start of Loop                                               #
+###############################################################
+# Load R1 with character in the address the cursor
+STR 0,0,17;          3 - Load R0 cursor to IX3 so we can use it
+LDX 3,0,17;          4
+LDR 1,3,0;           5
+# If character matches the File Separator (FS) stored in R0, break out of loop
+TRR 1,2;             6
+JCC 3,2,11;          7
+# Else
+OUT 1,1;             8 - Print character
+AIR 0,1;             9 - Increment cursor by 1
+JMA 2,3;            10 - Unconditional Jump to start of loop (3)
+###############################################################
+# End of Loop                                                 #
+###############################################################
+RFS 0;              11 - Return from Subroutine successfully

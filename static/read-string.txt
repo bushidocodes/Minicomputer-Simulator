@@ -16,30 +16,25 @@ LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
 LDX 2,1,0;           1 - Load IX2 with the base address of the program
 # R0 is already ready for use, containing the base address of our buffer
 # R3 contains our return address, and we don't change it, so no need to save it
-CHK 1,2;             3 - Check the Card reader and store the total number of chars in R1
-JNE 1,2,6;           4 - if R1 != 0, jump to start of loop  (6)
-RFS 1;               5
+CHK 1,2;             2 - Check the Card reader and store the total number of chars in R1
+JNE 1,2,5;           3 - if R1 != 0, jump to start of loop  (5)
+RFS 1;               4
 ###############################################################
-# Start of Loop - Read Entire Buffer into Memory              #
+# Start of Loop - Read Input Buffer into Memory               #
 ###############################################################
-# Load R0 into IX3
-STR 0,0,17;          6
-LDX 3,0,17;          7
-# Load character into R2
-IN 2,2;              8
-# Write character from R2 to the first usable word of the heap (in IX3)
-STR 2,3,0;           9
-# Increment cursor by 1
-AIR 0,1;            10
-# Check Card Reader, loading char count into R1
-CHK 1,2;            11
-JNE 1,2,6;          12 - If R1 != 0, jump to start of loop (6)
+# Copy R0 cursor to IX3 so it can be used
+STR 0,0,17;          5
+LDX 3,0,17;          6
+# Load a character from the virtual card punch into R2
+IN 2,2;              7
+# Write character from R2 to the address contained in IX3 (the cursor)
+STR 2,3,0;           8
+# Increment R0 cursor by 1
+AIR 0,1;             9
+# Get the number of remaining characters in the input buffer and loop if > 0
+CHK 1,2;            10
+JNE 1,2,5;          11 - If R1 != 0, jump to start of loop (5)
 ###############################################################
-# End of Loop - Write locals to console                       #
+# End of Loop - Read Input Buffer into Memory                 #
 ###############################################################
-# Success Condition
-LDR 3,1,1;          13 - R3 = local[1] (return address)
-RFS 0;              14 - Return from Subroutine successfully
-# Error Condition
-LDR 3,1,1;          15 - R3 = local[1] (return address)
-RFS 1;              16 - Return from Subroutine in error condition
+RFS 0;              12

@@ -8,51 +8,19 @@
 #  0 - Base Address of Program
 #  1 - Address of First character in Heap Dataset
 # Initialization
-LDX 1,0,16;          0 OK - Load IX1 with the base address of the stack frame
-LDX 2,0,18;          1 OK - Load IX2 with the base address of the heap
-LDA 0,2,1,1;         2 OK - Load R0 with the first usable word of the dataset (cursor)
-STR 0,1,1;           3 OK - Store the first usable word of the dataset to local[1]
-LDX 2,1,0;           4 OK- Load IX2 with the base address of the program
-CHK 1,2;             5 OK(17) - Check the Card reader and store the total number of chars in R1
-JNE 1,2,8;           6 OK - if R1 != 0, jump to start of loop  (8)
-TRAP 1;              7 OK
-##################
-# Start of Loop - Read Entire Buffer into Memory
-# Note: We have no memory protection in case over overruns
-##################
-# Load R0 into IX3
-STR 0,0,17;          8 OK
-LDX 3,0,17;          9 OK
-# Load character into R2
-IN 2,2;             10 OK
-# Write character from R2 to the first usable word of the heap (in IX3)
-STR 2,3,0;          11 OK
-# Increment cursor by 1
-AIR 0,1;            12 OK
-# Check Card Reader, loading char count into R1
-CHK 1,2;            13 OK
-JNE 1,2,8;          14 OK - If R1 != 0, jump to start of loop (8)
-#################
-# End of Loop
-#################
-LDR 0,1,1;          15 OK - Load R0 with initial cursor position
-LDA 2,0,28;         16 OK - Load R2 with the character code of FS (our terminator)
-#################
-# Start of Loop
-#################
-# Load cursor position from R0 into IX3
-STR 0,0,17;         17 OK
-LDX 3,0,17;         18 OK
-# Load R1 with value at IX3
-LDR 1,3,0;          19 OK
-TRR 1,2;            20 - If the contents of the print loop is a File Separator (FS), jump to 25
-JCC 3,2,25;         21
-OUT 1,1;            22 - Print Value
-# Increment cursor by 1
-AIR 0,1;            23
-JMA 2,17;           24 - Unconditional Jump to start of loop (17)
-#################
-# Start of Loop
-#################
-TRAP 0;             25
-TRAP 1;             26
+LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
+LDX 2,0,18;          1 - Load IX2 with the base address of the dataset
+LDA 0,2,1,1;         2 - Load R0 with the first usable word of the dataset (cursor)
+STR 0,1,1;           3 - Store the first usable word of the dataset to local[1]
+LDX 2,1,0;           4 - Load IX2 with the base address of the program
+# Execute read-string
+JSR 0,24,1;          5
+# Check R0 for RC. If not 0, jump to error
+LDX 1,0,16;          6 - Load IX1 with the base address of the stack frame
+LDX 2,1,0;           7 - Load IX2 with the base address of the program
+JNE 0,2,12;          8 - If RC > 0, Jump to error condition (12)
+LDR 0,1,1;           9 - Load R0 with initial cursor position in local[1]
+# Execute print-string
+JSR 0,25,1;         10
+TRAP 0;             11
+TRAP 1;             12
