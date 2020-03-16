@@ -448,7 +448,7 @@ public class Interface {
                             for (char ch: thisLine.toCharArray()){
                                 context.io.addWordToInputBuffer((short) 2, (short) ch);
                             }
-                            context.io.addWordToInputBuffer((short) 2, (short) 30); // Add record separator RS
+                            context.io.addWordToInputBuffer((short) 2, (short) 10); // Add record separator RS
                         }
                         context.io.addWordToInputBuffer((short) 2, (short) 28); // Add file separator FS
                         // turn off the indicator light

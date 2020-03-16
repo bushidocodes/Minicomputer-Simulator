@@ -101,10 +101,10 @@ class CheckDeviceStatusToRegister extends InputOutputInstruction {
             case 2: // Card Reader
                 validateInputDevice(this.deviceId);
                 // If a card is not loaded, pause execution and allow the operator to load a card
-                if (this.context.io.isInputBufferNull(this.deviceId)) {
-                    this.context.msr.setWaitingForCard(true);
-                    this.context.cu.pauseExecutionLoop();
-                }
+//                if (this.context.io.isInputBufferNull(this.deviceId)) {
+//                    this.context.msr.setWaitingForCard(true);
+//                    this.context.cu.pauseExecutionLoop();
+//                }
                 break;
             case 1: // Console Printer
                 validateOutputDevice(this.deviceId);
