@@ -53,7 +53,7 @@ public class Interface {
     private JLabel X1Label;
     private JLabel X2Label;
     private JLabel X3Label;
-    private JLabel selectedFileLabel;
+    private JTextField selectedFileLabel;
     private JSpinner programMemoryLocSpinner;
     private JButton returnButton;
     private JTextArea consolePrinter;
