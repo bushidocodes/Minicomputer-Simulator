@@ -8,10 +8,22 @@
 ######################################################################
 # Stack data
 #  Note: Base User Program, so Address of Program is in address 16
-#  0 - Base Address of Program
-#  1 - Address of First character in Heap Dataset -- first character in the paragraph
-#  2 - Character length of the paragraph
-#  3 - Address of first character in the user-entered word
+#   0 - Base Address of Program
+#   1 - Address of First character in Heap Dataset -- first character in the paragraph
+#   2 - Character length of the paragraph
+#   3 - wordCursor - Cursor for iterating through the user-entered word
+#   4 - Address of first loop (get word from user)
+#   5 - Address of first character in the user-entered word
+#   6 - paragraphCursor - Cursor for iterating through the paragraph
+#   7 - sentenceNumber - Track the sentences searched within the paragraph
+#   8 - wordNumber - Track the words searched within the current sentence
+#   9 - characterNumber - Track the characters searched within the current word
+#  10 - isMatch Boolean, initialized to TRUE
+#  11 - Address of second loop (word search) for jumps
+#  12 - Address of second loop (word search) +  32 for jumps
+#  13 - Address of second loop (word search) +  64 for jumps
+#  14 - Address of second loop (word search) +  96 for jumps
+#  15 - Address of second loop (word search) + 128 for jumps
 # Initialization
 LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
 LDX 2,0,18;          1 - Load IX2 with the base address of the dataset
@@ -29,6 +41,9 @@ JNE 0,2,12;         10 - If RC > 0, Jump to error condition (TBD)               
 LDR 0,1,1;          11 - Load R0 with initial cursor position in local[1]
 # Execute print-string
 JSR 0,25,1;         12
+######################################################################
+# Get the word from the user                                         #
+######################################################################
 # Prompt the user for a word. Assumes c(28) = 32, c(29) = 64, c(30)=96.
 LDX 1,0,28;         13
 LDX 2,0,29;         14
@@ -49,16 +64,196 @@ OUT 0,1;            27
 LDX 1,0,16;         28 - Load IX1 with the base address of the stack frame
 LDX 2,0,18;         29 - Load IX2 with the base address of the dataset
 LDA 0,2,1,1;        30 - Load R0 with the first usable word of the dataset (cursor)
-AMR 0,1,2;          31 - Add the length of the paragraph local[2] to R0 - next free word in the heap
-STR 0,1,3;          32 - Store the address of the user-entered word to local[3]
-LDX 2,1,3;          33 - Load IX2 with the cursor for the user word, local[3]
-IN 0,0;             34 - Allow the user to type a word into the console keyboard
-STR 0,1,3,1;        35 - Store the first character of the word at the cursor
-# How do we read a string from the keyboard?
-# DEBUG print the user-entered word
-LDX 1,0,16;         36 - Load IX1 with the base address of the stack frame
-LDX 2,1,0;          37 - Load IX2 with the base address of the program
-LDR 0,1,3;          38 - Load R0 with initial cursor position in local[3]
-# DEBUG Execute print-string
-JSR 0,25,1;         39
-TRAP 0;             40
+AMR 0,1,2;          31 - Add the length of the paragraph, local[2], to R0 - next free word in the heap
+STR 0,1,5;          32 - Store the address of the user-entered word to local[5]
+LDX 2,1,5;          33 - Load IX2 with the address for the user word, local[5]
+LDR 0,0,16,1;       34 - Store the start address of the first loop (38) to local[4]
+AIR 0,31;           35
+AIR 0,7;            36
+STR 0,1,4;          37
+# START LOOP - Get user word
+IN 0,0;             38 - Allow the user to type a word into the console keyboard
+STR 0,2,0;          39 - Store the first character of the word at the cursor
+STX 2,1,3;          40 - Increment user-word cursor
+LDR 3,1,3;          41
+AIR 3,1;            42
+STR 3,1,3;          43
+LDX 2,1,3;          44
+CHK 0,0;            45 - Check the number of characters remaining in the input buffer
+JNE 0,1,4,1;        46 - If R0 != 0, jump to start of loop (local[4])
+## END LOOP - Get user word
+LDA 0,0,28;         47 - Store ASCII 28 (FS) to mark the end of the word for print-string
+STR 0,2,0;          48
+######################################################################
+# START WORD SEARCH                                                  #
+######################################################################
+# Loop initialization
+LDR 0,0,16,1;       49 - Store the start address of the second loop (60) to local[11]
+AIR 0,31;           50
+AIR 0,29;           51
+STR 0,1,11;         52
+AIR 0,31;           53 - Store the local[11] + 32 to local[12]
+AIR 0,1;            54
+STR 0,1,12;         55
+AIR 0,31;           56 - Store the local[11] + 64 to local[13]
+AIR 0,1;            57
+STR 0,1,13;         58
+AIR 0,31;           59 - Store the local[11] + 96 to local[14]
+AIR 0,1;            60
+STR 0,1,14;         61
+AIR 0,31;           62 - Store the local[11] + 128 to local[15]
+AIR 0,1;            63
+STR 0,1,15;         64
+LDA 3,0,28;         65 - Load R3 with the character code of FS (our terminator)
+LDR 0,1,1;          66 - Initialize paragraphCursor (local[6]) to the first word in the paragraph
+STR 0,1,6;          67
+LDR 0,1,5;          68 - Initialize wordCursor (local[3]) to the first word in the user-entered word
+STR 0,1,3;          69
+LDA 0,0,1;          70 - Initialize isMatch (local[10]) to TRUE (1)
+STR 0,1,10;         71
+LDA 0,0,0;          72 - Initialize sentenceNumber, local[7], to zero
+STR 0,1,7;          73
+LDA 0,0,0;          74 - Initialize wordNumber, local[8], to zero
+STR 0,1,8;          75
+LDA 0,0,0;          76 - Initialize characterNumber, local[9], to zero
+STR 0,1,9;          77
+# LOOP START - Word Search
+LDR 0,1,6,1;        78 - Load R0 with the character at paragraphCursor
+LDR 1,1,3,1;        79 - Load R1 with the character at wordCursor
+#If R0 = FS && isMatch = FALSE, no match was found
+TRR 0,3;            80 - If R0 = R3 (FS)
+LDX 3,1,12;         81 - Load IX3 with loop_base+32
+JCC 3,3,4;         82 - R0 == FS, skip the next two instructions (skip to 85) to check isMatch
+LDX 3,1,12;         83 - Load IX3 with loop_base+32
+JMA 3,7;            84 - R0 != FS, jump to whitespace/punctuation check (88)
+LDR 2,1,10;         85 - If isMatch == FALSE
+LDX 3,1,14;         86 - Load IX3 with loop_base+96
+JZ 2,3,27;          87 - isMatch is False - No match found, jump to NO_MATCH (172)
+# Whitespace/punctuation check
+# If R0 = whitespace or punctuation (ASCII value < 65) continue. else, jump to isCharacter
+LDA 2,0,29;         88 - Store 65 at temporary location 17
+AIR 2,1;            89
+STR 2,0,17;         90
+SMR 0,0,17;         91 - Subtract 65 from R0.
+LDX 3,1,14;         92 - Load IX3 with loop_base+96
+JGE 0,3,11;         93 - If the value in R0 is >= 0, it's a character. Jump to isCharacter (156).
+LDR 0,1,6,1;        94 - Reload R0 with the character at paragraphCursor
+#    If character number (local_8) != 0 && isMatch == true
+LDR 2,1,8;          95
+LDX 3,1,13;         96 - Load IX3 with loop_base+64
+JZ 2,3,16;          97 - If local[8] == 0, jump to period check (129)
+LDR 2,1,10;         98 - If isMatch == TRUE
+LDX 3,1,13;         99 - Load IX3 with loop_base+64
+JZ 2,3,16;         100 - isMatch is False, jump to period check (129)
+# isMatch is True, Match has been found. Print the required info and then TRAP 0.
+#    Print the user-entered word
+LDX 1,0,16;        101 - Load IX1 with the base address of the stack frame
+LDR 0,1,5;         102 - Load R0 with base address of the user word, local[5]
+#    Execute print-string
+JSR 0,25,1;        103
+#    Print sentenceNumber
+LDX 2,0,28;        104 - IX2 = 32
+LDX 3,0,29;        105 - IX3 = 64
+LDX 1,0,16;        106 - Load IX1 with the base address of the stack frame
+LDA 0,0,10;        107 - \n
+OUT 0,1;           108
+LDA 0,3,19;        109 - S
+OUT 0,1;           110
+LDA 0,2,26;        111 - :
+OUT 0,1;           112
+LDA 0,2,0;         113 - space
+OUT 0,1;           114
+LDR 0,1,7;         115 - print sentenceNumber (local[7])
+OUT 0,1;           116
+LDA 0,0,10;        117 - \n
+OUT 0,1;           118
+#    Print wordNumber
+LDA 0,3,23;        119 - W
+OUT 0,1;           120
+LDA 0,2,26;        121 - :
+OUT 0,1;           122
+LDA 0,2,0;         123 - space
+OUT 0,1;           124
+LDR 0,1,8;         125 - print wordNumber (local[8])
+OUT 0,1;           126
+LDA 0,0,10;        127 - \n
+OUT 0,1;           128
+TRAP 0; Exit program
+#Else If R0 == '.' (period) - period check
+LDA 2,2,14;        129 - Load R2 with '.' (period)
+TRR 0,2;           130 - If R0 = R2 ('.')
+LDX 3,1,13;        131 - Load IX3 with loop_base+64
+JCC 3,3,22;        132 - R0 == . skip the next two instructions (skip to 135) and increment sentenceNumber
+LDX 3,1,13;        133 - Load IX3 with loop_base+64
+JMA 3,29;          134 - R0 != . do not increment sentenceNumber and do not reset word number, jump to wordNumber++ (142)
+LDR 2,1,7;         135 - increment sentenceNumber (local[7])
+AIR 2,1;           136
+STR 2,1,7;         137
+LDA 2,0,0;         138 - wordNumber (local[8]) = 0
+STR 2,1,8;         139
+LDX 3,1,14;        140 - Load IX3 with loop_base+64
+JMA 3,0;           141 - Do not increment wordNumber, skip to maintenance (145)
+LDA 2,0,0;         142 - wordNumber++
+AIR 2,1;           143
+STR 2,1,8;         144
+# maintenance
+# reset word_cursor, characterNumber = 0, paragraph_cursor++
+LDR 2,1,5;         145 - Reset wordCursor to the address of the first character in the user-entered word (local[5])
+STR 2,1,3;         146
+LDA 2,0,0;         147 - characterNumber = 0
+STR 2,1,9;         148
+LDR 2,1,6;         149 - paragraphCursor++
+AIR 2,1;           150
+STR 2,1,6;         151
+LDA 2,0,1;         152 - isMatch = TRUE (reset isMatch)
+STR 2,1,10;        153
+LDX 3,1,11;        154 - Load IX3 with loop_start
+JMA 3,0;           155 - Jump to loop_start
+## isCharacter -- R0 is a character
+TRR 0,1;           156 - If R0 == R1, the character matches
+LDX 3,1,14;        157 - Load IX3 with loop_start+96
+JCC 3,3,16;        158 - R0==R1, Jump to COUNTER_INCREMENTS (161)
+LDA 2,0,0;         159 - R0 != R1, set isMatch = FALSE
+STR 2,1,10;        160
+## COUNTER_INCREMENTS
+LDR 2,1,3;         161 - wordCursor++
+AIR 2,1;           162
+STR 2,1,3;         163
+LDR 2,1,9;         164 - characterNumber++
+AIR 2,1;           165
+STR 2,1,9;         166
+LDR 2,1,6;         167 - paragraphCursor ++
+AIR 2,1;           168
+STR 2,1,6;         169
+LDX 3,1,11;        170 - Load IX3 with loop_start
+JMA 3,0            171 - Jump to loop start
+# END LOOP - Word Search
+######################################################################
+# END WORD SEARCH                                                    #
+######################################################################
+# NO_MATCH
+# Assumes c(28) = 32, c(29) = 64, c(30)=96.
+LDX 1,0,28;        172
+LDX 2,0,29;        173
+LDX 3,0,30;        174
+LDA 0,2,14;        175 - N
+OUT 0,1;           176
+LDA 0,3,15;        177 - o
+OUT 0,1;           178
+LDA 0,1,0;         179 - [space]
+OUT 0,1;           180
+LDA 0,3,13;        181 - m
+OUT 0,1;           182
+LDA 0,3,1;         183 - a
+OUT 0,1;           184
+LDA 0,3,20;        185 - t
+OUT 0,1;           186
+LDA 0,3,3;         187 - c
+OUT 0,1;           188
+LDA 0,3,8;         189 - h
+OUT 0,1;           190
+LDA 0,1,1;         191 - !
+OUT 0,1;           192
+LDA 0,0,10;        193 - \n
+OUT 0,1;           194
+TRAP 0;            195
