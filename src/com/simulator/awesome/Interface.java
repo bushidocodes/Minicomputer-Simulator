@@ -357,7 +357,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Launch a file chooser
-                JFileChooser chooser = new JFileChooser();
+                JFileChooser chooser = new JFileChooser(basePath+"/static/");
 
                 // Only allow selection of text files
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -423,7 +423,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Launch a file chooser
-                JFileChooser chooser = new JFileChooser();
+                JFileChooser chooser = new JFileChooser(basePath+"/static/");
 
                 // Only allow selection of text files
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(
