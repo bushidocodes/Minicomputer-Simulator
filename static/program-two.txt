@@ -111,7 +111,7 @@ LDR 0,1,5;          68 - Initialize wordCursor (local[3]) to the first word in t
 STR 0,1,3;          69
 LDA 0,0,1;          70 - Initialize isMatch (local[10]) to TRUE (1)
 STR 0,1,10;         71
-LDA 0,0,0;          72 - Initialize sentenceNumber, local[7], to zero
+LDA 0,0,1;          72 - Initialize sentenceNumber, local[7], to one
 STR 0,1,7;          73
 LDA 0,0,0;          74 - Initialize wordNumber, local[8], to zero
 STR 0,1,8;          75
@@ -121,11 +121,11 @@ STR 0,1,9;          77
 LDR 0,1,6,1;        78 - Load R0 with the character at paragraphCursor
 LDR 1,1,3,1;        79 - Load R1 with the character at wordCursor
 #If R0 = FS && isMatch = FALSE, no match was found
-TRR 0,3;            80 - If R0 = R3 (FS)
+TRR 0,3;            80 - Test R0 = R3 (FS)
 LDX 3,1,12;         81 - Load IX3 with wordsearch_base+32
-JCC 3,3,4;          82 - R0 == FS, skip the next two instructions (skip to 85) to check isMatch
+JCC 3,3,4;          82 - If R0 == FS, skip the next two instructions (skip to 85) to check isMatch
 LDX 3,1,12;         83 - Load IX3 with wordsearch_base+32
-JMA 3,7;            84 - R0 != FS, jump to whitespace/punctuation check (88)
+JMA 3,7;            84 - If R0 != FS, jump to whitespace/punctuation check (88)
 LDR 2,1,10;         85 - If isMatch == FALSE
 LDX 3,1,15;         86 - Load IX3 with wordsearch_base+96
 JZ 2,3,3;           87 - isMatch is False - No match found, jump to NO_MATCH (180)
@@ -140,10 +140,10 @@ JCC 1,3,15;         93 - If underflow (negative number-- not a character), skip 
 LDX 3,1,14;         94 - Load IX3 with wordsearch_base+96
 JGE 0,3,18;         95 - If the value in R0 is >= 0, it's a character. Jump to isCharacter (163).
 LDR 0,1,6,1;        96 - Reload R0 with the character at paragraphCursor
-#    If character number (local_8) != 0 && isMatch == true
-LDR 2,1,8;          97
+#    If character number (local_9) != 0 && isMatch == true
+LDR 2,1,9;          97
 LDX 3,1,13;         98 - Load IX3 with wordsearch_base+64
-JZ 2,3,22;          99 - If local[8] == 0, jump to period check (135)
+JZ 2,3,22;          99 - If local[9] == 0, jump to period check (135)
 LDR 2,1,10;        100 - If isMatch == TRUE
 LDX 3,1,13;        101 - Load IX3 with wordsearch_base+64
 JZ 2,3,22;         102 - isMatch is False, jump to period check (135)
@@ -187,11 +187,11 @@ TRAP 0;            134 - Exit program
 #Else If R0 == '.' (period) - period check
 LDX 1,0,28;        135 - Load R2 with '.' (period). c(28) = 32
 LDA 2,1,14;        136
-TRR 0,2;           137 - If R0 = R2 ('.')
+TRR 0,2;           137 - Test R0 = R2 ('.')
 LDX 3,1,13;        138 - Load IX3 with wordsearch_base+64
-JCC 3,3,29;        139 - R0 == . skip the next two instructions (skip to 142) and increment sentenceNumber
+JCC 3,3,29;        139 - If R0 ==  R2 (.) skip the next two instructions (skip to 142) and increment sentenceNumber
 LDX 3,1,14;        140 - Load IX3 with wordsearch_base+64
-JMA 3,4;           141 - R0 != . do not increment sentenceNumber and do not reset word number, jump to wordNumber++ (149)
+JMA 3,4;           141 - R0 != R2 (.) do not increment sentenceNumber and do not reset word number, jump to wordNumber++ (149)
 LDR 2,1,7;         142 - increment sentenceNumber (local[7])
 AIR 2,1;           143
 STR 2,1,7;         144
@@ -199,7 +199,7 @@ LDA 2,0,0;         145 - wordNumber (local[8]) = 0
 STR 2,1,8;         146
 LDX 3,1,14;        147 - Load IX3 with wordsearch_base+64
 JMA 3,7;           148 - Do not increment wordNumber, skip to maintenance (152)
-LDR 2,1,8;         149 - wordNumber++
+LDR 2,1,8;         149 - wordNumber++ (local[8])
 AIR 2,1;           150
 STR 2,1,8;         151
 # maintenance
