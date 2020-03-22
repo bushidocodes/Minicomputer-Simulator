@@ -85,12 +85,12 @@ JNE 0,1,4,1;        46 - If R0 != 0, jump to start of loop (local[4])
 LDA 0,0,28;         47 - Store ASCII 28 (FS) to mark the end of the word for print-string
 STR 0,2,0;          48
 ######################################################################
-# START WORD SEARCH                                                  #
+# START WORD SEARCH  (wordsearch_base)                               #
 ######################################################################
 # Loop initialization
-LDR 0,0,16,1;       49 - Store the start address of the second loop (60) to local[11]
+LDR 0,0,16,1;       49 - Store the start address of the word search (49) to local[11] (wordsearch_base)
 AIR 0,31;           50
-AIR 0,29;           51
+AIR 0,18;           51
 STR 0,1,11;         52
 AIR 0,31;           53 - Store the local[11] + 32 to local[12]
 AIR 0,1;            54
@@ -117,143 +117,150 @@ LDA 0,0,0;          74 - Initialize wordNumber, local[8], to zero
 STR 0,1,8;          75
 LDA 0,0,0;          76 - Initialize characterNumber, local[9], to zero
 STR 0,1,9;          77
-# LOOP START - Word Search
+# LOOP_START - Word Search
 LDR 0,1,6,1;        78 - Load R0 with the character at paragraphCursor
 LDR 1,1,3,1;        79 - Load R1 with the character at wordCursor
 #If R0 = FS && isMatch = FALSE, no match was found
 TRR 0,3;            80 - If R0 = R3 (FS)
-LDX 3,1,12;         81 - Load IX3 with loop_base+32
-JCC 3,3,4;         82 - R0 == FS, skip the next two instructions (skip to 85) to check isMatch
-LDX 3,1,12;         83 - Load IX3 with loop_base+32
+LDX 3,1,12;         81 - Load IX3 with wordsearch_base+32
+JCC 3,3,4;          82 - R0 == FS, skip the next two instructions (skip to 85) to check isMatch
+LDX 3,1,12;         83 - Load IX3 with wordsearch_base+32
 JMA 3,7;            84 - R0 != FS, jump to whitespace/punctuation check (88)
 LDR 2,1,10;         85 - If isMatch == FALSE
-LDX 3,1,14;         86 - Load IX3 with loop_base+96
-JZ 2,3,27;          87 - isMatch is False - No match found, jump to NO_MATCH (172)
+LDX 3,1,15;         86 - Load IX3 with wordsearch_base+96
+JZ 2,3,3;           87 - isMatch is False - No match found, jump to NO_MATCH (180)
 # Whitespace/punctuation check
 # If R0 = whitespace or punctuation (ASCII value < 65) continue. else, jump to isCharacter
-LDA 2,0,29;         88 - Store 65 at temporary location 17
+LDR 2,0,29;         88 - Store 65 at temporary location 17
 AIR 2,1;            89
 STR 2,0,17;         90
 SMR 0,0,17;         91 - Subtract 65 from R0.
-LDX 3,1,14;         92 - Load IX3 with loop_base+96
-JGE 0,3,11;         93 - If the value in R0 is >= 0, it's a character. Jump to isCharacter (156).
-LDR 0,1,6,1;        94 - Reload R0 with the character at paragraphCursor
+LDX 3,1,12;         92 - Load IX3 with wordsearch_base+32
+JCC 1,3,15;         93 - If underflow (negative number-- not a character), skip the next two instructions (jump to 96)
+LDX 3,1,14;         94 - Load IX3 with wordsearch_base+96
+JGE 0,3,18;         95 - If the value in R0 is >= 0, it's a character. Jump to isCharacter (163).
+LDR 0,1,6,1;        96 - Reload R0 with the character at paragraphCursor
 #    If character number (local_8) != 0 && isMatch == true
-LDR 2,1,8;          95
-LDX 3,1,13;         96 - Load IX3 with loop_base+64
-JZ 2,3,16;          97 - If local[8] == 0, jump to period check (129)
-LDR 2,1,10;         98 - If isMatch == TRUE
-LDX 3,1,13;         99 - Load IX3 with loop_base+64
-JZ 2,3,16;         100 - isMatch is False, jump to period check (129)
+LDR 2,1,8;          97
+LDX 3,1,13;         98 - Load IX3 with wordsearch_base+64
+JZ 2,3,22;          99 - If local[8] == 0, jump to period check (135)
+LDR 2,1,10;        100 - If isMatch == TRUE
+LDX 3,1,13;        101 - Load IX3 with wordsearch_base+64
+JZ 2,3,22;         102 - isMatch is False, jump to period check (135)
 # isMatch is True, Match has been found. Print the required info and then TRAP 0.
 #    Print the user-entered word
-LDX 1,0,16;        101 - Load IX1 with the base address of the stack frame
-LDR 0,1,5;         102 - Load R0 with base address of the user word, local[5]
+LDX 1,0,16;        103 - Load IX1 with the base address of the stack frame
+LDR 0,1,5;         104 - Load R0 with base address of the user word, local[5]
 #    Execute print-string
-JSR 0,25,1;        103
+JSR 0,25,1;        105
 #    Print sentenceNumber
-LDX 2,0,28;        104 - IX2 = 32
-LDX 3,0,29;        105 - IX3 = 64
-LDX 1,0,16;        106 - Load IX1 with the base address of the stack frame
-LDA 0,0,10;        107 - \n
-OUT 0,1;           108
-LDA 0,3,19;        109 - S
+LDX 2,0,28;        106 - IX2 = 32
+LDX 3,0,29;        107 - IX3 = 64
+LDX 1,0,16;        108 - Load IX1 with the base address of the stack frame
+LDA 0,0,10;        109 - \n
 OUT 0,1;           110
-LDA 0,2,26;        111 - :
+LDA 0,3,19;        111 - S
 OUT 0,1;           112
-LDA 0,2,0;         113 - space
+LDA 0,2,26;        113 - :
 OUT 0,1;           114
-LDR 0,1,7;         115 - print sentenceNumber (local[7])
+LDA 0,2,0;         115 - space
 OUT 0,1;           116
-LDA 0,0,10;        117 - \n
-OUT 0,1;           118
-#    Print wordNumber
-LDA 0,3,23;        119 - W
+LDA 0,1,7;         117 - print sentenceNumber (local[7])
+JSR 0,27,1;        118 - print-int subroutine
+LDA 0,0,10;        119 - \n
 OUT 0,1;           120
-LDA 0,2,26;        121 - :
-OUT 0,1;           122
-LDA 0,2,0;         123 - space
-OUT 0,1;           124
-LDR 0,1,8;         125 - print wordNumber (local[8])
-OUT 0,1;           126
-LDA 0,0,10;        127 - \n
-OUT 0,1;           128
-TRAP 0; Exit program
+#    Print wordNumber
+LDX 2,0,28;        121 - IX2 = 32
+LDX 3,0,29;        122 - IX3 = 64
+LDX 1,0,16;        123 - Load IX1 with the base address of the stack frame
+LDA 0,3,23;        124 - W
+OUT 0,1;           125
+LDA 0,2,26;        126 - :
+OUT 0,1;           127
+LDA 0,2,0;         128 - space
+OUT 0,1;           129
+LDA 0,1,8;         130 - print wordNumber (local[8])
+JSR 0,27,1;        131 - print-int subroutine
+LDA 0,0,10;        132 - \n
+OUT 0,1;           133
+TRAP 0;            134 - Exit program
 #Else If R0 == '.' (period) - period check
-LDA 2,2,14;        129 - Load R2 with '.' (period)
-TRR 0,2;           130 - If R0 = R2 ('.')
-LDX 3,1,13;        131 - Load IX3 with loop_base+64
-JCC 3,3,22;        132 - R0 == . skip the next two instructions (skip to 135) and increment sentenceNumber
-LDX 3,1,13;        133 - Load IX3 with loop_base+64
-JMA 3,29;          134 - R0 != . do not increment sentenceNumber and do not reset word number, jump to wordNumber++ (142)
-LDR 2,1,7;         135 - increment sentenceNumber (local[7])
-AIR 2,1;           136
-STR 2,1,7;         137
-LDA 2,0,0;         138 - wordNumber (local[8]) = 0
-STR 2,1,8;         139
-LDX 3,1,14;        140 - Load IX3 with loop_base+64
-JMA 3,0;           141 - Do not increment wordNumber, skip to maintenance (145)
-LDA 2,0,0;         142 - wordNumber++
+LDX 1,0,28;        135 - Load R2 with '.' (period). c(28) = 32
+LDA 2,1,14;        136
+TRR 0,2;           137 - If R0 = R2 ('.')
+LDX 3,1,13;        138 - Load IX3 with wordsearch_base+64
+JCC 3,3,29;        139 - R0 == . skip the next two instructions (skip to 142) and increment sentenceNumber
+LDX 3,1,14;        140 - Load IX3 with wordsearch_base+64
+JMA 3,4;           141 - R0 != . do not increment sentenceNumber and do not reset word number, jump to wordNumber++ (149)
+LDR 2,1,7;         142 - increment sentenceNumber (local[7])
 AIR 2,1;           143
-STR 2,1,8;         144
+STR 2,1,7;         144
+LDA 2,0,0;         145 - wordNumber (local[8]) = 0
+STR 2,1,8;         146
+LDX 3,1,14;        147 - Load IX3 with wordsearch_base+64
+JMA 3,7;           148 - Do not increment wordNumber, skip to maintenance (152)
+LDR 2,1,8;         149 - wordNumber++
+AIR 2,1;           150
+STR 2,1,8;         151
 # maintenance
 # reset word_cursor, characterNumber = 0, paragraph_cursor++
-LDR 2,1,5;         145 - Reset wordCursor to the address of the first character in the user-entered word (local[5])
-STR 2,1,3;         146
-LDA 2,0,0;         147 - characterNumber = 0
-STR 2,1,9;         148
-LDR 2,1,6;         149 - paragraphCursor++
-AIR 2,1;           150
-STR 2,1,6;         151
-LDA 2,0,1;         152 - isMatch = TRUE (reset isMatch)
-STR 2,1,10;        153
-LDX 3,1,11;        154 - Load IX3 with loop_start
-JMA 3,0;           155 - Jump to loop_start
-## isCharacter -- R0 is a character
-TRR 0,1;           156 - If R0 == R1, the character matches
-LDX 3,1,14;        157 - Load IX3 with loop_start+96
-JCC 3,3,16;        158 - R0==R1, Jump to COUNTER_INCREMENTS (161)
-LDA 2,0,0;         159 - R0 != R1, set isMatch = FALSE
+LDR 2,1,5;         152 - Reset wordCursor to the address of the first character in the user-entered word (local[5])
+STR 2,1,3;         153
+LDA 2,0,0;         154 - characterNumber = 0
+STR 2,1,9;         155
+LDR 2,1,6;         156 - paragraphCursor++
+AIR 2,1;           157
+STR 2,1,6;         158
+LDA 2,0,1;         159 - isMatch = TRUE (reset isMatch)
 STR 2,1,10;        160
+LDX 3,1,11;        161 - Load IX3 with loop_base
+JMA 3,29;          162 - Jump to loop_start (78)
+## isCharacter -- R0 is a character
+LDR 0,1,6,1;       163 - Reload R0 with the character at paragraphCursor
+TRR 0,1;           164 - If R0 == R1, the character matches
+LDX 3,1,14;        165 - Load IX3 with loop_start+96
+JCC 3,3,24;        166 - R0==R1, Jump to COUNTER_INCREMENTS (169)
+LDA 2,0,0;         167 - R0 != R1, set isMatch = FALSE
+STR 2,1,10;        168
 ## COUNTER_INCREMENTS
-LDR 2,1,3;         161 - wordCursor++
-AIR 2,1;           162
-STR 2,1,3;         163
-LDR 2,1,9;         164 - characterNumber++
-AIR 2,1;           165
-STR 2,1,9;         166
-LDR 2,1,6;         167 - paragraphCursor ++
-AIR 2,1;           168
-STR 2,1,6;         169
-LDX 3,1,11;        170 - Load IX3 with loop_start
-JMA 3,0            171 - Jump to loop start
+LDR 2,1,3;         169 - wordCursor++ -- local[3]
+AIR 2,1;           170
+STR 2,1,3;         171
+LDR 2,1,9;         172 - characterNumber++ -- local[9]
+AIR 2,1;           173
+STR 2,1,9;         174
+LDR 2,1,6;         175 - paragraphCursor ++ -- local[6]
+AIR 2,1;           176
+STR 2,1,6;         177
+LDX 3,1,11;        178 - Load IX3 with loop_base
+JMA 3,29           179 - Jump to loop_start (78)
 # END LOOP - Word Search
 ######################################################################
 # END WORD SEARCH                                                    #
 ######################################################################
 # NO_MATCH
 # Assumes c(28) = 32, c(29) = 64, c(30)=96.
-LDX 1,0,28;        172
-LDX 2,0,29;        173
-LDX 3,0,30;        174
-LDA 0,2,14;        175 - N
-OUT 0,1;           176
-LDA 0,3,15;        177 - o
-OUT 0,1;           178
-LDA 0,1,0;         179 - [space]
-OUT 0,1;           180
-LDA 0,3,13;        181 - m
-OUT 0,1;           182
-LDA 0,3,1;         183 - a
+LDX 1,0,28;        180
+LDX 2,0,29;        181
+LDX 3,0,30;        182
+LDA 0,2,14;        183 - N
 OUT 0,1;           184
-LDA 0,3,20;        185 - t
+LDA 0,3,15;        185 - o
 OUT 0,1;           186
-LDA 0,3,3;         187 - c
+LDA 0,1,0;         187 - [space]
 OUT 0,1;           188
-LDA 0,3,8;         189 - h
+LDA 0,3,13;        189 - m
 OUT 0,1;           190
-LDA 0,1,1;         191 - !
+LDA 0,3,1;         191 - a
 OUT 0,1;           192
-LDA 0,0,10;        193 - \n
+LDA 0,3,20;        193 - t
 OUT 0,1;           194
-TRAP 0;            195
+LDA 0,3,3;         195 - c
+OUT 0,1;           196
+LDA 0,3,8;         197 - h
+OUT 0,1;           198
+LDA 0,1,1;         199 - !
+OUT 0,1;           200
+LDA 0,0,10;        201 - \n
+OUT 0,1;           202
+TRAP 0;            203
