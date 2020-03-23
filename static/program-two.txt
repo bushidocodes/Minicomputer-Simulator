@@ -15,9 +15,9 @@
 #   4 - Address of first loop (get word from user)
 #   5 - Address of first character in the user-entered word
 #   6 - paragraphCursor - Cursor for iterating through the paragraph
-#   7 - sentenceNumber - Track the sentences searched within the paragraph
-#   8 - wordNumber - Track the words searched within the current sentence
-#   9 - characterNumber - Track the characters searched within the current word
+#   7 - sentenceNumber - Track the sentences searched within the paragraph (1-indexed)
+#   8 - wordNumber - Track the words searched within the current sentence (1-indexed)
+#   9 - characterNumber - Track the characters searched within the current word (0 indexed)
 #  10 - isMatch Boolean, initialized to TRUE
 #  11 - Address of second loop (word search) for jumps
 #  12 - Address of second loop (word search) +  32 for jumps
@@ -113,7 +113,7 @@ LDA 0,0,1;          70 - Initialize isMatch (local[10]) to TRUE (1)
 STR 0,1,10;         71
 LDA 0,0,1;          72 - Initialize sentenceNumber, local[7], to one
 STR 0,1,7;          73
-LDA 0,0,0;          74 - Initialize wordNumber, local[8], to zero
+LDA 0,0,1;          74 - Initialize wordNumber, local[8], to one
 STR 0,1,8;          75
 LDA 0,0,0;          76 - Initialize characterNumber, local[9], to zero
 STR 0,1,9;          77
