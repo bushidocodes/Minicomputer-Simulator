@@ -69,6 +69,7 @@ public class Interface {
     private JPanel waitingForCardAlertPanel;
     private JPanel cardSlotPanel;
     private JLabel waitingForCardLabel;
+    private JButton loadProgram2Button;
     private final Simulator context;
     private File selectedFile;
     private File selectedCard;
@@ -479,6 +480,56 @@ public class Interface {
                 selectedCardLabel.setText("Select a file");
                 selectedCard = null;
                 ejectCardButton.setEnabled(false);
+                refresh();
+            }
+        });
+        loadProgram2Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Reset the simulation and call IPL to ensure a clean slate
+                resetButton.doClick();
+                iplButton.doClick();
+
+                // Assemble the program and load it into the computer at memory location 101.
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler.loadFile(basePath.concat("/static/program-two.txt"));
+                context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
+
+                // Load Deck-0
+                selectedCard = new File(basePath.concat("/static/deck-0.txt"));
+                selectedCardLabel.setText(selectedCard.getName());
+
+                // Read the input as an array of ASCII characters.
+                // Separate lines with ASCII 30 (record separator - RS)
+                // Mark end of file with ASCII 28 (file separator - FS)
+                try {
+                    Scanner scanner = new Scanner(selectedCard);
+                    String thisLine;
+                    // Read each character into the inputBuffer
+                    while (scanner.hasNextLine()){
+                        thisLine = scanner.nextLine();
+                        for (char ch: thisLine.toCharArray()){
+                            context.io.addWordToInputBuffer((short) 2, (short) ch);
+                        }
+                        context.io.addWordToInputBuffer((short) 2, (short) 10); // Add record separator RS
+                    }
+                    context.io.addWordToInputBuffer((short) 2, (short) 28); // Add file separator FS
+                    // turn off the indicator light
+                    setUIWaitingForCardInput(false);
+                    // If the computer was waiting, resume execution
+                    if(context.msr.isWaitingForCard()){
+                        // Change input waiting state
+                        context.msr.setWaitingForCard(false);
+                        context.cu.startExecutionLoop();
+                    }
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Enable the eject button
+                ejectCardButton.setEnabled(true);
+
+
                 refresh();
             }
         });
