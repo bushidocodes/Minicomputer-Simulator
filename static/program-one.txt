@@ -1,91 +1,192 @@
-LDR 1,0,16;    R1 (DATALOC) = Base Address of this program
-LDX 2,0,30;       load IX2 with the pointer to the start of the base address table
-LDX 3,2,1;        load IX3 with the pointer to the first data value in base address table
-LDX 2,3,3;        load IX2 with the third data value in the base address table (96)
-STX 2,0,17;       store value 96 into user reserved mem loc 17
-AMR 1,0,17;       add value 96 from mem loc 17 to register 1
-STR 1,0,19;       store the value of DATALOC (program start + 96) into reserved mem loc 19
-LDR 2,0,31;    R2 (counter) = 20
-AIR 2,20;
-STR 1,0,20;       store counter in mem loc 20
-LDA 1,0,16,1;  initialize POINTERS - load program start address into R1
-AIR 1,21;         ptr_LOOP_1_START add immediate 21 to R1 (this is the address of LOOP_1 start)
-STR 1,0,23;       store ptr_LOOP_1_START in reserved memory location 23
-AIR 1,12;         add immediate 12 to R1 (total 31) to calculate the instruction offset for instructions >31
-STR 1,0,24;       ptr_INSTRUCTION_OFFSET store value (program start + 31) into user reserved mem loc 24
-LDX 2,0,24;       load value (program start + 31) into IX2. this is the address of the 32nd instruction
-AIR 1,31;         INSTRUCTION_OFFSET_2 (program start +62)
-STR 1,0,25;       store INSTRUCTION_OFFSET_2 into user reserved mem loc 25
-SRC 1,8,1,0;   initialize CLOSEST_DISTANCE variable to max value (65535). Lsh R1 by 8 bits to get 1000 0100 0000 0000
-SRC 1,15,0,0;     Rsh R1 arithmetically 15 bits to get 1111 1111 1111 1111 (max value)
-STR 1,0,18;       store max value from R1 into user reserved memory loc 18
-STR 2,0,20;    LOOP_1: store counter in mem loc 20
-IN 1,0;           store the input from console keyboard in R1
-STR 1,0,19,1;     store the input value from register 1 into mem(DATALOC) indirect
-LDA 0,0,19,1;     Load this address into R0 to use as an arg to PRINTINT
-JSR 0,27,1;
-LDX 1,0,28;       line break character -- load the pointer to the start of the ASCII Table into IX1
-LDX 3,1,1;        loads ASCII 0 in IX3 to be used for printing line breaks later
-LDR 0,3,10;       load and print \n
-OUT 0,1;
-LDR 3,0,19;       load DATALOC variable into R3 from mem loc 19
-AIR 3,1;          increment DATALOC variable by 1
-STR 3,0,19;       store DATALOC variable from R3 back into mem loc 19
-LDR 2,0,20;       load counter from mem loc 20
-SOB 2,0,23,1;     END LOOP_1: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to beginning of loop_1
-LDR 0,3,31;    load and print N
-AIR 0,31;
-AIR 0,16;
-OUT 0,1;
-IN 0,0;        read one additional number USER_NUM from the user into R0
-STR 0,0,20;    store USER_NUM into user reserved memory location 20
-AIR 2,20;      add immediate 20 to register 2 to reset loop COUNTER variable.
-LDR 3,0,19;    load register 3 with DATALOC, which is at mem[19]
-SIR 3,20;      subtract immediate 20 from register 3 to set DATALOC back to the beginning of the array
-STR 3,0,19;    store DATALOC from R3 back into user reserved mem loc 19
-LDX 2,0,24;    load value (program start + 31) into IX2. this is the address of the 32nd instruction
-LDX 1,0,25;    load instruction offset 2 into IX1 (program start + 63) into IX1. address of the 63rd instruction
-LDR 0,0,20;    LOOP_2: load R0 with USER_NUM (which is in user reserved mem loc 20)
-SMR 0,0,19,1;     subtract the current number (mem[DATALOC]) from R0(USER_NUM)
-JCC 1,2,18;       if underflow is set (difference is less than 0), jump to GT (address 52).
-JMA 2,22;         if the diff that remains in R0 is >= 0 then jump to LT (address 56) -- this used to be JGE 0,2,17
-LDR 1,0,19,1;     GT: else the diff is < 0. mem[DATALOC]>USER_NUM so DISTANCE=mem[DATALOC]-USER_NUM. R1<-mem[DATALOC]
-SMR 1,0,20;          subtract USER_NUM from R1-- distance between numbers is in R1 now
-STR 1,0,21;          store the distance in user reserved mem loc 21
-JMA 2,29;            jump to CHECKDISTANCE (address 63)
-JZ 0,2,25;        LT: if the value in R0 is zero, jump to ZERO (address 59)
-STR 0,0,21;          else the diff is in R0 currently. store the current number distance in user reserved mem loc 21
-JMA 2,29;            jump to CHECKDISTANCE (address 63)
-STR 0,0,21;       ZERO: USER_NUM is exactly equal to NUM_DATALOC. Store the distance (0) in user reserved mem loc 21
-LDR 0,0,19,1;         User number is the same as current number. load the current number into R0
-STR 0,0,22;           store the current number in closestNumValue (mem 22)
-JMA 1,14;             Jump to the end (after loop2) (address 79)
-LDR 0,0,26;       CHECKDISTANCE: load firstLoopFlag into R0 from mem[26]
-JZ 0,1,3;            if this is the first loop, jump to NEWCLOSEST (address 68)
-LDR 0,0,18;           load the closest distance variable (mem loc 18) into R0
-SMR 0,0,21;           subtract the current number distance (memloc 21) from the closest distance number (R0)
-JCC 1,1,10;            if underflow is set the number is not closer, jump to LOOP2COUNTERS (address 75).
-LDR 0,0,26;       NEWCLOSEST: load firstLoopFlag
-AIR 0,1;              increment firstLoopFlag
-STR 0,0,26;           store firstLoopFlag
-LDR 0,0,21;           reload current number distance into R0 -- fixes an issue on the first iteration
-STR 0,0,18;           the current number distance is less than closest distance, so replace it in mem[18]]
-LDR 1,0,19,1;         load the current number (mem loc 19 indirect) in R1
-STR 1,0,22;           store the number from R1 (which has been found as the new closest number) into mem loc 22
-LDR 3,0,19;       LOOP2COUNTERS: load DATALOC (mem loc 19) variable into R3
-AIR 3,1;              increment DATALOC variable by 1
-STR 3,0,19;           store DATALOC variable from R3 back into memory loc 19
-SOB 2,2,14;     END LOOP_2: subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to address 48 (beginning of loop_2)
-LDA 0,0,20;    R0 = pointer to user number (mem loc 20). Used as arg to PRINTINT
-JSR 0,27,1;    PRINTINT
-LDX 1,0,28;    load ASCII table
-LDX 3,1,1;
-LDR 0,3,10;    load and print \n
-OUT 0,1;
-LDR 0,3,31;    load and print S
-AIR 0,31;
-AIR 0,21;
-OUT 0,1;
-LDA 0,0,22;    R0 = pointer to closest number (mem loc 22). Used as arg to PRINTINT
-JSR 0,27,1;    PRINTINT
-TRAP 0;
+######################################################################
+# Program 1                                                          #
+# A program that reads 20 numbers (integers) from the keyboard,      #
+# prints the numbers to the console printer, requests a number from  #
+# the user, and searches the 20 numbers read in for the number       #
+# closest to the number entered by the user. Print the number        #
+# entered by the user and the number closest to that number. Your    #
+# numbers should not be 1…10, but distributed over the range of      #
+# 0 … 65,535. Therefore, as you read a character in, you need to     #
+# check it is a digit, convert it to a number, and assemble the      #
+# integer.                                                           #
+######################################################################
+# Stack data
+#  Note: Base User Program, so Address of Program is in address 16
+#   0 - Base Address of Program
+#   1 - base+32 - for addressing instructions 31-63
+#   2 - base+64 - for addressing instructions 63-95
+#   3 - base+96 - for addressing instructions 96-127
+#   4 - base+128 - for addressing instructions 128-159
+#   5 - dataLoc - Cursor that points to the current number in the user inputted list of 20 numbers (0..65535) in memory (ARR)
+#   6 - loop_counter - Counter for iterating through the loop, initialized to 20.
+#   7 - loop_1_start - Start address of loop 1
+#   8 - loop_2_start - Start address of loop 2
+#   9 - closestDistance - Holds the shortest found distance so far. Initialized to 65535.
+#  10 - userNum - The user inputted number that will be compared to the list.
+#  11 - currentNumDistance - Holds the distance from the user inputted number to the list number being currently checked
+#  12 - closestNumValue - The closest number found so far in the search
+#  13 - firstLoopFlag - initialized to 0
+# Initialization
+LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
+LDX 2,0,18;          1 - Load IX2 with the base address of the dataset
+LDR 0,1,0;           2 - Load R0 with the base address of the program
+AIR 0,31;            3 - Store base+32 to local[1]
+AIR 0,1;             4
+STR 0,1,1;           5
+AIR 0,31;            6 - Store base+64 to local[2]
+AIR 0,1;             7
+STR 0,1,2;           8
+AIR 0,31;            9 - Store base+96 to local[3]
+AIR 0,1;            10
+STR 0,1,3;          11
+AIR 0,31;           12 - Store base+128 to local[4]
+AIR 0,1;            13
+STR 0,1,4;          14
+LDA 0,2,1,1;        15 - Store first usable word of the dataset (dataLoc) to local[5]
+STR 0,1,5;          16
+LDA 2,0,20;         17 - Initialize loop_counter to 20 at local[6]
+STR 2,1,6;          18
+LDR 0,0,16,1;       19 - Store loop_1_start (31) to local[7]
+AIR 0,30;           20
+AIR 0,1;            21
+STR 0,1,7;          22
+LDR 0,1,2;          23 - Store loop_2_start (66) to local[8]
+AIR 0,1;            24
+AIR 0,1;            25
+STR 0,1,8;          26
+# initialize CLOSEST_DISTANCE variable to max value (65535) and store at local[9]
+LDA 0,0,1;          27
+SRC 1,15,1,0;       28 - Lsh R1 by 15 bits to get 1000 0100 0000 0000
+SRC 1,15,0,0;       29 - Rsh R1 arithmetically 15 bits to get 1111 1111 1111 1111 (max value)
+STR 1,1,9;          30 - Store at local[9]
+#########################################
+# LOOP 1 - Get 20 numbers from the user #
+#########################################
+STR 2,1,6;          31 - Store loop_counter at local[6]
+# Read a number from the User. Return code goes to R0. Resulting number goes to R1.
+JSR 0,26,1;         32 - read-int subroutine
+LDX 1,0,16;         33 - Reload the base address of the stack frame
+# Check R0 for return code. If not 0, then error
+LDX 2,1,1;          34 - LDX for jump
+JZ 0,2,5;           35 - skip the next instruction. jump to (37)
+TRAP 1;             36 - read-int failed
+# Otherwise success, so write R1 to dataLoc cursor location (local[5] indirect)
+STR 1,1,5,1;        37 - write R1 to dataLoc cursor indirect
+LDA 0,1,5,1;        38 - Load this address into R0 to use as an arg to print-int subroutine
+JSR 0,27,1;         39 - print-int subroutine
+LDX 1,0,16;         40 - Reload the base address of the stack frame
+LDA 0,0,10;         41 - print \n
+OUT 0,1;            42
+LDR 0,1,5;          43 - increment dataLoc (local[5])
+AIR 0,1;            44
+STR 0,1,5;          45
+LDR 2,1,6;          46 - Load loop_counter (local[6])
+SOB 2,1,7,1;        47 - Subtract 1 from loop_counter and branch to LOOP 1 (local[7] indirect)
+#########################################
+# END LOOP 1                            #
+#########################################
+# Get one additional number             #
+#########################################
+# Prompt the user.
+LDX 2,0,29;         48 - N
+LDA 0,2,14;         49
+OUT 0,1;            50
+LDX 2,0,28;         51 - ?
+LDA 0,2,31;         52
+OUT 0,1;            53
+LDA 0,2,0;          54 - [space]
+OUT 0,1;            55
+# Read a number from the User. Return code goes to R0. Resulting number goes to R1.
+JSR 0,26,1;         56 - read-int subroutine
+LDX 1,0,16;         57 - Reload the base address of the stack frame
+# Check R0 for return code. If not 0, then error
+LDX 2,1,1;          58 - LDX for jump
+JZ 0,2,29;          59 - skip the next instruction. jump to (61)
+TRAP 1;             60 - read-int failed
+# Otherwise success, so write userNum to local[10]
+STR 1,1,10;         61 - write R1 to local[10]
+#########################################
+# Preparation for loop 2                #
+#########################################
+LDA 2,0,20;         62 - Load R2 with 20 to reset loop COUNTER variable.
+LDR 3,1,5;          63 - reset dataLoc cursor (local[5]) back to the beginning of the array by subtracting 20
+SIR 3,20;           64
+STR 3,1,5;          65
+#########################################
+# LOOP 2 - Search the list              #
+#########################################
+LDR 0,1,10;         66 - Load R0 with userNum (local[10])
+SMR 0,1,5,1;        67 - subtract the current number at the cursor (local[5] indirect) from userNum (R0)
+LDX 3,1,2;          68
+JCC 1,3,8;          69 - if underflow is set (difference is less than 0), jump to GREATER_THAN (72).
+LDX 3,1,2;          70
+JMA 3,13;           71 - otherwise (diff >= 0) jump to LESS_THAN (77)
+# GREATER_THAN
+# Difference between the two numbers is less than zero.
+LDR 1,1,5,1;        72 - Load R1 with the number from the list (local[5] indirect)
+SMR 1,1,10;         73 - subtract userNum (local[10]) from R1-- distance between numbers is in R1 now
+STR 1,1,11;         74 - store the distance (R1) to currentNumDistance (local[11])
+LDX 3,1,2;          75
+JMA 3,23;           76 - jump to CHECK_DISTANCE (87)
+# LESS_THAN
+# Difference between the two numbers is greater than or equal to zero.
+LDX 3,1,2;          77
+JZ 0,3,18;          78 - If the value in R0 is zero, jump to ZERO (82)
+# Otherwise, the difference is in R0 currently.
+STR 0,1,11;         79 - Store the currentNumDistance to local[11]
+LDX 3,1,2;          80
+JMA 3,23;           81 - jump to CHECK_DISTANCE (87)
+# ZERO
+# Difference between the two numbers is exactly zero-- they are the same number.
+STR 0,0,21;         82 - Store the distance (R0) to currentNumDistance (local[11])
+LDR 0,1,5,1;        83 - User number is the same as current number. Load the number into R0 from local[5] indirect
+STR 0,1,12;         84 - store the current number in closestNumValue (local[12])
+LDX 3,1,3;          85
+JMA 3,10;           86 - Number has been found. Jump to END LOOP 2 (106)
+# CHECK_DISTANCE
+# Check to see if the current number is closer than the closest known number.
+LDR 0,1,13;         87 - load firstLoopFlag into R0 from local[13]
+LDX 3,1,2;          88
+JZ 0,3,30;          89 - if this is the first loop, jump to NEW_CLOSEST (94)
+LDR 0,1,9;          90 - load closestDistance (local[9]) into R0
+SMR 0,1,11;         91 - subtract the currentNumDistance (local[11]) from the closestDistance (R0)
+LDX 3,1,3;          92
+JCC 1,3,5;          93 - if underflow is set the number is not closer, jump to LOOP MAINTENANCE (101).
+# NEW_CLOSEST
+# Set the current number as the new closest number.
+LDR 0,1,13;         94 - firstLoopFlag++  (local[13])
+AIR 0,1;            95
+STR 0,1,13;         96
+LDR 0,1,11;         97 - reload currentNumDistance (local[11]) into R0 -- fixes an issue on the first iteration
+STR 0,1,9;          98 - the currentNumDistance is closer than closestDistance, so replace it in local[9]
+LDR 1,1,5,1;        99 - load the current number at dataLoc (local[5] indirect) in R1
+STR 1,1,12;        100 - store current number into closestNumValue local[12]
+# LOOP MAINTENANCE
+# Increment counters.
+LDR 3,1,5;         101 - dataLoc++  (local[5])
+AIR 3,1;           102
+STR 3,1,5;         103
+LDX 3,1,8;         104
+SOB 2,3,0;         105 - subtract 1 from R2 (COUNTER). if c(R2) > 0, set PC to loop 2 start (local[8])
+#####################################################
+# END LOOP 2                                        #
+#####################################################
+LDA 0,1,10;        106 - R0 = pointer to userNum (local[10]). Used as arg to PRINTINT
+JSR 0,27,1;        107 - print-int subroutine
+LDX 1,0,16;        108 - Reload the base address of the stack frame
+LDA 0,0,10;        109 - \n
+OUT 0,1;           110
+LDX 2,0,29;        111 - S
+LDA 0,2,19;        112
+OUT 0,1;           113
+LDX 2,0,28;        114
+LDA 0,2,26;        115 - :
+OUT 0,1;           116
+LDA 0,2,0;         117 - [space]
+OUT 0,1;           118
+LDA 0,1,12;        119 - R0 = closestNumValue (local[12]). Used as arg to PRINTINT
+JSR 0,27,1;        120 - print-int subroutine
+LDX 1,0,16;        121 - Reload the base address of the stack frame
+LDA 0,0,10;        122 - \n
+OUT 0,1;           123
+TRAP 0;            124 - end of program
