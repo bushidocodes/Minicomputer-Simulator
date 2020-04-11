@@ -9,6 +9,8 @@ package com.simulator.awesome;
     6. Set the result to y.
 */
 
+import static java.lang.Math.round;
+
 public class FloatingPointUnit {
 
     // a and be are input registers for the FPU
@@ -165,8 +167,15 @@ public class FloatingPointUnit {
         this.y.mantissa = resultMantissa;
     }
 
-    public void convert(){
-        // TODO
+    public short convertFloatingPointToFixedPoint(){
+        int signedExponent = this.a.exponentValue;
+        if (this.a.exponentSign == 1){
+            signedExponent = -this.a.exponentValue;
+        }
+        return (short) round((this.a.mantissa * (2^signedExponent)));
     }
 
+    public void convertFixedPointToFloatingPoint(){
+        // todo
+    }
 }
