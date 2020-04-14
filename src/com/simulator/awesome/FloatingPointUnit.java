@@ -27,6 +27,14 @@ public class FloatingPointUnit {
     short resultExponentValue;
     short resultMantissa;
 
+    // fixed is used for the fixed<->floating conversion
+    private short fixed;
+
+    // Type of conversion
+    // 0 - Floating -> Fixed
+    // 1 - Fixed -> Floating
+    private int conversionType;
+
     private final Simulator context;
 
     FloatingPointUnit(Simulator context) {
@@ -44,8 +52,24 @@ public class FloatingPointUnit {
         this.b = new FloatingPointNumber(b);
     }
 
+    public void setFixed(short fixed) { this.fixed = fixed; }
+
+    public short getFixed() { return this.fixed; };
+
     public short getYAsShort() {
         return this.y.toShort();
+    }
+
+    public void setConversionType(int value){
+        // 0 = Floating -> Fixed
+        // 1 = Fixed -> Floating
+        if (value == 0 || value == 1) {
+            conversionType = value;
+        }
+    }
+
+    public int getConversionType(){
+        return conversionType;
     }
 
     public void add(){
@@ -167,15 +191,101 @@ public class FloatingPointUnit {
         this.y.mantissa = resultMantissa;
     }
 
-    public short convertFloatingPointToFixedPoint(){
-        int signedExponent = this.a.exponentValue;
-        if (this.a.exponentSign == 1){
-            signedExponent = -this.a.exponentValue;
+    public void convert(){
+        if (conversionType == 0){
+            convertFloatingPointToFixedPoint();
+        } else if (conversionType == 1){
+            convertFixedPointToFloatingPoint();
         }
-        return (short) round((this.a.mantissa * (2^signedExponent)));
+    }
+
+    public void convertFloatingPointToFixedPoint(){
+        /**
+         * Given a floating point number
+         *     0 | 0000000 | 00000000
+         *     S | expnt   | mantissa
+         *
+         * Convert it to a fixed point number in the following format
+         *     00000000 . 00000000
+         *     integer    fraction
+         *
+         * Basic concept:
+         *     1. Shift the decimal point in the mantissa n bits to the right (-) or left (+), where n is the value of the exponent
+         *     2. Restore the assumed 1 that is to the left of the decimal point. TODO: how do we do this for left shift?
+         *     3. Preserve the sign bit.
+         **/
+
+        // Store the input value into Y so it can be put into FR0
+        this.y = this.a;
+
+        // e.g. assume a number 0 0000100 10001111
+         if (this.a.exponentSign == 1){
+             // Negative exponent, shift right the mantissa by the exponent value.
+             this.fixed = (short) Utils.short_unsigned_right_shift(this.a.mantissa, this.a.exponentValue);
+         } else {
+             // Positive exponent, shift left the mantissa by the exponent value.
+             // using the given number, mantissa is now 100011110000
+             this.fixed = (short) (this.a.mantissa <<= this.a.exponentValue);
+        }
+
+         // Restore the assumed 1, which should be immediately to the left of the most significant bit
+         int leftMostBitDistance = getLeftMostSetBitDistance(this.a.mantissa);
+         this.fixed = (byte) (this.fixed | (1 << (leftMostBitDistance + 1)));
+
+        // Preserve the sign bit
+        this.fixed = (byte) (this.fixed | (1 << 15));
     }
 
     public void convertFixedPointToFloatingPoint(){
-        // todo
+        /**
+         * Given a fixed point number in the following format
+         *     00000000 . 00000000
+         *     integer    fraction
+         *
+         * Convert it to a floating point number
+         *     0 | 0000000 | 00000000
+         *     S | expnt   | mantissa
+         *
+         * Basic concept:
+         *     1. Find the most significant bit (left-most 1)
+         *     2. Determine how far that bit is from the mid point. This distance is the exponent value.
+         *     3. The mantissa becomes the maximum number of bits you can fit, starting from the most significant bit moving right (step 1)
+         **/
+        // TODO: Do we need to accommodate negative exponents here?
+
+        // Get the number of places that the decimal point needs to be shifted.
+        // It should be shifted so that the it is right after the most significant bit.
+        // e.g. given a number 00011000.11110000
+        // Shift it so we have 0001.100011110000 (this is a shift of 4)
+        short decimalDistanceFromCenter = (short) getLeftMostSetBitDistance(this.fixed);
+
+        // The shifted distance is the value of value of the exponent
+        this.y.exponentValue = decimalDistanceFromCenter;
+        this.y.exponentSign = 0; // could the exponent sign ever be negative here?
+
+        // The sign of the number is the left-most bit.
+        this.y.sign = Utils.short_unsigned_right_shift(this.fixed, 15);
+
+        // Chop off the top insignificant bits (Lsh). This value is the mantissa.
+        // The left-most 1 (the one to the left of the decimal point) is shifted off and assumed.
+        // e.g. Given the result above      0001.100011110000
+        //      Chop off bits until we get  .1000111100000000
+        short temp = (short) (this.fixed << (8-decimalDistanceFromCenter));
+        // Chop off the right bits of the mantissa until it fits within 8 bits.
+        // e.g. Given the result above      .1000111100000000
+        //      Chop off bits until we get  00000000.10001111
+        this.y.mantissa = (short) (Utils.short_unsigned_right_shift(temp, 8));
+    }
+
+    private int getLeftMostSetBitDistance(int fixed)
+    {
+        int bitDistance = 0;
+
+        while (fixed > 1){
+            fixed /= 2;
+            bitDistance++;
+        }
+
+        return (bitDistance);
     }
 }

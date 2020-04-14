@@ -199,8 +199,63 @@ class VectorSubtract extends FloatingPointVectorInstruction {
 class ConvertToFixedOrFloatingPoint extends FloatingPointVectorInstruction {
     public ConvertToFixedOrFloatingPoint(short word, Simulator context) {
         super(word, context);
+        // There is a reference to a general register in the normal floating register field. This is not a bug!
+        this.validateGeneralRegisterIndex(this.floatingRegisterId);
+        this.validateIndexRegisterIndex(this.indexRegisterId);
     }
 
+    public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // IAR <- EA
+        computeEffectiveAddress();
+        if (this.isIndirect) this.evaluatePointerToAddress();
+
+        if (this.floatingRegisterId == 0){
+            // Convert Floating -> Fixed
+            this.context.fpu.setConversionType(0);
+
+            // MAR <- IAR
+            // MBR <- c(MAR)
+            // A <- MBR
+            this.context.fpu.setA(this.context.memory.fetch(this.context.getInternalAddressRegister()));
+        } else if (this.floatingRegisterId == 1){
+            // Convert Fixed -> Floating
+            this.context.fpu.setConversionType(1);
+
+            // MAR <- IAR
+            // MBR <- c(MAR)
+            // fixed <- MBR
+            this.context.fpu.setFixed(this.context.memory.fetch(this.context.getInternalAddressRegister()));
+        }
+    }
+
+    public void execute(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        // Convert fixed to floating point or vice versa
+        this.context.fpu.convert();
+    }
+
+    public void storeResult(){
+        // Fault Handling and Validation
+        if (this.didFault) return;
+
+        if(this.context.fpu.getConversionType() == 0){
+            // 0 = Floating -> Fixed
+            // Store the value in the r
+            this.context.setGeneralRegister(this.floatingRegisterId, this.context.fpu.getYAsShort());
+        } else if (this.context.fpu.getConversionType() == 1){
+            // 1 = Fixed -> Floating
+            // Store the value in FR0
+            this.context.setFloatingRegister(this.floatingRegisterId, this.context.fpu.getFixed());
+            // r contains the value of F before the instruction is executed
+            this.context.setGeneralRegister(this.floatingRegisterId, this.context.fpu.getYAsShort());
+
+        }
+    }
 }
 
 /**
