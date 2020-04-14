@@ -744,21 +744,23 @@ class SubtractImmediateFromRegister extends RegisterMemoryInstruction {
  Then, V1[i] = V1[i]+ V2[i], i = 1, c(fr).
  */
 class VectorAdd extends RegisterMemoryInstruction {
-    final public short vectorLength;
+    private short vectorLength;
     private short a[];
     private short b[];
     private short y[];
 
     public VectorAdd(short word, Simulator context) {
         super(word, context);
-        this.vectorLength = this.registerId;
-        this.a = new short[4];
-        this.b = new short[4];
-        this.y = new short[4];
+
     }
     public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
+
+        this.vectorLength = this.context.getGeneralRegister(this.registerId);
+        this.a = new short[this.vectorLength];
+        this.b = new short[this.vectorLength];
+        this.y = new short[this.vectorLength];
 
         // IAR <- EA
         computeEffectiveAddress();
@@ -810,21 +812,23 @@ class VectorAdd extends RegisterMemoryInstruction {
  Then, V1[i] = V1[i] - V2[i], i = 1, c(fr).
  */
 class VectorSubtract extends RegisterMemoryInstruction {
-    final public short vectorLength;
+    private short vectorLength;
     private short a[];
     private short b[];
     private short y[];
 
     public VectorSubtract(short word, Simulator context) {
         super(word, context);
-        this.vectorLength = this.registerId;
-        this.a = new short[4];
-        this.b = new short[4];
-        this.y = new short[4];
     }
+
     public void fetchOperand() throws IllegalMemoryAccessToReservedLocationsException, IllegalMemoryAddressBeyondLimitException {
         // Fault Handling and Validation
         if (this.didFault) return;
+
+        this.vectorLength = this.context.getGeneralRegister(this.registerId);
+        this.a = new short[this.vectorLength];
+        this.b = new short[this.vectorLength];
+        this.y = new short[this.vectorLength];
 
         // IAR <- EA
         computeEffectiveAddress();
