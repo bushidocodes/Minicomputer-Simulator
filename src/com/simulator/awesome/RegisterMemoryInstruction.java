@@ -1,7 +1,5 @@
 package com.simulator.awesome;
 
-import java.util.ArrayList;
-
 public class RegisterMemoryInstruction extends Instruction {
     final public short registerId;
     final public short indexRegisterId;   // Acts as base address
