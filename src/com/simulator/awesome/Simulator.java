@@ -92,7 +92,7 @@ public class Simulator {
         this.x2 = 0;
         this.x3 = 0;
         this.fr0 = 0;
-        this.fr1 = 1;
+        this.fr1 = 0;
     }
 
     public short getInternalAddressRegister() {
