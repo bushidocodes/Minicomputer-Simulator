@@ -13,7 +13,7 @@ public class FloatingPointNumber{
         short mantissaMask      = (short) 0b0000000011111111;
 
         short mantissaOffset      = 0;
-        short exponentValueOffset = 9;
+        short exponentValueOffset = 8;
         short exponentSignOffset  = 14;
         short signOffset          = 15;
 
@@ -24,9 +24,11 @@ public class FloatingPointNumber{
     }
 
     public short toShort(){
-        return (short) (this.sign
-                        & this.exponentSign
-                        & this.exponentValue
-                        & this.mantissa);
+        String sign = String.valueOf(this.sign);
+        String exponentSign = String.valueOf(this.exponentSign);
+        String exponentValue = "0000000".substring(Integer.toBinaryString(this.exponentValue).length()) + Integer.toBinaryString(this.exponentValue); // pad to 7 bits
+        String mantissa = Integer.toBinaryString(this.mantissa);
+        short composedShort = (short) Integer.parseUnsignedInt(sign + exponentSign + exponentValue + mantissa, 2);
+        return composedShort;
     }
 }

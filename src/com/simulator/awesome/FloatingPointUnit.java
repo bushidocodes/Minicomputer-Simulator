@@ -9,6 +9,7 @@ package com.simulator.awesome;
     6. Set the result to y.
 */
 
+import static com.simulator.awesome.Utils.setNthLeastSignificantBit;
 import static java.lang.Math.round;
 
 public class FloatingPointUnit {
@@ -28,7 +29,7 @@ public class FloatingPointUnit {
     short resultMantissa;
 
     // fixed is used for the fixed<->floating conversion
-    private short fixed;
+    private int fixed;
 
     // Type of conversion
     // 0 - Floating -> Fixed
@@ -54,7 +55,7 @@ public class FloatingPointUnit {
 
     public void setFixed(short fixed) { this.fixed = fixed; }
 
-    public short getFixed() { return this.fixed; };
+    public short getFixed() { return (short) this.fixed; };
 
     public short getYAsShort() {
         return this.y.toShort();
@@ -221,19 +222,23 @@ public class FloatingPointUnit {
         // e.g. assume a number 0 0000100 10001111
          if (this.a.exponentSign == 1){
              // Negative exponent, shift right the mantissa by the exponent value.
-             this.fixed = (short) Utils.short_unsigned_right_shift(this.a.mantissa, this.a.exponentValue);
+             this.fixed = Utils.short_unsigned_right_shift(this.a.mantissa, this.a.exponentValue);
          } else {
              // Positive exponent, shift left the mantissa by the exponent value.
              // using the given number, mantissa is now 100011110000
-             this.fixed = (short) (this.a.mantissa <<= this.a.exponentValue);
+             this.fixed = (this.a.mantissa <<= this.a.exponentValue);
         }
 
          // Restore the assumed 1, which should be immediately to the left of the most significant bit
          int leftMostBitDistance = getLeftMostSetBitDistance(this.a.mantissa);
-         this.fixed = (byte) (this.fixed | (1 << (leftMostBitDistance + 1)));
+         this.fixed = (this.fixed | (1 << (leftMostBitDistance + 1)));
 
         // Preserve the sign bit
-        this.fixed = (byte) (this.fixed | (1 << 15));
+        if(this.a.sign == 1){
+            this.fixed = setNthLeastSignificantBit((short)this.fixed, 15,true);
+        } else {
+            this.fixed = setNthLeastSignificantBit((short)this.fixed, 15,false);
+        }
     }
 
     public void convertFixedPointToFloatingPoint(){
@@ -257,14 +262,14 @@ public class FloatingPointUnit {
         // It should be shifted so that the it is right after the most significant bit.
         // e.g. given a number 00011000.11110000
         // Shift it so we have 0001.100011110000 (this is a shift of 4)
-        short decimalDistanceFromCenter = (short) getLeftMostSetBitDistance(this.fixed);
+        short decimalDistanceFromCenter = (short) (getLeftMostSetBitDistance(this.fixed)-8);
 
         // The shifted distance is the value of value of the exponent
         this.y.exponentValue = decimalDistanceFromCenter;
         this.y.exponentSign = 0; // could the exponent sign ever be negative here?
 
         // The sign of the number is the left-most bit.
-        this.y.sign = Utils.short_unsigned_right_shift(this.fixed, 15);
+        this.y.sign = Utils.short_unsigned_right_shift((short) this.fixed, 15);
 
         // Chop off the top insignificant bits (Lsh). This value is the mantissa.
         // The left-most 1 (the one to the left of the decimal point) is shifted off and assumed.

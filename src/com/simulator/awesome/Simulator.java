@@ -48,6 +48,7 @@ public class Simulator {
         this.cu = new ControlUnit(this);
         this.memory = new Memory(this, wordCount);
         this.alu = new ArithmeticLogicUnit(this);
+        this.fpu = new FloatingPointUnit(this);
         this.io = new InputOutput(this);
         this.pc = new ProgramCounter();
         this.cc = new ConditionCode();

@@ -249,10 +249,10 @@ class ConvertToFixedOrFloatingPoint extends FloatingPointVectorInstruction {
             this.context.setGeneralRegister(this.floatingRegisterId, this.context.fpu.getYAsShort());
         } else if (this.context.fpu.getConversionType() == 1){
             // 1 = Fixed -> Floating
-            // Store the value in FR0
-            this.context.setFloatingRegister(this.floatingRegisterId, this.context.fpu.getFixed());
-            // r contains the value of F before the instruction is executed
-            this.context.setGeneralRegister(this.floatingRegisterId, this.context.fpu.getYAsShort());
+            // Store the value in FR1
+            this.context.setFloatingRegister(this.floatingRegisterId, this.context.fpu.getYAsShort());
+            // R1 contains the value of F before the instruction is executed
+            this.context.setGeneralRegister(this.floatingRegisterId, this.context.fpu.getFixed());
 
         }
     }
