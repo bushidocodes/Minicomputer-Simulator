@@ -75,11 +75,9 @@ public class FloatingPointUnit {
 
     public void add(){
         rewriteExponents();
-        convertMantissaToTwosComplement();
+
         // Add the mantissas
         resultMantissa = (short) (this.a.mantissa + this.b.mantissa);
-
-        convertMantissaToSignedMagnitude();
 
         // Try to handle mantissa overflow by shifting and adjusting the exponent
         if (resultMantissa > Config.FP_MANTISSA_MAX_VALUE) {
@@ -94,12 +92,21 @@ public class FloatingPointUnit {
 
     public void subtract(){
         rewriteExponents();
-        convertMantissaToTwosComplement();
+        convertMantissaToTwosComplement(b);
 
         // Subtract the mantissas
-        resultMantissa = (short) (this.a.mantissa - this.b.mantissa);
+        resultMantissa = (short) (this.a.mantissa + this.b.mantissa);
 
-        convertMantissaToSignedMagnitude();
+        convertMantissaToSignedMagnitude(b);
+
+        // Determine the sign of the result
+        // If the leftmost bit of each mantissa was 1, then overflow occurred during addition, meaning that the answer is positive
+        // If no overflow occurred, the answer is negative
+        if(getLeftMostSetBitDistance(this.a.mantissa) == 8 && getLeftMostSetBitDistance(this.b.mantissa) == 8){
+            resultSign = 0;
+        } else {
+            resultSign = 1;
+        }
 
         // Try to handle mantissa overflow by shifting and adjusting the exponent
         if (resultMantissa > Config.FP_MANTISSA_MAX_VALUE) {
@@ -147,34 +154,16 @@ public class FloatingPointUnit {
         }
     }
 
-    private void convertMantissaToTwosComplement(){
-        // If either of the operands are negative, convert its mantissa to 2's complement
-        if (this.a.sign == 1){
+    private void convertMantissaToTwosComplement(FloatingPointNumber n){
             // Invert the mantissa
-            this.a.mantissa = (short) ~this.a.mantissa;
+            n.mantissa = (short) ~n.mantissa;
             // Add 1
-            this.a.mantissa++;
-        }
-        if (this.b.sign == 1){
-            // Invert the mantissa
-            this.b.mantissa = (short) ~this.b.mantissa;
-            // Add 1
-            this.b.mantissa++;
-        }
+            n.mantissa++;
     }
 
-    private void convertMantissaToSignedMagnitude(){
-        // If the result is negative, convert the mantissa back to signed magnitude
-        if (resultMantissa < 0) { // not sure if this negative check will work here
-            resultMantissa = (short) ~resultMantissa;
-            resultMantissa++;
-            // Set the sign of the result
-            resultSign = 1;
-        } else {
-            // Set the sign of the result
-            resultSign = 0;
-        }
-
+    private void convertMantissaToSignedMagnitude(FloatingPointNumber n){
+        resultMantissa = (short) ~n.mantissa;
+        resultMantissa++;
         // Both exponents are the same, so just take one
         resultExponentValue = this.a.exponentValue;
     }
@@ -226,7 +215,7 @@ public class FloatingPointUnit {
          } else {
              // Positive exponent, shift left the mantissa by the exponent value.
              // using the given number, mantissa is now 100011110000
-             this.fixed = (this.a.mantissa <<= this.a.exponentValue);
+             this.fixed = (this.a.mantissa << this.a.exponentValue);
         }
 
          // Restore the assumed 1, which should be immediately to the left of the most significant bit
