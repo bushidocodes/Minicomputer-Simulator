@@ -91,6 +91,8 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+        this.fr0 = 0;
+        this.fr1 = 1;
     }
 
     public short getInternalAddressRegister() {

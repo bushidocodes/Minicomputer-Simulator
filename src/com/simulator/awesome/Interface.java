@@ -70,6 +70,11 @@ public class Interface {
     private JPanel cardSlotPanel;
     private JLabel waitingForCardLabel;
     private JButton loadProgram2Button;
+    private JTextField FR0TextField;
+    private JTextField FR1TextField;
+    private JLabel FR0Label;
+    private JLabel FR1Label;
+    private JButton loadFloatingPointDemoButton;
     private final Simulator context;
     private File selectedFile;
     private File selectedCard;
@@ -94,6 +99,10 @@ public class Interface {
         this.X1TextField.setText(wordToString(this.context.getIndexRegister((short)1)));
         this.X2TextField.setText(wordToString(this.context.getIndexRegister((short)2)));
         this.X3TextField.setText(wordToString(this.context.getIndexRegister((short)3)));
+
+        // Refresh Floating Point Registers FR0..FR1
+        this.FR0TextField.setText(wordToString(this.context.getFloatingRegister((short)0)));
+        this.FR1TextField.setText(wordToString(this.context.getFloatingRegister((short)1)));
 
         // Refresh other registers and fields: PC, MAR, MBR, MFR (not implemented), IR, CC (not implemented)
         this.PCTextField.setText(this.context.pc.toString());
@@ -264,6 +273,12 @@ public class Interface {
                         case "IR":
                             context.cu.setInstructionRegister(stringToWord(input));
                             break;
+                        case "FR0":
+                            context.setFloatingRegister((short) 0, stringToWord(input));
+                            break;
+                        case "FR1":
+                            context.setFloatingRegister((short) 1, stringToWord(input));
+                            break;
                     }
                 } else {
                     // Error: Input value was not a 16-bit binary number
@@ -406,7 +421,7 @@ public class Interface {
                 resetButton.doClick();
                 iplButton.doClick();
 
-                // Assemble the program and load it into the computer at memory location 101.
+                // Assemble the program and load it into the computer at memory location 160.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler.loadFile(basePath.concat("/static/program-one.txt"));
                 context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
@@ -490,7 +505,7 @@ public class Interface {
                 resetButton.doClick();
                 iplButton.doClick();
 
-                // Assemble the program and load it into the computer at memory location 101.
+                // Assemble the program and load it into the computer at memory location 160.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler.loadFile(basePath.concat("/static/program-two.txt"));
                 context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
@@ -530,6 +545,20 @@ public class Interface {
                 ejectCardButton.setEnabled(true);
 
 
+                refresh();
+            }
+        });
+        loadFloatingPointDemoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Reset the simulation and call IPL to ensure a clean slate
+                resetButton.doClick();
+                iplButton.doClick();
+
+                // Assemble the program and load it into the computer at memory location 160.
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler.loadFile(basePath.concat("/static/fpu-test.txt"));
+                context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
                 refresh();
             }
         });
