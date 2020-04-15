@@ -212,7 +212,7 @@ public class FloatingPointUnit {
          *
          * Basic concept:
          *     1. Shift the decimal point in the mantissa n bits to the right (-) or left (+), where n is the value of the exponent
-         *     2. Restore the assumed 1 that is to the left of the decimal point. TODO: how do we do this for left shift?
+         *     2. Restore the assumed 1 that is to the left of the decimal point.
          *     3. Preserve the sign bit.
          **/
 
@@ -256,17 +256,30 @@ public class FloatingPointUnit {
          *     2. Determine how far that bit is from the mid point. This distance is the exponent value.
          *     3. The mantissa becomes the maximum number of bits you can fit, starting from the most significant bit moving right (step 1)
          **/
-        // TODO: Do we need to accommodate negative exponents here?
 
-        // Get the number of places that the decimal point needs to be shifted.
-        // It should be shifted so that the it is right after the most significant bit.
-        // e.g. given a number 00011000.11110000
-        // Shift it so we have 0001.100011110000 (this is a shift of 4)
-        short decimalDistanceFromCenter = (short) (getLeftMostSetBitDistance(this.fixed)-8);
-
-        // The shifted distance is the value of value of the exponent
-        this.y.exponentValue = decimalDistanceFromCenter;
-        this.y.exponentSign = 0; // could the exponent sign ever be negative here?
+        /**
+         *  Get the number of places that the decimal point needs to be shifted from the center.
+         *  It should be shifted so that the it is right after the most significant bit.
+         *  The shifted distance is the value of value of the exponent
+         *  Shifting left gives a positive exponent. Shifting right gives a negative exponent.
+         *    e.g. given a number 00011000.11110000
+         *         Shift it so we have 0001.100011110000
+         *         The decimal was moved 4 places to the left, so the exponent is positive 4
+         **/
+        short decimalDistanceFromCenter;
+        // if the integer bits are 0, then we need to move the decimal point to the right
+        // in other words, if the short is between 00000000.00000000 and 00000000.11111111
+        // 00000000.01100000
+        if (this.fixed >= 0 && this.fixed < 256){
+            decimalDistanceFromCenter = (short) (9-getLeftMostSetBitDistance(this.fixed));
+            this.y.exponentValue = decimalDistanceFromCenter;
+            this.y.exponentSign = 1;
+        } else {
+            // otherwise, shift the decimal to the left
+            decimalDistanceFromCenter = (short) (getLeftMostSetBitDistance(this.fixed)-8);
+            this.y.exponentValue = decimalDistanceFromCenter;
+            this.y.exponentSign = 0;
+        }
 
         // The sign of the number is the left-most bit.
         this.y.sign = Utils.short_unsigned_right_shift((short) this.fixed, 15);
@@ -275,7 +288,12 @@ public class FloatingPointUnit {
         // The left-most 1 (the one to the left of the decimal point) is shifted off and assumed.
         // e.g. Given the result above      0001.100011110000
         //      Chop off bits until we get  .1000111100000000
-        short temp = (short) (this.fixed << (8-decimalDistanceFromCenter));
+        short temp;
+        if(this.y.exponentSign == 1){
+            temp = (short) (this.fixed << (8+decimalDistanceFromCenter));
+        } else {
+            temp = (short) (this.fixed << (8-decimalDistanceFromCenter));
+        }
         // Chop off the right bits of the mantissa until it fits within 8 bits.
         // e.g. Given the result above      .1000111100000000
         //      Chop off bits until we get  00000000.10001111
