@@ -1,0 +1,37 @@
+########################################################
+# Test FPU                                             #
+# Tests floating point instructions                    #
+# Output:                                              #
+#    FR0 <- 15.50 (0 0000001 11110000)                 #
+#    FR1 <- 7.75  (0 0000010 11110000)                 #
+########################################################
+# Stack data
+#  Note: Base User Program, so Address of Program is in address 16
+#   0 - Base Address of Program
+#   1 - Temporary location for fixed numbers before conversion
+#   2 - First floating point number
+#   3 - Second floating point number
+# Initialization
+LDX 1,0,16;          0 - Load IX1 with the base address of the stack frame
+LDX 2,0,18;          1 - Load IX2 with the base address of the dataset
+LDA 0,0,31;          2 - Store decimal 7.75 to local[1]
+AIR 0,0,31;          3      Decimal 7.75 = 0000 0111.1100 0000
+AIR 0,0,31;          4                      integer . fraction
+AIR 0,0,6;           5
+SRC 0,6,1,0;         6
+STR 0,1,1;           7
+CNVRT 1,1,1;         8 - Convert 7.75 to floating point.
+#                          FR1 <- 0 0000010 11110000
+#                          R1  <- 0000 0111.1100 0000
+STFR 1,1,2;          9 - Store the floating point number from FR1 to local[2]
+FADD 1,1,2;         10 - Add local[2] (7.75 as float) to FR1 (7.75 as float). FR1 <- 15.50
+#                          FR1 <- 0 0000001 11110000
+STFR 1,1,3;         11 - Store the floating point number from FR1 to local[3]
+FSUB 1,1,2;         12 - Subtract local[2] (7.75 as float) from FR1 (15.50).
+#                          FR1 <- 0 0000010 11110000
+STFR 1,1,2;         13 - Store the floating point number from FR1 to local[2] (proof that FSUB works)
+CNVRT 0,1,2;        14 - Convert local[2] (7.75) to fixed point.
+#                          R0 <- 0000 0111.1100 0000
+LDFR 0,1,2;         15 - Load the floating point number from local[2] to FR0 (7.75)
+LDFR 1,1,3;         16 - Load the floating point number from local[3] to FR1 (15.50)
+TRAP 0;             17 - End of program

@@ -30,8 +30,14 @@ public class Simulator {
     // The three index registers
     private short x1, x2, x3;
 
+    // The two floating point registers
+    private short fr0, fr1;
+
     // Arithmetic Logic Unit
     public ArithmeticLogicUnit alu;
+
+    // Floating Point  Unit
+    public FloatingPointUnit fpu;
 
     // I/O Subsystem
     public final InputOutput io;
@@ -42,6 +48,7 @@ public class Simulator {
         this.cu = new ControlUnit(this);
         this.memory = new Memory(this, wordCount);
         this.alu = new ArithmeticLogicUnit(this);
+        this.fpu = new FloatingPointUnit(this);
         this.io = new InputOutput(this);
         this.pc = new ProgramCounter();
         this.cc = new ConditionCode();
@@ -84,6 +91,8 @@ public class Simulator {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
+        this.fr0 = 0;
+        this.fr1 = 0;
     }
 
     public short getInternalAddressRegister() {
@@ -150,6 +159,26 @@ public class Simulator {
             this.x3 = value;
         } else {
             throw new RuntimeException("Invalid Index Register!");
+        }
+    }
+
+    public short getFloatingRegister(short registerId) {
+        if(registerId == 0){
+            return this.fr0;
+        } else if (registerId == 1){
+            return this.fr1;
+        } else {
+            throw new RuntimeException("Invalid Floating Point Register!");
+        }
+    }
+
+    public void setFloatingRegister(short registerId, short value) {
+        if(registerId == 0){
+            this.fr0 = value;
+        } else if (registerId == 1){
+            this.fr1 = value;
+        } else {
+            throw new RuntimeException("Invalid Floating Point Register!");
         }
     }
 

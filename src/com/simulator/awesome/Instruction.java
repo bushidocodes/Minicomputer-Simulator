@@ -38,6 +38,12 @@ public class Instruction {
         }
     }
 
+    public void validateFloatingRegisterIndex(short index){
+        if (index < 0 || index > 1) {
+            this.didFault = true;
+        }
+    }
+
     public void print(){
         System.out.println("OpCode: " + this.opCode);
     }
