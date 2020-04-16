@@ -5,6 +5,7 @@
 # Starts as 4,3,2,1                                    #
 # VADD yields 2,2,2,1                                  #
 # VSUB restores 4,3,2,1                                #
+# Writes 4,3 to operator's console                     #
 ########################################################
 LDX 1,0,16;             0 - Load IX1 with the base address of the stack frame
 LDA 0,0,4;              1 - Local(1) = 4
@@ -18,4 +19,15 @@ STR 0,1,4;              8
 LDA 0,0,2;              9 - Loading 2 (the length of our vectors into Register 0
 VSUB 0,1,1;             10 - [Local(1), Local(2)] = [Local(1), Local(2)] - [Local(3), Local(4)]
 VADD 0,1,1;             11 - [Local(1), Local(2)] = [Local(1), Local(2)] + [Local(3), Local(4)]
-TRAP 0;                 12 - end of program
+LDA 0,1,1;              12 - print local(1)
+JSR 0,27,1;             13 - print-int subroutine
+LDX 1,0,16;             14 - Load IX1 with the base address of the stack frame
+LDX 2,0,28;             15
+LDA 0,2,12;             16 - ,
+OUT 0,1;                17
+LDA 0,1,2;              18 - print local(1)
+JSR 0,27,1;             19 - print-int subroutine
+LDX 1,0,16;             20 - Load IX1 with the base address of the stack frame
+LDA 0,0,10;             21 - \n
+OUT 0,1;                22
+TRAP 0;                 23 - end of program
