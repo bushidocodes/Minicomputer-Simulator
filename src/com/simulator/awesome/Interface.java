@@ -75,6 +75,7 @@ public class Interface {
     private JLabel FR0Label;
     private JLabel FR1Label;
     private JButton loadFloatingPointDemoButton;
+    private JButton loadVectorDemoProgramButton;
     private final Simulator context;
     private File selectedFile;
     private File selectedCard;
@@ -558,6 +559,20 @@ public class Interface {
                 // Assemble the program and load it into the computer at memory location 160.
                 String basePath = new File("").getAbsolutePath(); //get current base directory
                 assembler.loadFile(basePath.concat("/static/fpu-test.txt"));
+                context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
+                refresh();
+            }
+        });
+        loadVectorDemoProgramButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Reset the simulation and call IPL to ensure a clean slate
+                resetButton.doClick();
+                iplButton.doClick();
+
+                // Assemble the program and load it into the computer at memory location 160.
+                String basePath = new File("").getAbsolutePath(); //get current base directory
+                assembler.loadFile(basePath.concat("/static/test-vector.txt"));
                 context.loadUserProgram(assembler.convertToMachineCode(), (short) 160);
                 refresh();
             }
