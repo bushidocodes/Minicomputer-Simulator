@@ -1,0 +1,103 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://www.jetbrains.com/intellij-repository/releases' }
+    maven { url = 'https://cache-redirector.jetbrains.com/intellij-dependencies' }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    mainClass = 'com.simulator.awesome.Main'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+            include '**/*.form', '**/*.png'
+        }
+    }
+}
+
+// IntelliJ GUI Designer support: Interface.form is bound to Interface.java
+// at compile time via bytecode instrumentation. We delegate to IntelliJ's
+// published Ant task (Javac2) for both compilation and instrumentation.
+def intellijVersion = '243.21565.193'
+
+configurations {
+    formsCompiler
+}
+
+dependencies {
+    implementation "com.jetbrains.intellij.java:java-gui-forms-rt:${intellijVersion}"
+    formsCompiler "com.jetbrains.intellij.java:java-compiler-ant-tasks:${intellijVersion}"
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    // Form files affect the instrumented output; track them so cache stays sane.
+    inputs.files(fileTree('src') { include '**/*.form' }).withPropertyName('formFiles')
+    doLast {
+        def classesDir = sourceSets.main.java.classesDirectory.get().asFile
+        def cp = (sourceSets.main.output.classesDirs.files + configurations.runtimeClasspath.files)
+                .collect { it.absolutePath }
+                .join(File.pathSeparator)
+        ant.taskdef(
+            name: 'javac2',
+            classname: 'com.intellij.ant.Javac2',
+            classpath: configurations.formsCompiler.asPath
+        )
+        // Apache Ant's Path.addJavaRuntime() has a Microsoft J++ hack: if
+        // java.vendor contains "Microsoft" it tries to load $JAVA_HOME/Packages,
+        // which doesn't exist on modern Microsoft Build of OpenJDK. Spoof the
+        // vendor for the duration of the instrumentation.
+        def originalVendor = System.getProperty('java.vendor')
+        try {
+            System.setProperty('java.vendor', 'Oracle Corporation')
+            ant.javac2(
+                srcdir: 'src',
+                destdir: classesDir.absolutePath,
+                classpath: cp,
+                includeantruntime: false,
+                source: '21',
+                target: '21',
+                encoding: 'UTF-8',
+                debug: 'true',
+                fork: 'false'
+            )
+        } finally {
+            if (originalVendor != null) System.setProperty('java.vendor', originalVendor)
+        }
+    }
+}
+
+// The app loads files from ./static at runtime via new File("").getAbsolutePath(),
+// so it must be launched from the project root.
+tasks.named('run', JavaExec) {
+    workingDir = project.projectDir
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': 'com.simulator.awesome.Main')
+    }
+    // Self-contained JAR: bundle the IntelliJ forms_rt runtime so the app can
+    // launch with just `java -jar`. Exclude signature files from dependencies
+    // to avoid "Invalid signature file digest" errors.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/MANIFEST.MF.*'
+}
