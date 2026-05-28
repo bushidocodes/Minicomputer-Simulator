@@ -1,0 +1,15 @@
+# Normalize all text files to LF in the repository.
+* text=auto eol=lf
+
+# Shell scripts must always be LF (Git Bash / WSL execute these).
+gradlew text eol=lf
+*.sh    text eol=lf
+
+# Windows batch files use CRLF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Binary files: don't touch.
+*.png   binary
+*.jar   binary
+*.gif   binary
