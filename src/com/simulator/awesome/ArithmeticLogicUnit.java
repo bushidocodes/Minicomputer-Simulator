@@ -92,12 +92,12 @@ public class ArithmeticLogicUnit {
     }
 
     public void divide() {
-        this.y = Integer.divideUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
-        this.y2 = Integer.remainderUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
-
-        // Set Condition Variables
         this.context.cc.reset();
-        this.context.cc.setDivideByZero(Integer.compareUnsigned(this.b, 0) == 0);
+        this.context.cc.setDivideByZero(this.b == 0);
+        if (this.b != 0) {
+            this.y = Integer.divideUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
+            this.y2 = Integer.remainderUnsigned(Short.toUnsignedInt(this.a), Short.toUnsignedInt(this.b));
+        }
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
