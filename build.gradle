@@ -28,6 +28,11 @@ sourceSets {
             include '**/*.form', '**/*.png'
         }
     }
+    test {
+        java {
+            srcDirs = ['test/java']
+        }
+    }
 }
 
 // IntelliJ GUI Designer support: Interface.form is bound to Interface.java
@@ -42,6 +47,12 @@ configurations {
 dependencies {
     implementation "com.jetbrains.intellij.java:java-gui-forms-rt:${intellijVersion}"
     formsCompiler "com.jetbrains.intellij.java:java-compiler-ant-tasks:${intellijVersion}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 compileJava {
