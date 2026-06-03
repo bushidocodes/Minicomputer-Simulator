@@ -11,7 +11,7 @@ public class Utils {
     public static short short_unsigned_right_shift(short source, int shift) {
         int temp = source;
         temp <<= 16; // Shift to the upper half of the int temporarily
-        temp >>>= (shift % 16);
+        temp >>>= shift;
         temp >>= 16;
         return (short)temp;
     }
