@@ -79,7 +79,11 @@ class OutputCharacterToDeviceFromRegister extends InputOutputInstruction {
         super(word, context);
         validateGeneralRegisterIndex(this.registerId);
         validateOutputDevice(this.deviceId);
-        this.context.io.addWordToOutputBuffer(this.deviceId,this.context.getGeneralRegister(this.registerId));
+    }
+
+    public void execute() {
+        if (this.didFault) return;
+        this.context.io.addWordToOutputBuffer(this.deviceId, this.context.getGeneralRegister(this.registerId));
     }
 }
 
