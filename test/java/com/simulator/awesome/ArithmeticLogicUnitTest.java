@@ -226,4 +226,59 @@ class ArithmeticLogicUnitTest {
         alu.logicalShiftLeft();
         assertEquals((short) 8, alu.getYAsShort());
     }
+
+    // --- shift underflow flag (issue #108) ---
+
+    @Test
+    void arithmeticShiftRight_underflow_setBitsLost() {
+        // 0b0000000000000011 >> 1 loses the bit at position 0
+        alu.setA((short) 0b11);
+        alu.setB((short) 1);
+        alu.arithmeticShiftRight();
+        assertTrue(sim.cc.isUnderflow(), "underflow should be set when 1-bits are shifted off");
+    }
+
+    @Test
+    void arithmeticShiftRight_noUnderflow_noLostBits() {
+        // 0b0000000000000100 >> 2 shifts out only zeros
+        alu.setA((short) 0b100);
+        alu.setB((short) 2);
+        alu.arithmeticShiftRight();
+        assertFalse(sim.cc.isUnderflow(), "underflow should be clear when only zero-bits are shifted off");
+    }
+
+    @Test
+    void arithmeticShiftRight_noUnderflow_zeroShift() {
+        alu.setA((short) 0b111);
+        alu.setB((short) 0);
+        alu.arithmeticShiftRight();
+        assertFalse(sim.cc.isUnderflow(), "underflow should be clear for shift count 0");
+    }
+
+    @Test
+    void logicalShiftRight_underflow_setBitsLost() {
+        // 0b0000000000000011 >> 1 loses the bit at position 0
+        alu.setA((short) 0b11);
+        alu.setB((short) 1);
+        alu.logicalShiftRight();
+        assertTrue(sim.cc.isUnderflow(), "underflow should be set when 1-bits are shifted off");
+    }
+
+    @Test
+    void logicalShiftRight_noUnderflow_highBitSource() {
+        // 0x8000 >> 1 shifts out only zeros from the right end
+        alu.setA((short) 0x8000);
+        alu.setB((short) 1);
+        alu.logicalShiftRight();
+        assertFalse(sim.cc.isUnderflow(), "underflow should be clear when only zero-bits are shifted off");
+        assertEquals((short) 0x4000, alu.getYAsShort());
+    }
+
+    @Test
+    void logicalShiftRight_noUnderflow_zeroShift() {
+        alu.setA((short) 0b111);
+        alu.setB((short) 0);
+        alu.logicalShiftRight();
+        assertFalse(sim.cc.isUnderflow(), "underflow should be clear for shift count 0");
+    }
 }

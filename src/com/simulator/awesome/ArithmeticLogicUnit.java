@@ -142,7 +142,8 @@ public class ArithmeticLogicUnit {
 
         // Set Condition Variables
         this.context.cc.reset();
-        this.context.cc.setUnderflow(this.b != 0 && this.a % 10 != 0);
+        // Underflow: any 1-bits were shifted off the right end
+        this.context.cc.setUnderflow(this.b > 0 && this.b < Short.SIZE && (this.a & ((1 << this.b) - 1)) != 0);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
@@ -157,7 +158,8 @@ public class ArithmeticLogicUnit {
 
         // Set Condition Variables
         this.context.cc.reset();
-        this.context.cc.setUnderflow(this.b != 0 && this.a % 10 != 0);
+        // Underflow: any 1-bits were shifted off the right end
+        this.context.cc.setUnderflow(this.b > 0 && this.b < Short.SIZE && (Short.toUnsignedInt(this.a) & ((1 << this.b) - 1)) != 0);
         this.context.cc.setEqual(Integer.compareUnsigned(this.a, this.b) == 0);
         this.context.cc.setGreaterThan(Integer.compareUnsigned(this.a, this.b) > 0);
     }
