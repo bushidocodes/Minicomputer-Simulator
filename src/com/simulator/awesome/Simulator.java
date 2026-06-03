@@ -77,6 +77,7 @@ public class Simulator {
         this.cu = new ControlUnit(this);
         this.memory.reset();
         this.alu = new ArithmeticLogicUnit(this);
+        this.fpu = new FloatingPointUnit(this);
         this.pc = new ProgramCounter();
         this.cc.reset();
         this.msr.reset();
