@@ -160,4 +160,28 @@ class UtilsTest {
         short result = Utils.short_unsigned_right_shift((short) 0xAB, 0);
         assertEquals((short) 0xAB, result);
     }
+
+    // --- shift count = 16 must produce 0, not a no-op (issue #123) ---
+
+    @Test
+    void shortUnsignedRightShift_by16_givesZero() {
+        // With % 16, shift=16 became shift=0, returning the original value unchanged.
+        short result = Utils.short_unsigned_right_shift((short) 0xFFFF, 16);
+        assertEquals((short) 0, result,
+            "right-shifting a 16-bit value by 16 must give 0");
+    }
+
+    @Test
+    void shortUnsignedRightShift_by16_positiveSource_givesZero() {
+        short result = Utils.short_unsigned_right_shift((short) 42, 16);
+        assertEquals((short) 0, result,
+            "right-shifting any 16-bit value by 16 must give 0");
+    }
+
+    @Test
+    void shortUnsignedRightShift_by15_preservesOnlyHighBit() {
+        // 0x8000 >> 15 = 0x0001
+        short result = Utils.short_unsigned_right_shift((short) 0x8000, 15);
+        assertEquals((short) 1, result);
+    }
 }
