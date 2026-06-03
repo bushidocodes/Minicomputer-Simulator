@@ -66,9 +66,7 @@ public class Assembler {
         }
 
         // Read the assembly code from the text file and then store each line in an array for processing.
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(filepath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
             String currentLine = reader.readLine();
             int lineCounter = 0;
             // Iterate through the text file line-by-line, storing each line in the array.
@@ -77,7 +75,6 @@ public class Assembler {
                 currentLine = reader.readLine();
                 lineCounter++;
             }
-            reader.close();
             this.currentFile = filepath;
             System.out.println("Loaded " + filepath + " containing "+input_arr.length+" lines.");
         } catch (IOException e) {
