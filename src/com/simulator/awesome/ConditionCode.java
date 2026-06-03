@@ -79,6 +79,8 @@ public class ConditionCode {
                 return this.isDivideByZero();
             case 3:
                 return this.isEqual();
+            case 4:
+                return this.isGreaterThan();
             default:
                 return false;
         }
