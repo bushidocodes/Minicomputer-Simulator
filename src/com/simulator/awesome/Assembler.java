@@ -91,6 +91,9 @@ public class Assembler {
         for(int lineCounter = 0; lineCounter < input_arr.length; lineCounter++){
             String currLine = input_arr[lineCounter];
 
+            // Skip null or blank lines (e.g. a trailing newline at end of file)
+            if (currLine == null || currLine.isBlank()) continue;
+
             // If the first character is a #, then this is a single line comment, so just advance
             if (currLine.startsWith("#")) continue;
 
