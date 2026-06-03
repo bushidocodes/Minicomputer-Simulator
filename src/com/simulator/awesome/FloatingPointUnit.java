@@ -134,7 +134,7 @@ public class FloatingPointUnit {
             this.a.exponentValue += absoluteExponentDifference;
 
             // The final exponent sign will be the exponent sign of B
-            resultExponentSign = this.b.sign;
+            resultExponentSign = this.b.exponentSign;
 
         } else if (this.a.exponentValue > this.b.exponentValue){
             // B is smaller than A
@@ -147,10 +147,10 @@ public class FloatingPointUnit {
             this.b.exponentValue += absoluteExponentDifference;
 
             // The final exponent sign will be the exponent sign of A
-            resultExponentSign = this.a.sign;
+            resultExponentSign = this.a.exponentSign;
         } else {
             // the numbers have the same exponent already, so just pick one for the resultExponentSign
-            resultExponentSign = this.a.sign;
+            resultExponentSign = this.a.exponentSign;
         }
     }
 
