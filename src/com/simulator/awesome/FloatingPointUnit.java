@@ -171,8 +171,9 @@ public class FloatingPointUnit {
     private void composeResult(){
         // Set Condition Variables
         this.context.cc.reset();
-        this.context.cc.setUnderflow(Integer.compareUnsigned(resultExponentValue, Config.FP_EXPONENT_MIN_VALUE) > 0);
-        this.context.cc.setUnderflow(Integer.compareUnsigned(resultMantissa, Config.FP_MANTISSA_MIN_VALUE) > 0);
+        boolean exponentUnderflow = Integer.compareUnsigned(resultExponentValue, Config.FP_EXPONENT_MIN_VALUE) > 0;
+        boolean mantissaUnderflow = Integer.compareUnsigned(resultMantissa, Config.FP_MANTISSA_MIN_VALUE) > 0;
+        this.context.cc.setUnderflow(exponentUnderflow || mantissaUnderflow);
 
         // Compose the result
         this.y.sign = resultSign;
