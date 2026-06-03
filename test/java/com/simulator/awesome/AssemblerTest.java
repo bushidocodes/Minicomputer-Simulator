@@ -150,6 +150,34 @@ class AssemblerTest {
         assertEquals("0000000000000000", result[0]);
     }
 
+    // --- Null / blank line handling (issue #122) ---
+
+    @Test
+    void nullLastLine_doesNotThrowNpe() {
+        // Files.lines().count() counts the trailing newline as an extra line; that slot is null
+        assertDoesNotThrow(() -> assemble("HLT", null),
+            "null line at end of input_arr must not throw NullPointerException");
+    }
+
+    @Test
+    void nullLastLine_producesCorrectOutput() {
+        String[] result = assemble("HLT", null);
+        assertEquals(1, result.length, "null trailing line must be skipped");
+        assertEquals("0000000000000000", result[0]);
+    }
+
+    @Test
+    void blankLastLine_isSkipped() {
+        String[] result = assemble("HLT", "");
+        assertEquals(1, result.length, "blank trailing line must be skipped");
+    }
+
+    @Test
+    void whitespaceOnlyLine_isSkipped() {
+        String[] result = assemble("HLT", "   ");
+        assertEquals(1, result.length, "whitespace-only line must be skipped");
+    }
+
     // --- Multi-instruction program ---
 
     @Test
