@@ -104,7 +104,7 @@ public class Memory {
     private void validateAddress(int address, boolean isWrite) throws IllegalMemoryAddressBeyondLimitException, IllegalMemoryAccessToReservedLocationsException {
         int lowerProtectedBounds = isWrite ? this.boundsLowerReadOnlyMemory : this.boundsLowerProtectedMemory;
         int upperProtectedBase = isWrite ? this.baseUpperReadOnlyMemory : this.baseUpperProtectedMemory;
-        if (address > this.wordCount) {
+        if (address >= this.wordCount) {
             throw new IllegalMemoryAddressBeyondLimitException("Illegally accessing address " + address + "above highest memory address " + this.wordCount + ". Halting!");
         } else if (!this.context.msr.isSupervisorMode() && (address <= lowerProtectedBounds || address >= upperProtectedBase)) {
             this.context.io.engineerConsolePrintLn("Illegally accessing protected address " + address + "! Halting");
