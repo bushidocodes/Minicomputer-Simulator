@@ -281,4 +281,179 @@ class ArithmeticLogicUnitTest {
         alu.logicalShiftRight();
         assertFalse(sim.cc.isUnderflow(), "underflow should be clear for shift count 0");
     }
+
+    // --- arithmeticShiftRight: underflow flag and count=0 (issue #118) ---
+
+    @Test
+    void arithmeticShiftRight_count0_resultUnchanged() {
+        alu.setA((short) 0b11110000);
+        alu.setB((short) 0);
+        alu.arithmeticShiftRight();
+        assertEquals((short) 0b11110000, alu.getYAsShort(),
+            "shift by 0 must not change the value");
+    }
+
+    @Test
+    void arithmeticShiftRight_count0_underflowClear() {
+        alu.setA((short) 0b111);
+        alu.setB((short) 0);
+        alu.arithmeticShiftRight();
+        assertFalse(sim.cc.isUnderflow(),
+            "shift count 0 must not set underflow");
+    }
+
+    @Test
+    void arithmeticShiftRight_underflow_setWhenBitsLost() {
+        // 0b11 >> 1 shifts out the lsb (1-bit lost) - underflow
+        alu.setA((short) 0b11);
+        alu.setB((short) 1);
+        alu.arithmeticShiftRight();
+        assertTrue(sim.cc.isUnderflow(),
+            "underflow must be set when 1-bits are shifted off the right end");
+    }
+
+    @Test
+    void arithmeticShiftRight_noUnderflow_onlyZerosBitsLost() {
+        // 0b100 >> 2: bits shifted out are 0,0 - no underflow
+        alu.setA((short) 0b100);
+        alu.setB((short) 2);
+        alu.arithmeticShiftRight();
+        assertFalse(sim.cc.isUnderflow(),
+            "underflow must be clear when only zero-bits are shifted off");
+    }
+
+    @Test
+    void arithmeticShiftRight_negative_signExtends() {
+        // Java >> sign-extends: -4 >> 1 = -2
+        alu.setA((short) -4);
+        alu.setB((short) 1);
+        alu.arithmeticShiftRight();
+        assertEquals((short) -2, alu.getYAsShort(),
+            "arithmetic right shift must sign-extend negative values");
+    }
+
+    // --- logicalShiftRight: underflow flag and count=0 (issue #118) ---
+
+    @Test
+    void logicalShiftRight_count0_resultUnchanged() {
+        alu.setA((short) 0b11110000);
+        alu.setB((short) 0);
+        alu.logicalShiftRight();
+        assertEquals((short) 0b11110000, alu.getYAsShort(),
+            "logical shift right by 0 must not change the value");
+    }
+
+    @Test
+    void logicalShiftRight_count0_underflowClear() {
+        alu.setA((short) 0b111);
+        alu.setB((short) 0);
+        alu.logicalShiftRight();
+        assertFalse(sim.cc.isUnderflow(),
+            "shift count 0 must not set underflow flag");
+    }
+
+    @Test
+    void logicalShiftRight_underflow_setWhenBitsLost() {
+        alu.setA((short) 0b11);
+        alu.setB((short) 1);
+        alu.logicalShiftRight();
+        assertTrue(sim.cc.isUnderflow(),
+            "underflow must be set when 1-bits are shifted off the right end");
+    }
+
+    @Test
+    void logicalShiftRight_noUnderflow_highBitSourceNoLoss() {
+        // 0x8000 >> 1: right end bit is 0, no underflow; result = 0x4000
+        alu.setA((short) 0x8000);
+        alu.setB((short) 1);
+        alu.logicalShiftRight();
+        assertFalse(sim.cc.isUnderflow(),
+            "underflow must be clear when the shifted-out bits are all zero");
+        assertEquals((short) 0x4000, alu.getYAsShort());
+    }
+
+    @Test
+    void logicalShiftRight_doesNotSignExtend() {
+        // Logical shift: sign bit must NOT propagate
+        alu.setA((short) 0x8000);
+        alu.setB((short) 1);
+        alu.logicalShiftRight();
+        assertEquals((short) 0x4000, alu.getYAsShort(),
+            "logical right shift must fill with 0, not sign-extend");
+    }
+
+    // --- arithmeticShiftLeft: count=0 (issue #118) ---
+
+    @Test
+    void arithmeticShiftLeft_count0_resultUnchanged() {
+        alu.setA((short) 0b10101010);
+        alu.setB((short) 0);
+        alu.arithmeticShiftLeft();
+        assertEquals((short) 0b10101010, alu.getYAsShort(),
+            "shift left by 0 must not change the value");
+    }
+
+    // --- logical rotates: count=0 (issue #118) ---
+
+    @Test
+    void logicalRotateLeft_count0_resultUnchanged() {
+        alu.setA((short) 0b1010101010101010);
+        alu.setB((short) 0);
+        alu.logicalRotateLeft();
+        assertEquals((short) 0b1010101010101010, alu.getYAsShort(),
+            "rotate left by 0 must not change the value");
+    }
+
+    @Test
+    void logicalRotateRight_count0_resultUnchanged() {
+        alu.setA((short) 0b0101010101010101);
+        alu.setB((short) 0);
+        alu.logicalRotateRight();
+        assertEquals((short) 0b0101010101010101, alu.getYAsShort(),
+            "rotate right by 0 must not change the value");
+    }
+
+    @Test
+    void logicalRotateLeft_wrapsHighBitToLow() {
+        // 0x8000 rotate-left by 1: high bit wraps to bit 0 - 0x0001
+        alu.setA((short) 0x8000);
+        alu.setB((short) 1);
+        alu.logicalRotateLeft();
+        assertEquals((short) 0x0001, alu.getYAsShort(),
+            "logical rotate left must wrap the high bit around to position 0");
+    }
+
+    @Test
+    void logicalRotateRight_wrapsLowBitToHigh() {
+        // 0x0001 rotate-right by 1: low bit wraps to bit 15 - 0x8000
+        alu.setA((short) 0x0001);
+        alu.setB((short) 1);
+        alu.logicalRotateRight();
+        assertEquals((short) 0x8000, alu.getYAsShort(),
+            "logical rotate right must wrap the low bit around to position 15");
+    }
+
+    // --- arithmeticShiftRight underflow was broken (issue #108, fixed) ---
+    // These document the correct behavior after the fix.
+
+    @Test
+    void arithmeticShiftRight_underflowUsesLostBits_notModulo10() {
+        // Before fix: `a % 10 != 0` was used -- value 10 would give no underflow incorrectly.
+        // After fix: check whether the bits shifted off the right are non-zero.
+        alu.setA((short) 10); // 10 % 10 == 0, so old code said no underflow
+        alu.setB((short) 1);  // shift out bit 0: 10 = 0b1010, bit 0 = 0 - no underflow
+        alu.arithmeticShiftRight();
+        assertFalse(sim.cc.isUnderflow(),
+            "10 >> 1: bit 0 is 0, so no bits are lost -- underflow must be clear");
+    }
+
+    @Test
+    void arithmeticShiftRight_underflowBitLoss_oddValue() {
+        // 11 >> 1: 11 = 0b1011, bit 0 = 1 - underflow (bit lost)
+        alu.setA((short) 11);
+        alu.setB((short) 1);
+        alu.arithmeticShiftRight();
+        assertTrue(sim.cc.isUnderflow(),
+            "11 >> 1: bit 0 is 1, a 1-bit is lost -- underflow must be set");
+    }
 }
