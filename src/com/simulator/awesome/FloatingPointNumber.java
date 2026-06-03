@@ -26,8 +26,8 @@ public class FloatingPointNumber{
     public short toShort(){
         String sign = String.valueOf(this.sign);
         String exponentSign = String.valueOf(this.exponentSign);
-        String exponentValue = "0000000".substring(Integer.toBinaryString(this.exponentValue).length()) + Integer.toBinaryString(this.exponentValue); // pad to 7 bits
-        String mantissa = Integer.toBinaryString(this.mantissa);
+        String exponentValue = "000000".substring(Integer.toBinaryString(this.exponentValue).length()) + Integer.toBinaryString(this.exponentValue); // pad to 6 bits
+        String mantissa = "00000000".substring(Integer.toBinaryString(this.mantissa).length()) + Integer.toBinaryString(this.mantissa); // pad to 8 bits
         short composedShort = (short) Integer.parseUnsignedInt(sign + exponentSign + exponentValue + mantissa, 2);
         return composedShort;
     }
