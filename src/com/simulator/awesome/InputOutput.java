@@ -17,6 +17,7 @@ public class InputOutput {
         this.outputBuffer = new LinkedBlockingQueue[Config.OUTPUT_IO_BUFFER_SIZE];
         this.inputBuffer = new LinkedBlockingQueue[Config.INPUT_IO_BUFFER_SIZE];
         this.engineerConsoleOutputBuffer = new LinkedBlockingQueue();
+        initializeIOBuffers();
     }
 
     public void reset(){
