@@ -133,8 +133,9 @@ public class FloatingPointUnit {
             // Add the absoluteExponentDifference to A's exponent
             this.a.exponentValue += absoluteExponentDifference;
 
-            // The final exponent sign will be the exponent sign of B
+            // The final exponent sign and value will be those of B (the larger)
             resultExponentSign = this.b.exponentSign;
+            resultExponentValue = this.b.exponentValue;
 
         } else if (this.a.exponentValue > this.b.exponentValue){
             // B is smaller than A
@@ -146,11 +147,13 @@ public class FloatingPointUnit {
             // Add the absoluteExponentDifference to B's exponent
             this.b.exponentValue += absoluteExponentDifference;
 
-            // The final exponent sign will be the exponent sign of A
+            // The final exponent sign and value will be those of A (the larger)
             resultExponentSign = this.a.exponentSign;
+            resultExponentValue = this.a.exponentValue;
         } else {
-            // the numbers have the same exponent already, so just pick one for the resultExponentSign
+            // the numbers have the same exponent already, so just pick one for both sign and value
             resultExponentSign = this.a.exponentSign;
+            resultExponentValue = this.a.exponentValue;
         }
     }
 
