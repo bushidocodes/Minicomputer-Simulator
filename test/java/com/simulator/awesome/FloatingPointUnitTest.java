@@ -89,4 +89,31 @@ class FloatingPointUnitTest {
         assertTrue(sim.cc.isUnderflow(),
             "non-zero mantissa result should set underflow (mantissa > FP_MANTISSA_MIN_VALUE)");
     }
+
+    // --- rewriteExponents sets resultExponentValue (issue #140) ---
+
+    @Test
+    void add_resultExponentTakesLargerOperandsExponent() {
+        // A: expValue=2, B: expValue=4 (larger) -> result exponent must be 4
+        fpu.setA(fp(0, 0, 2, 0x10));
+        fpu.setB(fp(0, 0, 4, 0x10));
+        fpu.add();
+        FloatingPointNumber result = new FloatingPointNumber(fpu.getYAsShort());
+        assertEquals(4, result.exponentValue,
+            "result exponent must match the larger of the two operand exponents");
+    }
+
+    @Test
+    void add_mantissaOverflow_shiftsAndIncrementsExponent() {
+        // 0x80 + 0x80 = 0x100 > FP_MANTISSA_MAX (0xFF): mantissa shifted right, exponent incremented.
+        // Base exponent is 2; overflow increments it to 3.
+        fpu.setA(fp(0, 0, 2, 0x80));
+        fpu.setB(fp(0, 0, 2, 0x80));
+        fpu.add();
+        FloatingPointNumber result = new FloatingPointNumber(fpu.getYAsShort());
+        assertTrue(Short.toUnsignedInt(result.mantissa) <= Config.FP_MANTISSA_MAX_VALUE,
+            "overflow mantissa must be shifted to fit in 8 bits");
+        assertEquals(3, result.exponentValue,
+            "exponent must be incremented when mantissa overflows (base 2 + 1 overflow = 3)");
+    }
 }
