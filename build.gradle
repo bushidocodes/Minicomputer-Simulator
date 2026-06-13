@@ -38,7 +38,7 @@ sourceSets {
 // IntelliJ GUI Designer support: Interface.form is bound to Interface.java
 // at compile time via bytecode instrumentation. We delegate to IntelliJ's
 // published Ant task (Javac2) for both compilation and instrumentation.
-def intellijVersion = '243.21565.193'
+def intellijVersion = '261.25134.147'
 
 configurations {
     formsCompiler
