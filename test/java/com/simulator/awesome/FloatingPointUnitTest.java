@@ -21,7 +21,7 @@ class FloatingPointUnitTest {
 
     @BeforeEach
     void setUp() {
-        sim = new Simulator(Config.WORD_COUNT);
+        sim = new Simulator();
         fpu = sim.fpu;
     }
 

@@ -5,7 +5,7 @@ import javax.swing.JFrame;
 class Main {
     public static void main(String[] args) {
         try {
-            Simulator myComputer = new Simulator(2048);
+            Simulator myComputer = new Simulator();
             myComputer.attachConsole();
             myComputer.io.initializeIOBuffers();
 

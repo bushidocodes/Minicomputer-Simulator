@@ -10,7 +10,7 @@ class OutputInstructionTest {
 
     @BeforeEach
     void setUp() {
-        sim = new Simulator(Config.WORD_COUNT);
+        sim = new Simulator();
         sim.msr.setSupervisorMode(true);
         sim.io.initializeIOBuffers(); // ensure queues are initialised (issue #113)
     }

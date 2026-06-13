@@ -16,7 +16,7 @@ class JumpGreaterThanOrEqualToTest {
 
     @BeforeEach
     void setUp() {
-        sim = new Simulator(Config.WORD_COUNT);
+        sim = new Simulator();
         sim.io.initializeIOBuffers(); // workaround for issue #113
         sim.msr.setSupervisorMode(true);
     }
