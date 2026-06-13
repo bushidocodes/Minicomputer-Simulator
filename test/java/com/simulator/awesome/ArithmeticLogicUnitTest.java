@@ -11,7 +11,7 @@ class ArithmeticLogicUnitTest {
 
     @BeforeEach
     void setUp() {
-        sim = new Simulator(Config.WORD_COUNT);
+        sim = new Simulator();
         alu = sim.alu;
     }
 

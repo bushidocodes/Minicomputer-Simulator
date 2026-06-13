@@ -44,9 +44,9 @@ public class Simulator {
 
     public final ReadOnlyMemory rom;
 
-    Simulator(int wordCount) {
+    Simulator() {
         this.cu = new ControlUnit(this);
-        this.memory = new Memory(this, wordCount);
+        this.memory = new Memory(this);
         this.alu = new ArithmeticLogicUnit(this);
         this.fpu = new FloatingPointUnit(this);
         this.io = new InputOutput(this);

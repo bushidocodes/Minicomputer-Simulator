@@ -11,7 +11,7 @@ class MemoryTest {
 
     @BeforeEach
     void setUp() {
-        sim = new Simulator(Config.WORD_COUNT);
+        sim = new Simulator();
         sim.msr.setSupervisorMode(true); // bypass protection checks for direct tests
         memory = sim.memory;
     }

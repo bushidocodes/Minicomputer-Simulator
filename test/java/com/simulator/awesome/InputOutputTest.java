@@ -11,7 +11,7 @@ class InputOutputTest {
 
     @BeforeEach
     void setUp() {
-        sim = new Simulator(Config.WORD_COUNT);
+        sim = new Simulator();
         io = sim.io;
     }
 

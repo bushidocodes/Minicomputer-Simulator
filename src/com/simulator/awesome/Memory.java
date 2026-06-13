@@ -29,7 +29,7 @@ public class Memory {
     short baseUpperProtectedMemory;
     short baseHeapSpace = 160; // This is updated to one address after the end of the user program
 
-    Memory(Simulator context, int wordCount){
+    Memory(Simulator context){
         this.context = context;
 
         // Allocate and zero out Linear Memory
