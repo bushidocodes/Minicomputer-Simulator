@@ -131,7 +131,7 @@ public class FloatingPointUnit {
             this.a.mantissa = Utils.short_unsigned_right_shift(this.a.mantissa, absoluteExponentDifference);
 
             // Add the absoluteExponentDifference to A's exponent
-            this.a.exponentValue += absoluteExponentDifference;
+            this.a.exponentValue = (short) (this.a.exponentValue + absoluteExponentDifference);
 
             // The final exponent sign and value will be those of B (the larger)
             resultExponentSign = this.b.exponentSign;
@@ -145,7 +145,7 @@ public class FloatingPointUnit {
             this.b.mantissa = Utils.short_unsigned_right_shift(this.b.mantissa, absoluteExponentDifference);
 
             // Add the absoluteExponentDifference to B's exponent
-            this.b.exponentValue += absoluteExponentDifference;
+            this.b.exponentValue = (short) (this.b.exponentValue + absoluteExponentDifference);
 
             // The final exponent sign and value will be those of A (the larger)
             resultExponentSign = this.a.exponentSign;

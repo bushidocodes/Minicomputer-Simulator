@@ -33,7 +33,7 @@ public class DataSet {
         int displacement = baseAddress - this.baseAddress;
         this.baseAddress = baseAddress;
         for (int bodySection=1, address=this.baseAddress + 32; bodySection <= this.numberOfBodySections; bodySection++, address+=32){
-            this.dataSet[bodySection] += displacement;
+            this.dataSet[bodySection] = (short) (this.dataSet[bodySection] + displacement);
         }
     }
 
